@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.version     = HQ::GraphQL::VERSION
   s.authors     = ["Danny Jones"]
   s.email       = ["dpjones09@gmail.com"]
-  s.homepage    = "https://github.com/onehq/hql"
+  s.homepage    = "https://github.com/OneHQ/hq-graphql"
   s.summary     = "OneHQ GraphQL Library"
   s.description = "OneHQ GraphQL Library"
   s.license     = "MIT"
@@ -16,10 +16,9 @@ Gem::Specification.new do |s|
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
   s.test_files = Dir["spec/**/*"]
 
-  s.add_dependency "rails",                     "~> 4.2.0"
-  s.add_dependency "graphql"
+  s.add_dependency "rails",                     "~> 4.2"
+  s.add_dependency "graphql",                   "~> 1.0", ">= 1.8.7"
 
-  s.add_development_dependency "graphiql-rails"
   s.add_development_dependency "rspec_junit_formatter",   "~> 0.3", ">= 0.3.0"
   s.add_development_dependency "testhq",                  "~> 1.0", ">= 1.0.0"
 end
