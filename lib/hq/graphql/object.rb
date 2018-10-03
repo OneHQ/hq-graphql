@@ -1,6 +1,8 @@
 module HQ
   module GraphQL
     class Object < ::GraphQL::Schema::Object
+      include Scalars
+
       class Error < StandardError
         MISSING_MODEL_MSG = "Can't perform %{action} without connecting to a model: `::HQ::GraphQL::Object.with_model 'User'`".freeze
         MISSING_ATTR_MSG = "Can't find attr %{model}.%{attr}'`".freeze

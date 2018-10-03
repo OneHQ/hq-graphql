@@ -27,6 +27,6 @@ module HQ
   end
 end
 
-require "hq/graphql/object"
 require "hq/graphql/types"
+require "hq/graphql/object"
 require "hq/graphql/engine"

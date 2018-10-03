@@ -1,4 +1,4 @@
-class Query < GraphQL::Schema::Object
+class Query < HQ::GraphQL::Object
   graphql_name "Query"
 
   field :users, [HQ::GraphQL::Types[User]], null: false

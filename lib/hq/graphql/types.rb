@@ -1,4 +1,4 @@
-require "hq/graphql/types/uuid"
+require "hq/graphql/scalars"
 
 module HQ
   module GraphQL
@@ -16,13 +16,13 @@ module HQ
         when :uuid
           ::HQ::GraphQL::Types::UUID
         when :integer
-          ::GraphQL::INT_TYPE
+          ::GraphQL::Types::Int
         when :decimal
-          ::GraphQL::FLOAT_TYPE
+          ::GraphQL::Types::Float
         when :boolean
-          ::GraphQL::BOOLEAN_TYPE
+          ::GraphQL::Types::Boolean
         else
-          ::GraphQL::STRING_TYPE
+          ::GraphQL::Types::String
         end
       end
 

@@ -6,13 +6,13 @@ ActiveRecord::Schema.define do
     t.timestamps                       null: false
   end
 
-  create_table "users", force: true do |t|
+  create_table "users", force: true, id: :uuid do |t|
     t.belongs_to  :organization,       null: false, index: true, foreign_key: true, type: :uuid
     t.string      :name,               null: false
     t.timestamps                       null: false
   end
 
-  create_table "advisors", force: true do |t|
+  create_table "advisors", force: true, id: :uuid do |t|
     t.references  :organization,       null: false, index: true, foreign_key: true, type: :uuid
     t.string      :name,               null: false
     t.timestamps                       null: false
