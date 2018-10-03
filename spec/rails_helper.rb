@@ -32,10 +32,12 @@ RSpec.configure do |config|
   end
 
   config.before(:each) do
+    ::HQ::GraphQL.reset!
     DatabaseCleaner.start
   end
 
   config.after(:each) do
     DatabaseCleaner.clean
+    ::HQ::GraphQL.reset!
   end
 end

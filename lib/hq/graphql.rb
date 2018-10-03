@@ -2,6 +2,7 @@ require "graphql"
 
 module HQ
   module GraphQL
+
     def self.config
       @config ||= ::ActiveSupport::OrderedOptions.new
     end
@@ -10,23 +11,38 @@ module HQ
       config.instance_eval(&block)
     end
 
-    # The gem assumes that if your model is called `MyModel`, the corresponding type is `MyModelType`.
-    # You can override that convention.
-    #
-    # ::HQ::GraphQL.config do |config|
-    #   config.model_to_graphql_type = -> (model_class) { "::CustomNameSpace::#{model_class.name}Type" }
-    # end
-    def self.model_to_graphql_type
-      config.model_to_graphql_type ||
-        @model_to_graphql_type ||= -> (model_class) { "#{model_class.name.demodulize}Type" }
+    def self.default_scope(scope, context)
+      config.default_scope&.call(scope, context) || scope
     end
 
-    def self.graphql_type_from_model(model_class)
-      model_to_graphql_type.call(model_class)
+    def self.reset!
+      @root_queries = nil
+      @types = nil
+      ::HQ::GraphQL::Inputs.reset!
+      ::HQ::GraphQL::Types.reset!
     end
+
+    def self.root_queries
+      @root_queries ||= Set.new
+    end
+
+    def self.types
+      @types ||= Set.new
+    end
+
   end
 end
 
-require "hq/graphql/types"
+require "hq/graphql/active_record_extensions"
+require "hq/graphql/scalars"
+require "hq/graphql/input_extensions"
+
+require "hq/graphql/inputs"
+require "hq/graphql/input_object"
+require "hq/graphql/mutation"
 require "hq/graphql/object"
+require "hq/graphql/resource"
+require "hq/graphql/root_mutation"
+require "hq/graphql/root_query"
+require "hq/graphql/types"
 require "hq/graphql/engine"
