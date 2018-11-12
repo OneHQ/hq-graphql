@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   s.test_files = Dir["spec/**/*"]
 
   s.add_dependency "rails",                     "~> 4.2"
-  s.add_dependency "graphql",                   "~> 1.0", ">= 1.8.7"
+  s.add_dependency "graphql",                   "~> 1.0", ">= 1.8.10"
 
   s.add_development_dependency "rspec_junit_formatter",   "~> 0.3", ">= 0.3.0"
   s.add_development_dependency "testhq",                  "~> 1.0", ">= 1.0.0"

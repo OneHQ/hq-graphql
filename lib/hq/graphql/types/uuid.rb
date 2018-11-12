@@ -5,11 +5,11 @@ module HQ
         description "UUID"
 
         class << self
-          def self.coerce_input(value, context)
+          def coerce_input(value, context)
             validate_and_return_uuid(value)
           end
 
-          def self.coerce_result(value, context)
+          def coerce_result(value, context)
             validate_and_return_uuid(value)
           end
 
@@ -24,7 +24,7 @@ module HQ
           end
 
           def validate_uuid(value)
-            !!value.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+            !!value.to_s.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
           end
         end
       end
