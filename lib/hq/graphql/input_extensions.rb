@@ -5,7 +5,22 @@ module HQ
       def self.included(base)
         base.include Scalars
         base.include ::HQ::GraphQL::ActiveRecordExtensions
+        base.include(InstanceMethods)
         base.extend(ClassMethods)
+      end
+
+      module InstanceMethods
+        # Recursively format attributes so that they are compatible with `accepts_nested_attributes_for`
+        def format_nested_attributes(attrs)
+          attrs.inject({}) do |formatted_attrs, (key, value) |
+            if self.class.nested_attributes.include?(key.to_s)
+              formatted_attrs["#{key}_attributes"] = value.format_nested_attributes(value.to_h)
+            else
+              formatted_attrs[key] = value
+            end
+            formatted_attrs
+          end
+        end
       end
 
       module ClassMethods
@@ -26,22 +41,28 @@ module HQ
           end
         end
 
+        def nested_attributes
+          @nested_attributes ||= Set.new
+        end
+
         private
 
         def argument_from_association(association)
           input = ::HQ::GraphQL::Inputs[association.klass]
           name = association.name
-          name_attributes = "#{name}_attributes"
+
           case association.macro
           when :has_many
-            argument name_attributes, [input], required: false
+            argument name, [input], required: false
           else
-            argument name_attributes, input, required: false
+            argument name, input, required: false
           end
 
           if !model_klass.nested_attributes_options.keys.include?(name.to_sym)
             model_klass.accepts_nested_attributes_for name, allow_destroy: true
           end
+
+          nested_attributes << name.to_s
         rescue ::HQ::GraphQL::Inputs::Error
           nil
         end

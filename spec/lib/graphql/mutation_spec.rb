@@ -147,7 +147,7 @@ describe ::HQ::GraphQL::Mutation do
 
           expect(hq_input_object.arguments.keys).to be_empty
           hq_input_object.payload_type
-          expect(hq_input_object.arguments.keys).to contain_exactly("organizationAttributes")
+          expect(hq_input_object.arguments.keys).to contain_exactly("organization")
         end
 
         it "raises an error when adding an association that doesn't exist" do

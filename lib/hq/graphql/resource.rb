@@ -64,7 +64,7 @@ module HQ
             create_mutation = ::HQ::GraphQL::Resource::Mutation.build(model_name, graphql_name: "#{model_display_name}Create") do
               define_method(:resolve) do |**attrs|
                 resource = scoped_self.model_klass.new
-                resource.assign_attributes(attrs)
+                resource.assign_attributes(format_nested_attributes(attrs))
                 if resource.save
                   {
                     resource: resource,
@@ -96,7 +96,7 @@ module HQ
                 resource = scoped_self.find_record(attrs, context)
 
                 if resource
-                  resource.assign_attributes(attrs)
+                  resource.assign_attributes(format_nested_attributes(attrs))
                   if resource.save
                     {
                       resource: resource,

@@ -180,7 +180,7 @@ describe ::HQ::GraphQL::Resource do
       update_mutation.payload_type
 
       aggregate_failures do
-        expected_arguments = ["id", "organizationId", "organizationAttributes", "createdAt", "updatedAt"]
+        expected_arguments = ["id", "organizationId", "organization", "createdAt", "updatedAt"]
         expect(update_mutation.arguments.keys).to contain_exactly(*expected_arguments)
 
         expected_fields = ["errors", "resource"]
@@ -221,8 +221,8 @@ describe ::HQ::GraphQL::Resource do
 
     let(:update_mutation) {
       <<-gql
-        mutation updateAdvisor($id: UUID!, $name: String!, $organizationAttributes: OrganizationInput){
-          updateAdvisor(id: $id, name: $name, organizationAttributes: $organizationAttributes) {
+        mutation updateAdvisor($id: UUID!, $name: String!, $organization: OrganizationInput){
+          updateAdvisor(id: $id, name: $name, organization: $organization) {
             errors
             resource {
               name
@@ -293,7 +293,7 @@ describe ::HQ::GraphQL::Resource do
       results = schema.execute(update_mutation, variables: {
         id: advisor.id,
         name: name,
-        organizationAttributes: { id: advisor.organization_id, name: organization_name }
+        organization: { id: advisor.organization_id, name: organization_name }
       })
 
       data = results["data"]
