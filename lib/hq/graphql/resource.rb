@@ -185,10 +185,6 @@ module HQ
           end
         end
 
-        def errors_from_resource(resource)
-          resource.errors.to_h.deep_transform_keys { |k| k.to_s.camelize(:lower) }
-        end
-
       end
     end
   end
