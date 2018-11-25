@@ -62,7 +62,7 @@ module HQ
                 else
                   {
                     resource: nil,
-                    errors: resource.errors.full_messages
+                    errors: errors_from_resource(resource)
                   }
                 end
               end
@@ -94,7 +94,7 @@ module HQ
                   else
                     {
                       resource: resource,
-                      errors: resource.errors.full_messages
+                      errors: errors_from_resource(resource)
                     }
                   end
                 else
@@ -131,7 +131,7 @@ module HQ
                   else
                     {
                       resource: resource,
-                      errors: resource.errors.full_messages
+                      errors: errors_from_resource(resource)
                     }
                   end
                 else
@@ -183,6 +183,10 @@ module HQ
 
             instance_eval(&block) if block
           end
+        end
+
+        def errors_from_resource(resource)
+          resource.errors.to_h.deep_transform_keys { |k| k.to_s.camelize(:lower) }
         end
 
       end
