@@ -169,8 +169,8 @@ module HQ
             graphql_name scoped_model_name
 
             with_model scoped_model_name, **options
-
-            instance_eval(&block) if block
+          end.tap do |klass|
+            klass.class_eval(&block) if block
           end
         end
 
@@ -180,8 +180,8 @@ module HQ
             graphql_name "#{scoped_model_name.demodulize}Input"
 
             with_model scoped_model_name, **options
-
-            instance_eval(&block) if block
+          end.tap do |klass|
+            klass.class_eval(&block) if block
           end
         end
 
