@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe ::HQ::GraphQL::Mutation do
+describe ::HQ::GraphQL::InputObject do
 
   describe ".with_model" do
     let(:hq_input_object) do
@@ -27,7 +27,7 @@ describe ::HQ::GraphQL::Mutation do
       end
 
       expect(hq_input_object.arguments.keys).to be_empty
-      hq_input_object.payload_type
+      hq_input_object.graphql_definition
       expected = ["createdAt", "id", "name", "organizationId", "updatedAt"]
       expect(hq_input_object.arguments.keys).to contain_exactly(*expected)
     end
@@ -40,7 +40,7 @@ describe ::HQ::GraphQL::Mutation do
         end
 
         expect(hq_input_object.arguments.keys).to be_empty
-        hq_input_object.payload_type
+        hq_input_object.graphql_definition
         expected = ["name", "updatedAt"]
         expect(hq_input_object.arguments.keys).to contain_exactly(*expected)
       end
@@ -51,7 +51,7 @@ describe ::HQ::GraphQL::Mutation do
           with_model "Advisor"
         end
 
-        expect { hq_input_object.payload_type }.to raise_error(described_class::Error)
+        expect { hq_input_object.graphql_definition }.to raise_error(described_class::Error)
       end
 
       it "raises an error when not connected to a model" do
@@ -59,7 +59,7 @@ describe ::HQ::GraphQL::Mutation do
           remove_attributes :created_at
         end
 
-        expect { hq_input_object.payload_type }.to raise_error(described_class::Error)
+        expect { hq_input_object.graphql_definition }.to raise_error(described_class::Error)
       end
     end
 
@@ -71,7 +71,7 @@ describe ::HQ::GraphQL::Mutation do
         end
 
         expect(hq_input_object.arguments.keys).to be_empty
-        hq_input_object.payload_type
+        hq_input_object.graphql_definition
         expected = ["createdAt", "id", "name", "organizationId", "updatedAt"]
         expect(hq_input_object.arguments.keys).to contain_exactly(*expected)
       end
@@ -82,7 +82,7 @@ describe ::HQ::GraphQL::Mutation do
           with_model "Advisor"
         end
 
-        expect { hq_input_object.payload_type }.to raise_error(described_class::Error)
+        expect { hq_input_object.graphql_definition }.to raise_error(described_class::Error)
       end
 
       it "raises an error when not connected to a model" do
@@ -90,13 +90,13 @@ describe ::HQ::GraphQL::Mutation do
           remove_associations :organization
         end
 
-        expect { hq_input_object.payload_type }.to raise_error(described_class::Error)
+        expect { hq_input_object.graphql_definition }.to raise_error(described_class::Error)
       end
     end
 
     context "with attributes and associations turned off" do
       it "doesn't have any arguments by default" do
-        hq_input_object.payload_type
+        hq_input_object.graphql_definition
         expect(hq_input_object.arguments.keys).to be_empty
       end
 
@@ -104,7 +104,7 @@ describe ::HQ::GraphQL::Mutation do
         hq_input_object.class_eval do
           with_model "Advisor", attributes: false, associations: false
         end
-        hq_input_object.payload_type
+        hq_input_object.graphql_definition
         expect(hq_input_object.arguments.keys).to be_empty
       end
 
@@ -116,7 +116,7 @@ describe ::HQ::GraphQL::Mutation do
           end
 
           expect(hq_input_object.arguments.keys).to be_empty
-          hq_input_object.payload_type
+          hq_input_object.graphql_definition
           expect(hq_input_object.arguments.keys).to contain_exactly("name")
         end
 
@@ -126,7 +126,7 @@ describe ::HQ::GraphQL::Mutation do
             with_model "Advisor", attributes: false, associations: false
           end
 
-          expect { hq_input_object.payload_type }.to raise_error(described_class::Error)
+          expect { hq_input_object.graphql_definition }.to raise_error(described_class::Error)
         end
 
         it "raises an error when not connected to a model" do
@@ -134,7 +134,7 @@ describe ::HQ::GraphQL::Mutation do
             add_attributes :name
           end
 
-          expect { hq_input_object.payload_type }.to raise_error(described_class::Error)
+          expect { hq_input_object.graphql_definition }.to raise_error(described_class::Error)
         end
       end
 
@@ -146,7 +146,7 @@ describe ::HQ::GraphQL::Mutation do
           end
 
           expect(hq_input_object.arguments.keys).to be_empty
-          hq_input_object.payload_type
+          hq_input_object.graphql_definition
           expect(hq_input_object.arguments.keys).to contain_exactly("organization")
         end
 
@@ -156,7 +156,7 @@ describe ::HQ::GraphQL::Mutation do
             with_model "Advisor", attributes: false, associations: false
           end
 
-          expect { hq_input_object.payload_type }.to raise_error(described_class::Error)
+          expect { hq_input_object.graphql_definition }.to raise_error(described_class::Error)
         end
 
         it "raises an error when not connected to a model" do
@@ -164,7 +164,7 @@ describe ::HQ::GraphQL::Mutation do
             add_associations :organization
           end
 
-          expect { hq_input_object.payload_type }.to raise_error(described_class::Error)
+          expect { hq_input_object.graphql_definition }.to raise_error(described_class::Error)
         end
       end
     end

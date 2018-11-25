@@ -1,7 +1,8 @@
 module HQ
   module GraphQL
     class Mutation < ::GraphQL::Schema::Mutation
-      include ::HQ::GraphQL::InputExtensions
+      include Scalars
+      include ::HQ::GraphQL::ActiveRecordExtensions
 
       def self.generate_payload_type
         lazy_load!

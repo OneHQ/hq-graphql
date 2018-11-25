@@ -27,14 +27,7 @@ module HQ
         end
 
         def input_klass
-          @input_klass ||= begin
-            scoped_model_name = model_name
-            scoped_inputs_proc = inputs_proc
-            Class.new(::HQ::GraphQL::InputObject) do
-              graphql_name "#{scoped_model_name.demodulize}Input"
-              instance_eval(&scoped_inputs_proc)
-            end
-          end
+          @input_klass ||= build_input_object
         end
 
         def query_klass
@@ -43,28 +36,24 @@ module HQ
 
         protected
 
-        def inputs_proc
-          @inputs_proc ||= build_input_proc
-        end
-
         def default_scope(&block)
           @default_scope = block
         end
 
         def input(**options, &block)
-          @inputs_proc = build_input_proc(**options, &block)
+          @input_klass = build_input_object(**options, &block)
         end
 
         def mutations(create: true, update: true, destroy: true)
+          scoped_model_name = model_name
           model_display_name = model_name.demodulize
           scoped_self = self
-          delayed_execute_inputs_proc = proc { scoped_self.inputs_proc }
 
           if create
             create_mutation = ::HQ::GraphQL::Resource::Mutation.build(model_name, graphql_name: "#{model_display_name}Create") do
-              define_method(:resolve) do |**attrs|
+              define_method(:resolve) do |**args|
                 resource = scoped_self.model_klass.new
-                resource.assign_attributes(format_nested_attributes(attrs))
+                resource.assign_attributes(args[:attributes].format_nested_attributes)
                 if resource.save
                   {
                     resource: resource,
@@ -79,7 +68,7 @@ module HQ
               end
 
               lazy_load do
-                instance_eval(&delayed_execute_inputs_proc.call)
+                argument :attributes, ::HQ::GraphQL::Inputs[scoped_model_name], required: true
               end
             end
 
@@ -92,11 +81,11 @@ module HQ
               graphql_name: "#{model_display_name}Update",
               require_primary_key: true
             ) do
-              define_method(:resolve) do |**attrs|
-                resource = scoped_self.find_record(attrs, context)
+              define_method(:resolve) do |**args|
+                resource = scoped_self.find_record(args, context)
 
                 if resource
-                  resource.assign_attributes(format_nested_attributes(attrs))
+                  resource.assign_attributes(args[:attributes].format_nested_attributes)
                   if resource.save
                     {
                       resource: resource,
@@ -117,7 +106,7 @@ module HQ
               end
 
               lazy_load do
-                instance_eval(&delayed_execute_inputs_proc.call)
+                argument :attributes, ::HQ::GraphQL::Inputs[scoped_model_name], required: true
               end
             end
 
@@ -185,10 +174,13 @@ module HQ
           end
         end
 
-        def build_input_proc(**options, &block)
+        def build_input_object(**options, &block)
           scoped_model_name = model_name
-          proc do
+          Class.new(::HQ::GraphQL::InputObject) do
+            graphql_name "#{scoped_model_name.demodulize}Input"
+
             with_model scoped_model_name, **options
+
             instance_eval(&block) if block
           end
         end
