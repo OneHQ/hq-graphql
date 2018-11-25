@@ -38,7 +38,7 @@ module HQ
           # validate removed_attributes exist
           removed_attributes.each { |attr| column_from_model(attr) }
 
-          model_columns.reject { |c| removed_attributes.include?(c.name.to_sym) }
+          model_columns.reject { |c| removed_attributes.include?(c.name.to_sym) }.sort_by(&:name)
         end
 
         def model_associations
@@ -52,7 +52,7 @@ module HQ
           # validate removed_associations exist
           removed_associations.each { |association| association_from_model(association) }
 
-          model_associations.reject { |a| removed_associations.include?(a.name.to_sym) }
+          model_associations.reject { |a| removed_associations.include?(a.name.to_sym) }.sort_by(&:name)
         end
 
         private

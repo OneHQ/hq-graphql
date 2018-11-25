@@ -6,7 +6,8 @@ module HQ
 
       def self.included(base)
         ::HQ::GraphQL.types << base
-        base.extend(ClassMethods)
+        base.include Scalars
+        base.extend ClassMethods
       end
 
       module ClassMethods
@@ -169,8 +170,8 @@ module HQ
             graphql_name scoped_model_name
 
             with_model scoped_model_name, **options
-          end.tap do |klass|
-            klass.class_eval(&block) if block
+
+            class_eval(&block) if block
           end
         end
 
@@ -180,8 +181,8 @@ module HQ
             graphql_name "#{scoped_model_name.demodulize}Input"
 
             with_model scoped_model_name, **options
-          end.tap do |klass|
-            klass.class_eval(&block) if block
+
+            class_eval(&block) if block
           end
         end
 
