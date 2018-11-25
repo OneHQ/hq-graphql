@@ -57,7 +57,7 @@ module HQ
                 if resource.save
                   {
                     resource: resource,
-                    errors: [],
+                    errors: {},
                   }
                 else
                   {
@@ -89,7 +89,7 @@ module HQ
                   if resource.save
                     {
                       resource: resource,
-                      errors: [],
+                      errors: {},
                     }
                   else
                     {
@@ -100,7 +100,7 @@ module HQ
                 else
                   {
                     resource: nil,
-                    errors: ["Unable to find #{model_display_name}"],
+                    errors: { resource: "Unable to find #{model_display_name}" }
                   }
                 end
               end
@@ -137,7 +137,7 @@ module HQ
                 else
                   {
                     resource: nil,
-                    errors: ["Unable to find #{model_display_name}"],
+                    errors: { resource: "Unable to find #{model_display_name}" }
                   }
                 end
               end
