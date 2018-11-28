@@ -35,7 +35,6 @@ end
 
 require "hq/graphql/active_record_extensions"
 require "hq/graphql/scalars"
-require "hq/graphql/input_extensions"
 
 require "hq/graphql/inputs"
 require "hq/graphql/input_object"

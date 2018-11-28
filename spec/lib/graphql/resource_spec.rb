@@ -179,8 +179,14 @@ describe ::HQ::GraphQL::Resource do
       update_mutation = advisor_type.mutation_klasses[:update_advisor]
       update_mutation.payload_type
 
+      input_object = advisor_type.input_klass
+      input_object.graphql_definition
+
       aggregate_failures do
-        expected_arguments = ["id", "organizationId", "organizationAttributes", "createdAt", "updatedAt"]
+        expected_arguments = ["id", "organizationId", "organization", "createdAt", "updatedAt"]
+        expect(input_object.arguments.keys).to contain_exactly(*expected_arguments)
+
+        expected_arguments = ["id", "attributes"]
         expect(update_mutation.arguments.keys).to contain_exactly(*expected_arguments)
 
         expected_fields = ["errors", "resource"]
@@ -207,8 +213,8 @@ describe ::HQ::GraphQL::Resource do
 
     let(:create_mutation) {
       <<-gql
-        mutation createAdvisor($name: String!, $organizationId: UUID!){
-          createAdvisor(name: $name, organizationId: $organizationId) {
+        mutation createAdvisor($attributes: AdvisorInput!){
+          createAdvisor(attributes: $attributes) {
             errors
             resource {
               id
@@ -221,8 +227,8 @@ describe ::HQ::GraphQL::Resource do
 
     let(:update_mutation) {
       <<-gql
-        mutation updateAdvisor($id: UUID!, $name: String!, $organizationAttributes: OrganizationInput){
-          updateAdvisor(id: $id, name: $name, organizationAttributes: $organizationAttributes) {
+        mutation updateAdvisor($id: UUID!, $attributes: AdvisorInput!){
+          updateAdvisor(id: $id, attributes: $attributes) {
             errors
             resource {
               name
@@ -275,7 +281,7 @@ describe ::HQ::GraphQL::Resource do
     it "creates" do
       organization = FactoryBot.create(:organization)
       name = "Bob"
-      results = schema.execute(create_mutation, variables: { name: name, organizationId: organization.id })
+      results = schema.execute(create_mutation, variables: { attributes: { name: name, organizationId: organization.id } })
 
       data = results["data"]
       aggregate_failures do
@@ -292,8 +298,10 @@ describe ::HQ::GraphQL::Resource do
 
       results = schema.execute(update_mutation, variables: {
         id: advisor.id,
-        name: name,
-        organizationAttributes: { id: advisor.organization_id, name: organization_name }
+        attributes: {
+          name: name,
+          organization: { id: advisor.organization_id, name: organization_name }
+        }
       })
 
       data = results["data"]
@@ -332,7 +340,12 @@ describe ::HQ::GraphQL::Resource do
 
       it "returns an error on a mutation" do
         advisor = FactoryBot.create(:advisor)
-        results = schema.execute(update_mutation, variables: { id: advisor.id, name: "Bob" })
+        results = schema.execute(update_mutation, variables: {
+          id: advisor.id,
+          attributes: {
+            name: "Bob"
+          }
+        })
 
         data = results["data"]
         aggregate_failures do
@@ -360,7 +373,12 @@ describe ::HQ::GraphQL::Resource do
 
       it "returns an error on a mutation" do
         advisor = FactoryBot.create(:advisor)
-        results = schema.execute(update_mutation, variables: { id: advisor.id, name: "Bob" })
+        results = schema.execute(update_mutation, variables: {
+          id: advisor.id,
+          attributes: {
+            name: "Bob"
+          }
+        })
 
         data = results["data"]
         aggregate_failures do

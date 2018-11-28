@@ -8,7 +8,7 @@ module HQ
             graphql_name graphql_name
 
             lazy_load do
-              field :errors, [String], null: false
+              field :errors, ::HQ::GraphQL::Types::JSON, null: false
               field :resource, ::HQ::GraphQL::Types[model_name], null: true
             end
 
@@ -22,6 +22,10 @@ module HQ
 
                 argument primary_key, ::HQ::GraphQL::Types.type_from_column(pk_column), required: true
               end
+            end
+
+            def errors_from_resource(resource)
+              resource.errors.to_h.deep_transform_keys { |k| k.to_s.camelize(:lower) }
             end
           end
         end
