@@ -6,7 +6,7 @@ module HQ
 
         class << self
           def coerce_input(value, context)
-            JSON.parse(value)
+            ::JSON.parse(value)
           end
 
           def coerce_result(value, context)
