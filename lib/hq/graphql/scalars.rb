@@ -1,10 +1,10 @@
-require "hq/graphql/types/json"
+require "hq/graphql/types/object"
 require "hq/graphql/types/uuid"
 
 module HQ
   module GraphQL
     module Scalars
-      JSON = ::HQ::GraphQL::Types::JSON
+      Object = ::HQ::GraphQL::Types::Object
       UUID = ::HQ::GraphQL::Types::UUID
     end
   end

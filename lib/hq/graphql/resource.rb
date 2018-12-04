@@ -127,7 +127,7 @@ module HQ
                   if resource.destroy
                     {
                       resource: resource,
-                      errors: [],
+                      errors: {},
                     }
                   else
                     {

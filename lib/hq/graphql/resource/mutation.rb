@@ -8,7 +8,7 @@ module HQ
             graphql_name graphql_name
 
             lazy_load do
-              field :errors, ::HQ::GraphQL::Types::JSON, null: false
+              field :errors, ::HQ::GraphQL::Types::Object, null: false
               field :resource, ::HQ::GraphQL::Types[model_name], null: true
             end
 
