@@ -37,4 +37,50 @@ describe ::HQ::GraphQL::Types do
     end
   end
 
+  describe ".type_from_column" do
+    context "UUID" do
+      it "matches uuid" do
+        expect(type_from_column("id")).to eq ::HQ::GraphQL::Types::UUID
+      end
+    end
+
+    context "Object" do
+      it "matches json" do
+        expect(type_from_column("data_json")).to eq ::HQ::GraphQL::Types::Object
+      end
+
+      it "matches jsonb" do
+        expect(type_from_column("data_jsonb")).to eq ::HQ::GraphQL::Types::Object
+      end
+    end
+
+    context "Int" do
+      it "matches integer" do
+        expect(type_from_column("count")).to eq ::GraphQL::Types::Int
+      end
+    end
+
+    context "Float" do
+      it "matches decimal" do
+        expect(type_from_column("amount")).to eq ::GraphQL::Types::Float
+      end
+    end
+
+    context "Boolean" do
+      it "matches boolean" do
+        expect(type_from_column("is_bool")).to eq ::GraphQL::Types::Boolean
+      end
+    end
+
+    context "String" do
+      it "matches string" do
+        expect(type_from_column("name")).to eq ::GraphQL::Types::String
+      end
+    end
+
+    def type_from_column(name)
+      described_class.type_from_column(TestType.columns_hash[name])
+    end
+  end
+
 end

@@ -18,4 +18,13 @@ ActiveRecord::Schema.define do
     t.timestamps                       null: false
   end
 
+  create_table "test_types", force: true, id: :uuid do |t|
+    t.jsonb       :data_jsonb
+    t.json        :data_json
+    t.integer     :count
+    t.decimal     :amount
+    t.boolean     :is_bool
+    t.string      :name
+  end
+
 end
