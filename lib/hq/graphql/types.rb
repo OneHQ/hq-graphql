@@ -16,6 +16,8 @@ module HQ
         case column&.cast_type&.type
         when :uuid
           ::HQ::GraphQL::Types::UUID
+        when :json, :jsonb
+          ::HQ::GraphQL::Types::Object
         when :integer
           ::GraphQL::Types::Int
         when :decimal
