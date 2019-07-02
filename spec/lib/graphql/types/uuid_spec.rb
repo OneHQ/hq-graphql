@@ -30,13 +30,13 @@ describe ::HQ::GraphQL::Types::UUID do
   end
 
   let(:query_str) do
-    <<-gql
+    <<-GRAPHQL
       query findAdvisor($id: UUID!){
         advisor(id: $id) {
           name
         }
       }
-    gql
+    GRAPHQL
   end
 
   before(:each) do

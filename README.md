@@ -89,7 +89,7 @@ class Schema < ::GraphQL::Schema
 end
 ```
 
-### Root Queries
+### Default Root Queries
 Create a root query:
 ```ruby
 class AdvisorResource
@@ -103,6 +103,26 @@ class RootQuery < ::HQ::GraphQL::RootQuery; end
 
 class Schema < ::GraphQL::Schema
   mutation(RootQuery)
+end
+```
+
+### Custom Root Queries
+```ruby
+class AdvisorResource
+  include ::HQ::GraphQL::Resource
+  self.model_name = "Advisor"
+
+  def_root :advisors, is_array: true, null: false do
+    argument :active, ::GraphQL::Types::Boolean, required: false
+
+    def resolve(active: nil)
+      scope = Advisor.all
+
+      if active
+        scope = scope.where(active: true)
+      end
+    end
+  end
 end
 ```
 

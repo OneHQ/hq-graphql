@@ -15,9 +15,13 @@ describe ::HQ::GraphQL::Types do
       end
     end
 
-    it "finds the type" do
-      type_object = graphql_klass.query_klass
+    let(:type_object) { graphql_klass.query_klass }
 
+    before(:each) do
+      graphql_klass
+    end
+
+    it "finds the type" do
       aggregate_failures do
         expect(type_object.superclass).to eql(::HQ::GraphQL::Object)
         expect(type_object).to eql(described_class[Advisor])
@@ -28,12 +32,23 @@ describe ::HQ::GraphQL::Types do
     end
 
     it "finds the type when lookup is a string" do
-      type_object = graphql_klass.query_klass
       expect(type_object).to eql(described_class["Advisor"])
     end
 
     it "raises an exception for unknown types" do
-      expect { described_class[Advisor] }.to raise_error(described_class::Error)
+      expect { described_class[Organization] }.to raise_error(described_class::Error)
+    end
+
+    it "works with sti" do
+      sti_resource = Class.new do
+        include ::HQ::GraphQL::Resource
+        self.model_name = "Agent"
+      end
+      expect(sti_resource.query_klass).to eql(described_class["Agent"])
+    end
+
+    it "falls back to the base class" do
+      expect(type_object).to eql(described_class["Agent"])
     end
   end
 

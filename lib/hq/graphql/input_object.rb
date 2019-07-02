@@ -8,7 +8,16 @@ module HQ
       def format_nested_attributes
         self.each.inject({}) do |formatted_attrs, (key, value) |
           if self.class.nested_attributes.include?(key.to_s)
-            formatted_attrs["#{key}_attributes"] = value.format_nested_attributes
+            formatted_value =
+              if value.is_a?(Array)
+                value.map(&:format_nested_attributes)
+              elsif value
+                value.format_nested_attributes
+              end
+
+            formatted_attrs[:"#{key}_attributes"] = formatted_value if formatted_value
+          elsif key.to_s == "x"
+            formatted_attrs[:X] = value
           else
             formatted_attrs[key] = value
           end
@@ -35,6 +44,8 @@ module HQ
           model_associations.each do |association|
             argument_from_association association
           end
+
+          argument :X, String, required: false
         end
       end
 

@@ -39,23 +39,23 @@ describe ::HQ::GraphQL::Types::Object do
   end
 
   let(:query_str) do
-    <<-gql
+    <<-GRAPHQL
       query findAdvisor($filters: Object!){
         advisor(filters: $filters) {
           validObject
         }
       }
-    gql
+    GRAPHQL
   end
 
   let(:invalid_query_str) do
-    <<-gql
+    <<-GRAPHQL
       query findAdvisor($filters: Object!){
         advisor(filters: $filters) {
           invalidObject
         }
       }
-    gql
+    GRAPHQL
   end
 
   let(:advisor) { FactoryBot.create(:advisor) }

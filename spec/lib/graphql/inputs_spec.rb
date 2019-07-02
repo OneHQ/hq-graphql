@@ -23,7 +23,7 @@ describe ::HQ::GraphQL::Inputs do
         expect(input_object).to eql(described_class[Advisor])
         expect(input_object.arguments.keys).to contain_exactly("customField")
         input_object.to_graphql
-        expect(input_object.arguments.keys).to contain_exactly("customField")
+        expect(input_object.arguments.keys).to contain_exactly("customField", "X")
       end
     end
 
