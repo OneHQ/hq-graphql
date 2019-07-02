@@ -28,7 +28,7 @@ describe ::HQ::GraphQL::InputObject do
 
       expect(hq_input_object.arguments.keys).to be_empty
       hq_input_object.graphql_definition
-      expected = ["createdAt", "id", "name", "organizationId", "updatedAt"]
+      expected = ["createdAt", "id", "name", "organizationId", "updatedAt", "X"]
       expect(hq_input_object.arguments.keys).to contain_exactly(*expected)
     end
 
@@ -41,7 +41,7 @@ describe ::HQ::GraphQL::InputObject do
 
         expect(hq_input_object.arguments.keys).to be_empty
         hq_input_object.graphql_definition
-        expected = ["name", "updatedAt"]
+        expected = ["name", "updatedAt", "X"]
         expect(hq_input_object.arguments.keys).to contain_exactly(*expected)
       end
 
@@ -72,7 +72,7 @@ describe ::HQ::GraphQL::InputObject do
 
         expect(hq_input_object.arguments.keys).to be_empty
         hq_input_object.graphql_definition
-        expected = ["createdAt", "id", "name", "organizationId", "updatedAt"]
+        expected = ["createdAt", "id", "name", "organizationId", "updatedAt", "X"]
         expect(hq_input_object.arguments.keys).to contain_exactly(*expected)
       end
 
@@ -105,7 +105,7 @@ describe ::HQ::GraphQL::InputObject do
           with_model "Advisor", attributes: false, associations: false
         end
         hq_input_object.graphql_definition
-        expect(hq_input_object.arguments.keys).to be_empty
+        expect(hq_input_object.arguments.keys).to contain_exactly("X")
       end
 
       describe ".add_attributes" do
@@ -117,7 +117,7 @@ describe ::HQ::GraphQL::InputObject do
 
           expect(hq_input_object.arguments.keys).to be_empty
           hq_input_object.graphql_definition
-          expect(hq_input_object.arguments.keys).to contain_exactly("name")
+          expect(hq_input_object.arguments.keys).to contain_exactly("name", "X")
         end
 
         it "raises an error when adding an attribute that doesn't exist" do
@@ -147,7 +147,7 @@ describe ::HQ::GraphQL::InputObject do
 
           expect(hq_input_object.arguments.keys).to be_empty
           hq_input_object.graphql_definition
-          expect(hq_input_object.arguments.keys).to contain_exactly("organization")
+          expect(hq_input_object.arguments.keys).to contain_exactly("organization", "X")
         end
 
         it "raises an error when adding an association that doesn't exist" do

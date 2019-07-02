@@ -40,6 +40,7 @@ module HQ
         def klass_for(klass_or_string)
           klass = klass_or_string.is_a?(String) ? klass_or_string.constantize : klass_or_string
           ::HQ::GraphQL.types.detect { |t| t.model_klass == klass }&.query_klass ||
+          ::HQ::GraphQL.types.detect { |t| t.model_klass == klass.base_class }&.query_klass ||
              raise(Error, Error::MISSING_TYPE_MSG % { klass: klass.name })
         end
       end

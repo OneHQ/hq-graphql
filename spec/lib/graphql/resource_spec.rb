@@ -8,7 +8,7 @@ describe ::HQ::GraphQL::Resource do
     end
   end
 
-  let(:advisor_type) do
+  let(:advisor_resource) do
     Class.new do
       include ::HQ::GraphQL::Resource
       self.model_name = "Advisor"
@@ -33,18 +33,18 @@ describe ::HQ::GraphQL::Resource do
   end
 
   before(:each) do
-    advisor_type
+    advisor_resource
     stub_const("RootQuery", root_query)
     stub_const("RootMutation", root_mutation)
   end
 
   context "defaults" do
     it "builds the query klass" do
-      expect(::HQ::GraphQL::Types[Advisor]).to eql(advisor_type.query_klass)
+      expect(::HQ::GraphQL::Types[Advisor]).to eql(advisor_resource.query_klass)
     end
 
     it "builds the input klass" do
-      expect(::HQ::GraphQL::Inputs[Advisor]).to eql(advisor_type.input_klass)
+      expect(::HQ::GraphQL::Inputs[Advisor]).to eql(advisor_resource.input_klass)
     end
 
     it "creates query fields" do
@@ -60,7 +60,7 @@ describe ::HQ::GraphQL::Resource do
 
     it "creates input arguments" do
       ::HQ::GraphQL::Inputs[Advisor].graphql_definition
-      expected = ["id", "organizationId", "name", "createdAt", "updatedAt"]
+      expected = ["id", "organizationId", "name", "createdAt", "updatedAt", "X"]
       expect(::HQ::GraphQL::Inputs[Advisor].arguments.keys).to contain_exactly(*expected)
     end
 
@@ -70,7 +70,7 @@ describe ::HQ::GraphQL::Resource do
     end
 
     it "doesn't create mutations" do
-      expect(advisor_type.mutation_klasses).to be_empty
+      expect(advisor_resource.mutation_klasses).to be_empty
     end
 
     context "with an association" do
@@ -86,14 +86,14 @@ describe ::HQ::GraphQL::Resource do
 
       it "doesn't add organization type" do
         ::HQ::GraphQL::Inputs[Advisor].graphql_definition
-        expected = ["id", "organizationId", "name", "createdAt", "updatedAt"]
+        expected = ["id", "organizationId", "name", "createdAt", "updatedAt", "X"]
         expect(::HQ::GraphQL::Inputs[Advisor].arguments.keys).to contain_exactly(*expected)
       end
     end
   end
 
-  context ".query" do
-    let(:advisor_type) do
+  describe ".query" do
+    let(:advisor_resource) do
       Class.new do
         include ::HQ::GraphQL::Resource
         self.model_name = "Advisor"
@@ -107,7 +107,7 @@ describe ::HQ::GraphQL::Resource do
 
     before(:each) do
       organization_type
-      advisor_type
+      advisor_resource
     end
 
     it "removes name" do
@@ -122,8 +122,8 @@ describe ::HQ::GraphQL::Resource do
     end
   end
 
-  context ".input" do
-    let(:advisor_type) do
+  describe ".input" do
+    let(:advisor_resource) do
       Class.new do
         include ::HQ::GraphQL::Resource
         self.model_name = "Advisor"
@@ -137,12 +137,12 @@ describe ::HQ::GraphQL::Resource do
 
     before(:each) do
       organization_type
-      advisor_type
+      advisor_resource
     end
 
     it "removes name" do
       ::HQ::GraphQL::Inputs[Advisor].graphql_definition
-      expected = ["id", "organizationId", "createdAt", "updatedAt"]
+      expected = ["id", "organizationId", "createdAt", "updatedAt", "X"]
       expect(::HQ::GraphQL::Inputs[Advisor].arguments.keys).to contain_exactly(*expected)
     end
 
@@ -152,8 +152,8 @@ describe ::HQ::GraphQL::Resource do
     end
   end
 
-  context ".mutations" do
-    let(:advisor_type) do
+  describe ".mutations" do
+    let(:advisor_resource) do
       Class.new do
         include ::HQ::GraphQL::Resource
         self.model_name = "Advisor"
@@ -172,18 +172,18 @@ describe ::HQ::GraphQL::Resource do
     end
 
     it "generates the create, update, and destroy mutations by default" do
-      expect(advisor_type.mutation_klasses.keys).to contain_exactly("create_advisor", "update_advisor", "destroy_advisor")
+      expect(advisor_resource.mutation_klasses.keys).to contain_exactly("create_advisor", "update_advisor", "destroy_advisor")
     end
 
     it "removes name on update" do
-      update_mutation = advisor_type.mutation_klasses[:update_advisor]
+      update_mutation = advisor_resource.mutation_klasses[:update_advisor]
       update_mutation.payload_type
 
-      input_object = advisor_type.input_klass
+      input_object = advisor_resource.input_klass
       input_object.graphql_definition
 
       aggregate_failures do
-        expected_arguments = ["id", "organizationId", "organization", "createdAt", "updatedAt"]
+        expected_arguments = ["id", "organizationId", "organization", "createdAt", "updatedAt", "X"]
         expect(input_object.arguments.keys).to contain_exactly(*expected_arguments)
 
         expected_arguments = ["id", "attributes"]
@@ -195,9 +195,53 @@ describe ::HQ::GraphQL::Resource do
     end
   end
 
+  describe ".def_root" do
+    let(:find_onehq) {
+      <<-GRAPHQL
+        query advisorsNamedOneHq {
+          advisorsNamedOneHq {
+            name
+            organizationId
+
+            organization {
+              name
+            }
+          }
+        }
+      GRAPHQL
+    }
+
+    before(:each) do
+      organization_type
+
+      advisor_resource.class_eval do
+        def_root :advisors_named_one_hq, is_array: true, null: true do
+          def resolve
+            Advisor.where(name: "OneHQ")
+          end
+        end
+      end
+    end
+
+    it "fetches results" do
+      FactoryBot.create(:advisor)
+      onehq = FactoryBot.create(:advisor, name: "OneHQ")
+      results = schema.execute(find_onehq)
+      data = results["data"]["advisorsNamedOneHq"]
+      expect(data.size).to eq 1
+      advisor = data[0]
+
+      aggregate_failures do
+        expect(advisor["name"]).to eql(onehq.name)
+        expect(advisor["organizationId"]).to eql(onehq.organization_id)
+        expect(advisor["organization"]["name"]).to eql(onehq.organization.name)
+      end
+    end
+  end
+
   context "execution" do
     let(:find_advisor) {
-      <<-gql
+      <<-GRAPHQL
         query findAdvisor($id: UUID!){
           advisor(id: $id) {
             name
@@ -208,11 +252,11 @@ describe ::HQ::GraphQL::Resource do
             }
           }
         }
-      gql
+      GRAPHQL
     }
 
     let(:create_mutation) {
-      <<-gql
+      <<-GRAPHQL
         mutation createAdvisor($attributes: AdvisorInput!){
           createAdvisor(attributes: $attributes) {
             errors
@@ -222,11 +266,11 @@ describe ::HQ::GraphQL::Resource do
             }
           }
         }
-      gql
+      GRAPHQL
     }
 
     let(:update_mutation) {
-      <<-gql
+      <<-GRAPHQL
         mutation updateAdvisor($id: UUID!, $attributes: AdvisorInput!){
           updateAdvisor(id: $id, attributes: $attributes) {
             errors
@@ -238,11 +282,11 @@ describe ::HQ::GraphQL::Resource do
             }
           }
         }
-      gql
+      GRAPHQL
     }
 
     let(:destroy_mutation) {
-      <<-gql
+      <<-GRAPHQL
         mutation destroyAdvisor($id: UUID!){
           destroyAdvisor(id: $id) {
             errors
@@ -251,13 +295,13 @@ describe ::HQ::GraphQL::Resource do
             }
           }
         }
-      gql
+      GRAPHQL
     }
 
     before(:each) do
       organization_type
 
-      advisor_type.class_eval do
+      advisor_resource.class_eval do
         mutations
 
         input do
@@ -357,7 +401,7 @@ describe ::HQ::GraphQL::Resource do
 
     context "with a local scope" do
       before(:each) do
-        advisor_type.class_eval do
+        advisor_resource.class_eval do
           default_scope do
             Advisor.none
           end

@@ -1,0 +1,2 @@
+class Agent < Advisor
+end
