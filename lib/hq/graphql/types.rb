@@ -13,20 +13,23 @@ module HQ
       end
 
       def self.type_from_column(column)
-        case column&.cast_type&.type
-        when :uuid
-          ::HQ::GraphQL::Types::UUID
-        when :json, :jsonb
-          ::HQ::GraphQL::Types::Object
-        when :integer
-          ::GraphQL::Types::Int
-        when :decimal
-          ::GraphQL::Types::Float
-        when :boolean
-          ::GraphQL::Types::Boolean
-        else
-          ::GraphQL::Types::String
-        end
+        graphql_type =
+          case column&.cast_type&.type
+          when :uuid
+            ::HQ::GraphQL::Types::UUID
+          when :json, :jsonb
+            ::HQ::GraphQL::Types::Object
+          when :integer
+            ::GraphQL::Types::Int
+          when :decimal
+            ::GraphQL::Types::Float
+          when :boolean
+            ::GraphQL::Types::Boolean
+          else
+            ::GraphQL::Types::String
+          end
+
+        column.array ? [graphql_type] : graphql_type
       end
 
       # Only being used in testing
