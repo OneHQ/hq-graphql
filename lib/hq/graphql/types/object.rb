@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module HQ
   module GraphQL
     module Types
@@ -5,11 +7,11 @@ module HQ
         description "Object"
 
         class << self
-          def coerce_input(value, context)
+          def coerce_input(value, _context)
             validate_and_return_object(value)
           end
 
-          def coerce_result(value, context)
+          def coerce_result(value, _context)
             validate_and_return_object(value)
           end
 
@@ -26,7 +28,6 @@ module HQ
           def validate_object(value)
             value.is_a?(Hash)
           end
-
         end
       end
     end

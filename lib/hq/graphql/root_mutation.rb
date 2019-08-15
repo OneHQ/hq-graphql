@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 module HQ
   module GraphQL
     class RootMutation < ::HQ::GraphQL::Object
-
       def self.inherited(base)
         super
         base.class_eval do
@@ -14,7 +15,6 @@ module HQ
           end
         end
       end
-
     end
   end
 end

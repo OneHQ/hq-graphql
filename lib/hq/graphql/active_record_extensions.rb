@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 module HQ
   module GraphQL
     module ActiveRecordExtensions
       class Error < StandardError
-        MISSING_MODEL_MSG = "Your GraphQL object must be connected to a model: `::HQ::GraphQL::Object.with_model 'User'`".freeze
-        MISSING_ATTR_MSG = "Can't find attr %{model}.%{attr}'`".freeze
-        MISSING_ASSOC_MSG = "Can't find association %{model}.%{assoc}'`".freeze
+        MISSING_MODEL_MSG = "Your GraphQL object must be connected to a model: `::HQ::GraphQL::Object.with_model 'User'`"
+        MISSING_ATTR_MSG = "Can't find attr %{model}.%{attr}'`"
+        MISSING_ASSOC_MSG = "Can't find association %{model}.%{assoc}'`"
       end
 
       def self.included(base)
@@ -118,7 +120,6 @@ module HQ
             model_name || raise(Error, Error::MISSING_MODEL_MSG)
           end
         end
-
       end
     end
   end

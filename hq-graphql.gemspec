@@ -29,4 +29,7 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "rspec",                                   "~> 3.8"
   s.add_development_dependency "rspec-rails",                             ">= 4.0.0beta2"
+  s.add_development_dependency "rubocop",                                 "~> 0.7"
+  s.add_development_dependency "rubocop-performance",                     "~> 1.4"
+  s.add_development_dependency "rubocop-rails",                           "~> 2.3"
 end

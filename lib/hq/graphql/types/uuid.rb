@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module HQ
   module GraphQL
     module Types
@@ -5,11 +7,11 @@ module HQ
         description "UUID"
 
         class << self
-          def coerce_input(value, context)
+          def coerce_input(value, _context)
             validate_and_return_uuid(value)
           end
 
-          def coerce_result(value, context)
+          def coerce_result(value, _context)
             validate_and_return_uuid(value)
           end
 

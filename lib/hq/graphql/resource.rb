@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 require "hq/graphql/resource/mutation"
 
 module HQ
   module GraphQL
     module Resource
-
       def self.included(base)
         ::HQ::GraphQL.types << base
         base.include Scalars
@@ -238,7 +239,7 @@ module HQ
 
           if find_all
             def_root field_name.pluralize, is_array: true, null: false do
-              define_method(:resolve) do |**attrs|
+              define_method(:resolve) do |**_attrs|
                 scoped_self.scope(context).all
               end
             end
@@ -270,7 +271,6 @@ module HQ
             class_eval(&block) if block
           end
         end
-
       end
     end
   end

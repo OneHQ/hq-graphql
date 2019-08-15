@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module HQ
   module GraphQL
     module Inputs
       class Error < StandardError
-        MISSING_TYPE_MSG = "The GraphQL type for `%{klass}` is missing.".freeze
+        MISSING_TYPE_MSG = "The GraphQL type for `%{klass}` is missing."
       end
 
       def self.[](key)
@@ -26,7 +28,6 @@ module HQ
              raise(Error, Error::MISSING_TYPE_MSG % { klass: klass.name })
         end
       end
-
     end
   end
 end

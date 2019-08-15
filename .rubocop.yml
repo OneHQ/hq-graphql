@@ -1,0 +1,2 @@
+inherit_from:
+  - https://onehq.com/rubocop.yml

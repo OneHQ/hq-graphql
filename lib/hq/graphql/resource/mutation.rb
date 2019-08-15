@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 module HQ
   module GraphQL
     module Resource
       module Mutation
-
         def self.build(model_name, graphql_name:, require_primary_key: false, &block)
           Class.new(::HQ::GraphQL::Mutation) do
             graphql_name graphql_name
@@ -29,7 +30,6 @@ module HQ
             end
           end
         end
-
       end
     end
   end

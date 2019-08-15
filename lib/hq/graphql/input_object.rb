@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module HQ
   module GraphQL
     class InputObject < ::GraphQL::Schema::InputObject
@@ -25,9 +27,7 @@ module HQ
         end
       end
 
-      def with_indifferent_access
-        to_h.with_indifferent_access
-      end
+      delegate :with_indifferent_access, to: :to_h
 
       #### Class Methods ####
 
@@ -72,7 +72,7 @@ module HQ
             argument name, input, required: false
           end
 
-          if !model_klass.nested_attributes_options.keys.include?(name.to_sym)
+          if !model_klass.nested_attributes_options.key?(name.to_sym)
             model_klass.accepts_nested_attributes_for name, allow_destroy: true
           end
 
@@ -85,7 +85,6 @@ module HQ
           argument column.name, ::HQ::GraphQL::Types.type_from_column(column), required: false
         end
       end
-
     end
   end
 end

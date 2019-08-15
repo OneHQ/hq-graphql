@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 require "rails"
 require "graphql"
 
 module HQ
   module GraphQL
-
     def self.config
       @config ||= ::ActiveSupport::OrderedOptions.new
     end
@@ -30,7 +31,6 @@ module HQ
     def self.types
       @types ||= Set.new
     end
-
   end
 end
 
