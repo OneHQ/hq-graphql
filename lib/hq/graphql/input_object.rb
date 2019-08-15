@@ -4,6 +4,7 @@
 module HQ
   module GraphQL
     class InputObject < ::GraphQL::Schema::InputObject
+      extend T::Sig
       include Scalars
       include ::HQ::GraphQL::ActiveRecordExtensions
 
@@ -29,7 +30,7 @@ module HQ
       end
 
       #### Class Methods ####
-
+      sig { params(model_name: String, attributes: T::Boolean, associations: T::Boolean).void }
       def self.with_model(model_name, attributes: true, associations: false)
         self.model_name = model_name
         self.auto_load_attributes = attributes

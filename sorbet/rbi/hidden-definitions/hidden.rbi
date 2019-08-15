@@ -5491,7 +5491,7 @@ class Array
 end
 
 class Array
-  def self.try_convert(_); end
+  def self.wrap(object); end
 end
 
 BasicObject::BasicObject = BasicObject
@@ -5529,30 +5529,6 @@ class Binding
   def source_location(); end
 end
 
-class Bundler::CurrentRuby
-  def jruby_27?(); end
-
-  def maglev_27?(); end
-
-  def mingw_27?(); end
-
-  def mri_27?(); end
-
-  def mswin64_27?(); end
-
-  def mswin_27?(); end
-
-  def on_27?(); end
-
-  def rbx_27?(); end
-
-  def ruby_27?(); end
-
-  def truffleruby_27?(); end
-
-  def x64_mingw_27?(); end
-end
-
 Bundler::Deprecate = Gem::Deprecate
 
 class Bundler::Env
@@ -5568,8 +5544,6 @@ end
 
 class Bundler::FeatureFlag
   def github_https?(); end
-
-  def lockfile_upgrade_warning?(); end
 end
 
 class Bundler::Fetcher
@@ -5746,20 +5720,6 @@ class Bundler::Fetcher
   def self.redirect_limit=(redirect_limit); end
 end
 
-module Bundler::FileUtils
-  VERSION = ::T.let(nil, ::T.untyped)
-end
-
-class Bundler::FileUtils::Entry_
-  def link(dest); end
-end
-
-module Bundler::FileUtils
-  def self.cp_lr(src, dest, noop: T.unsafe(nil), verbose: T.unsafe(nil), dereference_root: T.unsafe(nil), remove_destination: T.unsafe(nil)); end
-
-  def self.link_entry(src, dest, dereference_root=T.unsafe(nil), remove_destination=T.unsafe(nil)); end
-end
-
 class Bundler::GemHelper
   def allowed_push_host(); end
 
@@ -5801,9 +5761,7 @@ class Bundler::GemHelper
 
   def sh(cmd, &block); end
 
-  def sh_with_input(cmd); end
-
-  def sh_with_status(cmd, &block); end
+  def sh_with_code(cmd, &block); end
 
   def spec_path(); end
 
@@ -6147,10 +6105,6 @@ class Bundler::RubyGemsGemInstaller
 end
 
 class Bundler::RubyGemsGemInstaller
-end
-
-class Bundler::RubygemsIntegration::MoreFuture
-  def default_stubs(); end
 end
 
 class Bundler::Settings::Mirror
@@ -6570,8 +6524,6 @@ module Concurrent::Utility::NativeInteger
   MIN_VALUE = ::T.let(nil, ::T.untyped)
 end
 
-ConditionVariable = Thread::ConditionVariable
-
 module DRb::DRbUndumped
   def _dump(dummy); end
 end
@@ -6813,6 +6765,8 @@ module ERB::Util
 
   def self.unwrapped_html_escape(s); end
 end
+
+Emitter = Psych::Stream::Emitter
 
 class Encoding
   include ::ActiveSupport::ToJsonWithActiveSupportEncoder
@@ -7314,7 +7268,12 @@ module Faker
   VERSION = ::T.let(nil, ::T.untyped)
 end
 
+class Faker::Alphanumeric
+  ALPHANUMS = ::T.let(nil, ::T.untyped)
+end
+
 class Faker::Base
+  LLetters = ::T.let(nil, ::T.untyped)
   Letters = ::T.let(nil, ::T.untyped)
   Numbers = ::T.let(nil, ::T.untyped)
   ULetters = ::T.let(nil, ::T.untyped)
@@ -7369,9 +7328,13 @@ end
 class Fiber
   include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def resume(*_); end
+
+  def transfer(*_); end
 end
 
 class Fiber
+  def self.current(); end
+
   def self.yield(*_); end
 end
 
@@ -7520,10 +7483,6 @@ end
 
 class Gem::ErrorReason
   include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class Gem::Installer
-  def verify_spec_name(); end
 end
 
 class Gem::List
@@ -7939,16 +7898,39 @@ module GraphQL::Types::Relay::Node
   extend ::GraphQL::Schema::Member::AcceptsDefinition::ToGraphQLExtension
 end
 
+module HQ::GraphQL::ActiveRecordExtensions::ClassMethods
+  extend ::T::Private::Methods::MethodHooks
+  extend ::T::Private::Methods::SingletonMethodHooks
+end
+
+module HQ::GraphQL::ActiveRecordExtensions
+  extend ::T::Private::MixesInClassMethods
+end
+
+class HQ::GraphQL::Config
+  def self.inherited(s); end
+end
+
 class HQ::GraphQL::InputObject
-  extend ::HQ::GraphQL::ActiveRecordExtensions::ClassMethods
+  extend ::T::Private::Methods::MethodHooks
+  extend ::T::Private::Methods::SingletonMethodHooks
 end
 
-class HQ::GraphQL::Mutation
-  extend ::HQ::GraphQL::ActiveRecordExtensions::ClassMethods
+module HQ::GraphQL::Resource
+  extend ::T::Private::MixesInClassMethods
 end
 
-class HQ::GraphQL::Object
-  extend ::HQ::GraphQL::ActiveRecordExtensions::ClassMethods
+class HQ::GraphQL::Types::Object
+  extend ::T::Private::Methods::SingletonMethodHooks
+end
+
+class HQ::GraphQL::Types::UUID
+  extend ::T::Private::Methods::SingletonMethodHooks
+end
+
+module HQ::GraphQL
+  extend ::T::Private::Methods::MethodHooks
+  extend ::T::Private::Methods::SingletonMethodHooks
 end
 
 class Hash
@@ -8003,7 +7985,7 @@ class Hash
 end
 
 class Hash
-  def self.try_convert(_); end
+  def self.from_xml(xml, disallowed_types=T.unsafe(nil)); end
 end
 
 HashWithIndifferentAccess = ActiveSupport::HashWithIndifferentAccess
@@ -9345,6 +9327,8 @@ JSON::State = JSON::Ext::Generator::State
 
 JSON::UnparserError = JSON::GeneratorError
 
+JSONTree = Psych::Visitors::JSONTree
+
 module JaroWinkler
   VERSION = ::T.let(nil, ::T.untyped)
 end
@@ -9451,6 +9435,8 @@ end
 class Method
   include ::ActiveSupport::ToJsonWithActiveSupportEncoder
 end
+
+Methods = T::Private::Methods
 
 module Mime
   ALL = ::T.let(nil, ::T.untyped)
@@ -9898,8 +9884,6 @@ module MonitorMixin
   def self.extend_object(obj); end
 end
 
-Mutex = Thread::Mutex
-
 module Mutex_m
   VERSION = ::T.let(nil, ::T.untyped)
 end
@@ -9936,6 +9920,8 @@ class Net::HTTP
   def write_timeout=(sec); end
   ENVIRONMENT_VARIABLE_IS_MULTIUSER_SAFE = ::T.let(nil, ::T.untyped)
 end
+
+Net::HTTP::ProxyMod = Net::HTTP::ProxyDelta
 
 class Net::HTTPAlreadyReported
   HAS_BODY = ::T.let(nil, ::T.untyped)
@@ -10051,15 +10037,7 @@ Net::HTTPServerError::EXCEPTION_TYPE = Net::HTTPFatalError
 
 Net::HTTPServerErrorCode = Net::HTTPServerError
 
-class Net::HTTP
-end
-
-Net::HTTPSession::ProxyDelta = Net::HTTP::ProxyDelta
-
-Net::HTTPSession::ProxyMod = Net::HTTP::ProxyDelta
-
-class Net::HTTP
-end
+Net::HTTPSession = Net::HTTP
 
 Net::HTTPSuccess::EXCEPTION_TYPE = Net::HTTPError
 
@@ -10156,13 +10134,9 @@ class Numeric
 
   def megabytes(); end
 
-  def negative?(); end
-
   def petabyte(); end
 
   def petabytes(); end
-
-  def positive?(); end
 
   def terabyte(); end
 
@@ -10580,8 +10554,6 @@ class Proc
   def >>(_); end
 
   def clone(); end
-
-  def lambda?(); end
 
   def yield(*_); end
 end
@@ -11476,8 +11448,6 @@ module Psych
 
   def self.to_json(object); end
 end
-
-Queue = Thread::Queue
 
 module RSpec
   MODULES_TO_AUTOLOAD = ::T.let(nil, ::T.untyped)
@@ -18243,8 +18213,6 @@ module Singleton
   def self.__init__(klass); end
 end
 
-SizedQueue = Thread::SizedQueue
-
 class Socket
   AF_CCITT = ::T.let(nil, ::T.untyped)
   AF_CHAOS = ::T.let(nil, ::T.untyped)
@@ -19160,65 +19128,6 @@ end
 
 class Thread
   include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-  def abort_on_exception(); end
-
-  def abort_on_exception=(abort_on_exception); end
-
-  def add_trace_func(_); end
-
-  def backtrace(*_); end
-
-  def backtrace_locations(*_); end
-
-  def exit(); end
-
-  def fetch(*_); end
-
-  def group(); end
-
-  def initialize(*_); end
-
-  def join(*_); end
-
-  def key?(_); end
-
-  def keys(); end
-
-  def name(); end
-
-  def name=(name); end
-
-  def pending_interrupt?(*_); end
-
-  def priority(); end
-
-  def priority=(priority); end
-
-  def report_on_exception(); end
-
-  def report_on_exception=(report_on_exception); end
-
-  def run(); end
-
-  def safe_level(); end
-
-  def status(); end
-
-  def stop?(); end
-
-  def terminate(); end
-
-  def thread_variable?(_); end
-
-  def thread_variable_get(_); end
-
-  def thread_variable_set(_, _1); end
-
-  def thread_variables(); end
-
-  def value(); end
-
-  def wakeup(); end
 end
 
 class Thread::Backtrace
@@ -19231,103 +19140,14 @@ end
 
 class Thread::ConditionVariable
   include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-  def broadcast(); end
-
-  def marshal_dump(); end
-
-  def signal(); end
-
-  def wait(*_); end
 end
 
 class Thread::Mutex
   include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-  def lock(); end
-
-  def locked?(); end
-
-  def owned?(); end
-
-  def synchronize(); end
-
-  def try_lock(); end
-
-  def unlock(); end
 end
 
 class Thread::Queue
   include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-  def <<(_); end
-
-  def clear(); end
-
-  def close(); end
-
-  def closed?(); end
-
-  def deq(*_); end
-
-  def empty?(); end
-
-  def enq(_); end
-
-  def length(); end
-
-  def marshal_dump(); end
-
-  def num_waiting(); end
-
-  def pop(*_); end
-
-  def push(_); end
-
-  def shift(*_); end
-
-  def size(); end
-end
-
-class Thread::SizedQueue
-  def <<(*_); end
-
-  def enq(*_); end
-
-  def initialize(_); end
-
-  def max(); end
-
-  def max=(max); end
-
-  def push(*_); end
-end
-
-class Thread
-  def self.abort_on_exception(); end
-
-  def self.abort_on_exception=(abort_on_exception); end
-
-  def self.exclusive(&block); end
-
-  def self.exit(); end
-
-  def self.fork(*_); end
-
-  def self.handle_interrupt(_); end
-
-  def self.kill(_); end
-
-  def self.list(); end
-
-  def self.pass(); end
-
-  def self.pending_interrupt?(*_); end
-
-  def self.report_on_exception(); end
-
-  def self.report_on_exception=(report_on_exception); end
-
-  def self.start(*_); end
-
-  def self.stop(); end
 end
 
 class ThreadGroup
@@ -19927,6 +19747,8 @@ end
 module UnicodeNormalize
 end
 
+Visitor = Psych::Visitors::Visitor
+
 class WEBrick::HTTPServlet::AbstractServlet
   include ::ActiveSupport::ToJsonWithActiveSupportEncoder
 end
@@ -19955,6 +19777,8 @@ class WeakRef
 end
 
 YAML = Psych
+
+YAMLTree = Psych::Visitors::YAMLTree
 
 module Zlib
   ASCII = ::T.let(nil, ::T.untyped)

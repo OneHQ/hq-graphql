@@ -21,6 +21,11 @@ module ActiveRecord::AutosaveAssociation; end
 module ActiveRecord::Callbacks; end
 module ActiveRecord::CollectionCacheKey; end
 module ActiveRecord::ConnectionAdapters::TableDefinition; end
+module ActiveRecord::ConnectionAdapters::TableDefinition; end
+module ActiveRecord::ConnectionAdapters::TableDefinition; end
+module ActiveRecord::ConnectionAdapters::TableDefinition; end
+module ActiveRecord::ConnectionAdapters::TableDefinition; end
+module ActiveRecord::ConnectionAdapters::TableDefinition; end
 module ActiveRecord::ConnectionHandling; end
 module ActiveRecord::Core; end
 module ActiveRecord::CounterCache; end
@@ -47,3 +52,13 @@ module ActiveRecord::Timestamp; end
 module ActiveRecord::TouchLater; end
 module ActiveRecord::Transactions; end
 module ActiveRecord::Translation; end
+module T::Private::Methods::MethodHooks; end
+module T::Private::Methods::MethodHooks; end
+module T::Private::Methods::MethodHooks; end
+module T::Private::Methods::SingletonMethodHooks; end
+module T::Private::Methods::SingletonMethodHooks; end
+module T::Private::Methods::SingletonMethodHooks; end
+module T::Private::Methods::SingletonMethodHooks; end
+module T::Private::Methods::SingletonMethodHooks; end
+module T::Private::MixesInClassMethods; end
+module T::Private::MixesInClassMethods; end

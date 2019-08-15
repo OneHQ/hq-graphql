@@ -8,6 +8,8 @@ module HQ
         description "Object"
 
         class << self
+          extend T::Sig
+
           def coerce_input(value, _context)
             validate_and_return_object(value)
           end
@@ -26,6 +28,7 @@ module HQ
             end
           end
 
+          sig { params(value: T.untyped).returns(T::Boolean) }
           def validate_object(value)
             value.is_a?(Hash)
           end

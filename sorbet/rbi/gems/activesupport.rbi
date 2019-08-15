@@ -7,7 +7,7 @@
 #
 #   https://github.com/sorbet/sorbet-typed/new/master?filename=lib/activesupport/all/activesupport.rbi
 #
-# activesupport-6.0.0.rc2
+# activesupport-6.0.0
 class Hash
   def _deep_transform_keys_in_object!(object, &block); end
   def _deep_transform_keys_in_object(object, &block); end
@@ -32,7 +32,7 @@ class Hash
   def reverse_merge(other_hash); end
   def reverse_update(other_hash); end
   def self.from_trusted_xml(xml); end
-  def self.from_xml(xml, disallowed_types = nil); end
+  def self.try_convert(arg0); end
   def slice!(*keys); end
   def stringify_keys!; end
   def stringify_keys; end
@@ -284,7 +284,7 @@ class Array
   def blank?; end
   def deep_dup; end
   def extract_options!; end
-  def self.wrap(object); end
+  def self.try_convert(arg0); end
   def to_default_s; end
   def to_formatted_s(format = nil); end
   def to_param; end
@@ -851,6 +851,7 @@ module ActiveSupport::Dependencies
   def new_constants_in(*descs); end
   def qualified_const_defined?(path); end
   def qualified_name_for(mod, name); end
+  def real_mod_name(mod); end
   def reference(klass); end
   def remove_constant(const); end
   def remove_unloadable_constants!; end
@@ -973,6 +974,9 @@ module ActiveSupport::Dependencies::ZeitwerkIntegration::Decorations
   def safe_constantize(cpath); end
   def unhook!; end
   def verbose=(verbose); end
+end
+module ActiveSupport::Dependencies::ZeitwerkIntegration::RequireDependency
+  def require_dependency(filename); end
 end
 module ActiveSupport::Dependencies::ZeitwerkIntegration::Inflector
   def self.camelize(basename, _abspath); end

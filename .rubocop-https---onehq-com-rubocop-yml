@@ -6,7 +6,10 @@ AllCops:
   TargetRubyVersion: 2.6
   DisabledByDefault: true
   Exclude:
+    - "**/node_modules/**/*"
     - "**/spec/**/*"
+    - "**/templates/**/*"
+    - "**/vendor/**/*"
 
 Bundler:
   Enabled: true
@@ -21,13 +24,13 @@ Naming:
   Enabled: true
 
 Rails:
-  Enabled: True
+  Enabled: true
 
 Performance:
-  Enabled: True
+  Enabled: true
 
 Security:
-  Enabled: True
+  Enabled: true
 
 Layout/CaseIndentation:
   Enabled: true
@@ -35,6 +38,10 @@ Layout/CaseIndentation:
 # Align comments with method definitions.
 Layout/CommentIndentation:
   Enabled: true
+
+Layout/DotPosition:
+  Enabled: true
+  EnforcedStyle: trailing
 
 Layout/ElseAlignment:
   Enabled: true
@@ -138,8 +145,24 @@ Naming/PredicateName:
 Naming/UncommunicativeMethodParamName:
   Enabled: false
 
+Performance/RedundantBlockCall:
+  Enabled: false
+
+Rails/ApplicationRecord:
+  Enabled: false
+
+Rails/Date:
+  Enabled: false
+
+Rails/LexicallyScopedActionFilter:
+  Enabled: false
+
 Rails/Output:
   Enabled: false
+  
+Rails/SkipsModelValidations:
+  Enabled: true
+  Whitelist: [update_all]
 
 # Prefer &&/|| over and/or.
 Style/AndOr:

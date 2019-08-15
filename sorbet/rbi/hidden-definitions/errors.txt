@@ -2734,7 +2734,7 @@
 # wrong constant name sum$2
 # wrong constant name to_h
 # wrong constant name to_s$1
-# wrong constant name try_convert
+# wrong constant name wrap
 # wrong constant name <Class:BasicObject>
 # undefined method `_dump$1' for class `BigDecimal'
 # undefined method `div$2' for class `BigDecimal'
@@ -2763,23 +2763,11 @@
 # wrong constant name local_variable_set
 # wrong constant name receiver
 # wrong constant name source_location
-# wrong constant name jruby_27?
-# wrong constant name maglev_27?
-# wrong constant name mingw_27?
-# wrong constant name mri_27?
-# wrong constant name mswin64_27?
-# wrong constant name mswin_27?
-# wrong constant name on_27?
-# wrong constant name rbx_27?
-# wrong constant name ruby_27?
-# wrong constant name truffleruby_27?
-# wrong constant name x64_mingw_27?
 # wrong constant name <static-init>
 # wrong constant name environment
 # wrong constant name report
 # wrong constant name write
 # wrong constant name github_https?
-# wrong constant name lockfile_upgrade_warning?
 # wrong constant name <Class:AuthenticationRequiredError>
 # wrong constant name <Class:BadAuthenticationError>
 # wrong constant name <Class:Base>
@@ -2859,9 +2847,6 @@
 # wrong constant name max_retries=
 # wrong constant name redirect_limit
 # wrong constant name redirect_limit=
-# wrong constant name link
-# wrong constant name cp_lr
-# wrong constant name link_entry
 # wrong constant name allowed_push_host
 # wrong constant name already_tagged?
 # wrong constant name base
@@ -2882,8 +2867,7 @@
 # wrong constant name perform_git_push
 # wrong constant name rubygem_push
 # wrong constant name sh
-# wrong constant name sh_with_input
-# wrong constant name sh_with_status
+# wrong constant name sh_with_code
 # wrong constant name spec_path
 # wrong constant name tag_version
 # wrong constant name version
@@ -3031,8 +3015,6 @@
 # wrong constant name default_retries
 # uninitialized constant Bundler::RubyGemsGemInstaller::ENV_PATHS
 # wrong constant name <static-init>
-# uninitialized constant Bundler::RubygemsIntegration::MoreFuture::EXT_LOCK
-# wrong constant name default_stubs
 # wrong constant name ==
 # wrong constant name fallback_timeout
 # wrong constant name fallback_timeout=
@@ -3593,25 +3575,37 @@
 # wrong constant name extend_object
 # wrong constant name message
 # wrong constant name <static-init>
+# uninitialized constant Faker::Alphanumeric::LLetters
+# uninitialized constant Faker::Alphanumeric::Letters
+# uninitialized constant Faker::Alphanumeric::Numbers
+# uninitialized constant Faker::Alphanumeric::ULetters
+# uninitialized constant Faker::DrivingLicence::LLetters
 # uninitialized constant Faker::DrivingLicence::Letters
 # uninitialized constant Faker::DrivingLicence::Numbers
 # uninitialized constant Faker::DrivingLicence::ULetters
+# uninitialized constant Faker::Finance::LLetters
 # uninitialized constant Faker::Finance::Letters
 # uninitialized constant Faker::Finance::Numbers
 # uninitialized constant Faker::Finance::ULetters
+# uninitialized constant Faker::IDNumber::LLetters
 # uninitialized constant Faker::IDNumber::Letters
 # uninitialized constant Faker::IDNumber::Numbers
 # uninitialized constant Faker::IDNumber::ULetters
+# uninitialized constant Faker::Time::LLetters
 # uninitialized constant Faker::Time::Letters
 # uninitialized constant Faker::Time::Numbers
 # uninitialized constant Faker::Time::ULetters
+# uninitialized constant Faker::Types::LLetters
 # uninitialized constant Faker::Types::Letters
 # uninitialized constant Faker::Types::Numbers
 # uninitialized constant Faker::Types::ULetters
+# uninitialized constant Faker::Vehicle::LLetters
 # uninitialized constant Faker::Vehicle::Letters
 # uninitialized constant Faker::Vehicle::Numbers
 # uninitialized constant Faker::Vehicle::ULetters
 # wrong constant name resume
+# wrong constant name transfer
+# wrong constant name current
 # wrong constant name yield
 # wrong constant name size?
 # undefined singleton method `absolute_path$1' for `File'
@@ -3684,7 +3678,6 @@
 # wrong constant name verify_internal_consistency
 # wrong constant name verify_transient_heap_internal_consistency
 # wrong constant name <=>
-# wrong constant name verify_spec_name
 # uninitialized constant Gem::Resolver::Molinillo::DependencyGraph::Log::Elem
 # uninitialized constant Gem::Specification::Elem
 # wrong constant name <=>
@@ -3740,6 +3733,7 @@
 # uninitialized constant GraphQL::Types::Int::Boolean
 # uninitialized constant GraphQL::Types::Int::ID
 # uninitialized constant GraphQL::Types::Int::Int
+# wrong constant name inherited
 # undefined method `default$2' for class `Hash'
 # undefined method `fetch$2' for class `Hash'
 # undefined method `initialize$2' for class `Hash'
@@ -3770,7 +3764,7 @@
 # wrong constant name transform_values
 # wrong constant name transform_values!
 # wrong constant name update
-# wrong constant name try_convert
+# wrong constant name from_xml
 # wrong constant name <Class:Gettext>
 # wrong constant name <Class:Locale>
 # wrong constant name <Class:Middleware>
@@ -4893,10 +4887,8 @@
 # wrong constant name kilobytes
 # wrong constant name megabyte
 # wrong constant name megabytes
-# wrong constant name negative?
 # wrong constant name petabyte
 # wrong constant name petabytes
-# wrong constant name positive?
 # wrong constant name round$1
 # wrong constant name step$2
 # wrong constant name terabyte
@@ -5011,7 +5003,6 @@
 # wrong constant name >>
 # wrong constant name clone
 # wrong constant name curry$1
-# wrong constant name lambda?
 # wrong constant name yield
 # uninitialized constant Proc0
 # uninitialized constant Proc0
@@ -7340,6 +7331,7 @@
 # uninitialized constant RuboCop::Cop::Rails::Output::LITERAL_REGEX
 # uninitialized constant RuboCop::Cop::Rails::OutputSafety::LITERAL_REGEX
 # uninitialized constant RuboCop::Cop::Rails::PluralizationGrammar::LITERAL_REGEX
+# uninitialized constant RuboCop::Cop::Rails::Presence::BYTE_ORDER_MARK
 # uninitialized constant RuboCop::Cop::Rails::Presence::LITERAL_REGEX
 # uninitialized constant RuboCop::Cop::Rails::Present::LITERAL_REGEX
 # uninitialized constant RuboCop::Cop::Rails::ReadWriteAttribute::LITERAL_REGEX
@@ -8484,80 +8476,6 @@
 # wrong constant name call
 # wrong constant name initialize
 # wrong constant name <static-init>
-# wrong constant name abort_on_exception
-# wrong constant name abort_on_exception=
-# wrong constant name add_trace_func
-# wrong constant name backtrace
-# wrong constant name backtrace_locations
-# wrong constant name exit
-# wrong constant name fetch
-# wrong constant name group
-# wrong constant name initialize
-# wrong constant name join
-# wrong constant name key?
-# wrong constant name keys
-# wrong constant name name
-# wrong constant name name=
-# wrong constant name pending_interrupt?
-# wrong constant name priority
-# wrong constant name priority=
-# wrong constant name report_on_exception
-# wrong constant name report_on_exception=
-# wrong constant name run
-# wrong constant name safe_level
-# wrong constant name status
-# wrong constant name stop?
-# wrong constant name terminate
-# wrong constant name thread_variable?
-# wrong constant name thread_variable_get
-# wrong constant name thread_variable_set
-# wrong constant name thread_variables
-# wrong constant name value
-# wrong constant name wakeup
-# wrong constant name broadcast
-# wrong constant name marshal_dump
-# wrong constant name signal
-# wrong constant name wait
-# wrong constant name lock
-# wrong constant name locked?
-# wrong constant name owned?
-# wrong constant name synchronize
-# wrong constant name try_lock
-# wrong constant name unlock
-# wrong constant name <<
-# wrong constant name clear
-# wrong constant name close
-# wrong constant name closed?
-# wrong constant name deq
-# wrong constant name empty?
-# wrong constant name enq
-# wrong constant name length
-# wrong constant name marshal_dump
-# wrong constant name num_waiting
-# wrong constant name pop
-# wrong constant name push
-# wrong constant name shift
-# wrong constant name size
-# wrong constant name <<
-# wrong constant name enq
-# wrong constant name initialize
-# wrong constant name max
-# wrong constant name max=
-# wrong constant name push
-# wrong constant name abort_on_exception
-# wrong constant name abort_on_exception=
-# wrong constant name exclusive
-# wrong constant name exit
-# wrong constant name fork
-# wrong constant name handle_interrupt
-# wrong constant name kill
-# wrong constant name list
-# wrong constant name pass
-# wrong constant name pending_interrupt?
-# wrong constant name report_on_exception
-# wrong constant name report_on_exception=
-# wrong constant name start
-# wrong constant name stop
 # wrong constant name <Class:AtomicReferenceCacheBackend>
 # wrong constant name <Class:SynchronizedCacheBackend>
 # wrong constant name <Class:Util>

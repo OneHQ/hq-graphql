@@ -2,8 +2,7 @@ require "byebug"
 require "combustion"
 
 Combustion.initialize! :all do
-  # Disable strong parameters
-  config.action_controller.permit_all_parameters = true
+  config.load_defaults 6.0
 end
 
 require "database_cleaner"
@@ -12,12 +11,6 @@ require "faker"
 require "rspec/rails"
 
 RSpec.configure do |config|
-  config.expect_with :rspec do |c|
-    c.syntax = [:expect]
-  end
-
-  config.use_transactional_fixtures = false
-
   config.include FactoryBot::Syntax::Methods
 
   config.before(:suite) do

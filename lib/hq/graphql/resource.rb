@@ -6,10 +6,12 @@ require "hq/graphql/resource/mutation"
 module HQ
   module GraphQL
     module Resource
+      extend T::Helpers
+
       def self.included(base)
+        super
         ::HQ::GraphQL.types << base
         base.include Scalars
-        base.extend ClassMethods
       end
 
       module ClassMethods
@@ -273,6 +275,8 @@ module HQ
           end
         end
       end
+
+      mixes_in_class_methods(ClassMethods)
     end
   end
 end

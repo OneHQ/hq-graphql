@@ -17,16 +17,17 @@ Gem::Specification.new do |s|
 
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
 
+  s.add_dependency "rails",                     "~> 6.0"
+
   s.add_dependency "graphql",                   "~> 1.0", ">= 1.9.6"
   s.add_dependency "pg",                        "~> 1.1"
-  s.add_dependency "rails",                     ">= 6.0.0.rc2"
+  s.add_dependency "sorbet-runtime"
 
   s.add_development_dependency "byebug",                                  "~> 11.0"
   s.add_development_dependency "combustion",                              "~> 1.1"
   s.add_development_dependency "database_cleaner",                        "~> 1.7"
   s.add_development_dependency "factory_bot_rails",                       "~> 5.0"
   s.add_development_dependency "faker",                                   "~> 2.1"
-
   s.add_development_dependency "rspec",                                   "~> 3.8"
   s.add_development_dependency "rspec-rails",                             ">= 4.0.0beta2"
   s.add_development_dependency "rubocop",                                 "~> 0.7"

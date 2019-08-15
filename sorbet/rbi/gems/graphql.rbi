@@ -7,7 +7,7 @@
 #
 #   https://github.com/sorbet/sorbet-typed/new/master?filename=lib/graphql/all/graphql.rbi
 #
-# graphql-1.9.9
+# graphql-1.9.11
 module GraphQL
   def self.parse(graphql_string, tracer: nil); end
   def self.parse_file(filename); end
@@ -607,6 +607,7 @@ class GraphQL::Language::Nodes::AbstractNode
   def initialize(options = nil); end
   def initialize_copy(other); end
   def line; end
+  def merge!(new_options); end
   def merge(new_options); end
   def position; end
   def replace_child(previous_child, new_child); end
@@ -1736,6 +1737,7 @@ class GraphQL::Schema
   def self.analysis_engine(*args, &block); end
   def self.analysis_engine=(*args, &block); end
   def self.as_json(*args, &block); end
+  def self.ast_node(*args, &block); end
   def self.call_on_type_class(member, method_name, *args, default:); end
   def self.context_class(new_context_class = nil); end
   def self.cursor_encoder(new_encoder = nil); end
@@ -2291,7 +2293,7 @@ class GraphQL::Schema::Field
   def description=(arg0); end
   def extension(extension, options = nil); end
   def extensions(new_extensions = nil); end
-  def extras; end
+  def extras(new_extras = nil); end
   def fetch_extra(extra_name, ctx); end
   def graphql_name; end
   def initialize(*args, **kwargs, &block); end
@@ -2861,6 +2863,9 @@ end
 class GraphQL::AnalysisError < GraphQL::ExecutionError
 end
 class GraphQL::CoercionError < GraphQL::Error
+  def extensions; end
+  def extensions=(arg0); end
+  def initialize(message, extensions: nil); end
 end
 class GraphQL::LiteralValidationError < GraphQL::Error
   def ast_value; end
@@ -3446,7 +3451,7 @@ end
 class GraphQL::StaticValidation::ArgumentLiteralsAreCompatibleError < GraphQL::StaticValidation::Error
   def argument_name; end
   def code; end
-  def initialize(message, type:, path: nil, nodes: nil, argument: nil); end
+  def initialize(message, type:, path: nil, nodes: nil, argument: nil, extensions: nil); end
   def to_h; end
   def type_name; end
 end
