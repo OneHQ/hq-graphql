@@ -32,4 +32,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rubocop",                                 "~> 0.7"
   s.add_development_dependency "rubocop-performance",                     "~> 1.4"
   s.add_development_dependency "rubocop-rails",                           "~> 2.3"
+  s.add_development_dependency "sorbet"
 end

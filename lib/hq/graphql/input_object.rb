@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 
 module HQ
@@ -26,8 +27,6 @@ module HQ
           formatted_attrs
         end
       end
-
-      delegate :with_indifferent_access, to: :to_h
 
       #### Class Methods ####
 
