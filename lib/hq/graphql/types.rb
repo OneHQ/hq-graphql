@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module HQ
   module GraphQL
     module Types
       class Error < StandardError
-        MISSING_TYPE_MSG = "The GraphQL type for `%{klass}` is missing.".freeze
+        MISSING_TYPE_MSG = "The GraphQL type for `%{klass}` is missing."
       end
 
       def self.[](key)
@@ -14,7 +16,7 @@ module HQ
 
       def self.type_from_column(column)
         graphql_type =
-          case column&.cast_type&.type
+          case column.type
           when :uuid
             ::HQ::GraphQL::Types::UUID
           when :json, :jsonb
@@ -47,7 +49,6 @@ module HQ
              raise(Error, Error::MISSING_TYPE_MSG % { klass: klass.name })
         end
       end
-
     end
   end
 end

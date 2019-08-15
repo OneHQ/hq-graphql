@@ -1,21 +1,15 @@
-require "testhq/coverage"  # Needs to be require at the top of this file!
-                           # Coverage must also be enabled in the environment by setting
-                           # environment variables, e.g. `COVERAGE=true` or `CODECLIMATE_REPO_TOKEN=...`.
-                           # See https://github.com/OneHQ/testhq#code-coverage.
-
-require "bundler/setup"
+require "byebug"
 require "combustion"
 
-silence_stream(STDOUT) do  # Hides a lot of output from Combustion init such as schema loading.
-  Combustion.initialize! :all do
-    # Disable strong parameters
-    config.action_controller.permit_all_parameters = true
-  end
+Combustion.initialize! :all do
+  # Disable strong parameters
+  config.action_controller.permit_all_parameters = true
 end
 
-require "byebug"
+require "database_cleaner"
+require "factory_bot_rails"
+require "faker"
 require "rspec/rails"
-require "testhq"
 
 RSpec.configure do |config|
   config.expect_with :rspec do |c|

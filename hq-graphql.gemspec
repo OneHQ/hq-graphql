@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 $:.push File.expand_path("../lib", __FILE__)
 
 # Maintain your gem's version:
@@ -15,9 +17,16 @@ Gem::Specification.new do |s|
 
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
 
-  s.add_dependency "rails",                     "~> 4.2"
   s.add_dependency "graphql",                   "~> 1.0", ">= 1.9.6"
+  s.add_dependency "pg",                        "~> 1.1"
+  s.add_dependency "rails",                     ">= 6.0.0.rc2"
 
-  s.add_development_dependency "rspec_junit_formatter",   "~> 0.3", ">= 0.3.0"
-  s.add_development_dependency "testhq",                  "~> 1.0", ">= 1.0.0"
+  s.add_development_dependency "byebug",                                  "~> 11.0"
+  s.add_development_dependency "combustion",                              "~> 1.1"
+  s.add_development_dependency "database_cleaner",                        "~> 1.7"
+  s.add_development_dependency "factory_bot_rails",                       "~> 5.0"
+  s.add_development_dependency "faker",                                   "~> 2.1"
+
+  s.add_development_dependency "rspec",                                   "~> 3.8"
+  s.add_development_dependency "rspec-rails",                             ">= 4.0.0beta2"
 end

@@ -172,7 +172,7 @@ describe ::HQ::GraphQL::Resource do
     end
 
     it "generates the create, update, and destroy mutations by default" do
-      expect(advisor_resource.mutation_klasses.keys).to contain_exactly("create_advisor", "update_advisor", "destroy_advisor")
+      expect(advisor_resource.mutation_klasses.keys).to contain_exactly("create_advisor", "copy_advisor", "update_advisor", "destroy_advisor")
     end
 
     it "removes name on update" do
