@@ -1,3 +1,6 @@
+# typed: true
+# frozen_string_literal: true
+
 module HQ
   module GraphQL
     class Object < ::GraphQL::Schema::Object
@@ -42,10 +45,9 @@ module HQ
         end
 
         def field_from_column(column)
-          field column.name, ::HQ::GraphQL::Types.type_from_column(column), null: column.null
+          field column.name, ::HQ::GraphQL::Types.type_from_column(column), null: true
         end
       end
-
     end
   end
 end

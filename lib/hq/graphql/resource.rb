@@ -1,22 +1,36 @@
+# typed: false
+# frozen_string_literal: true
+
 require "hq/graphql/resource/mutation"
 
 module HQ
   module GraphQL
     module Resource
+      extend T::Helpers
 
       def self.included(base)
+        super
         ::HQ::GraphQL.types << base
         base.include Scalars
-        base.extend ClassMethods
       end
 
       module ClassMethods
         attr_writer :graphql_name, :model_name
 
+        def scope(context)
+          scope = model_klass
+          scope = ::HQ::GraphQL.default_scope(scope, context)
+          @default_scope&.call(scope, context) || scope
+        end
+
         def find_record(attrs, context)
           primary_key = model_klass.primary_key.to_sym
           primary_key_value = attrs[primary_key]
           scope(context).find_by(primary_key => primary_key_value)
+        end
+
+        def new_record(context)
+          scope(context).new
         end
 
         def graphql_name
@@ -53,7 +67,7 @@ module HQ
           @input_klass = build_input_object(**options, &block)
         end
 
-        def mutations(create: true, update: true, destroy: true)
+        def mutations(create: true, copy: true, update: true, destroy: true)
           scoped_graphql_name = graphql_name
           scoped_model_name = model_name
           scoped_self = self
@@ -61,7 +75,7 @@ module HQ
           if create
             create_mutation = ::HQ::GraphQL::Resource::Mutation.build(model_name, graphql_name: "#{scoped_graphql_name}Create") do
               define_method(:resolve) do |**args|
-                resource = scoped_self.model_klass.new
+                resource = scoped_self.new_record(context)
                 resource.assign_attributes(args[:attributes].format_nested_attributes)
                 if resource.save
                   {
@@ -82,6 +96,40 @@ module HQ
             end
 
             mutation_klasses["create_#{scoped_graphql_name.underscore}"] = create_mutation
+          end
+
+          if copy
+            copy_mutation = ::HQ::GraphQL::Resource::Mutation.build(
+              model_name,
+              graphql_name: "#{scoped_graphql_name}Copy",
+              require_primary_key: true
+            ) do
+              define_method(:resolve) do |**args|
+                resource = scoped_self.find_record(args, context)
+
+                if resource
+                  copy = resource.copy
+                  if copy.save
+                    {
+                      resource: copy,
+                      errors: {},
+                    }
+                  else
+                    {
+                      resource: copy,
+                      errors: errors_from_resource(copy)
+                    }
+                  end
+                else
+                  {
+                    resource: nil,
+                    errors: { resource: "Unable to find #{scoped_graphql_name}" }
+                  }
+                end
+              end
+            end
+
+            mutation_klasses["copy_#{scoped_graphql_name.underscore}"] = copy_mutation
           end
 
           if update
@@ -194,17 +242,11 @@ module HQ
 
           if find_all
             def_root field_name.pluralize, is_array: true, null: false do
-              define_method(:resolve) do |**attrs|
+              define_method(:resolve) do |**_attrs|
                 scoped_self.scope(context).all
               end
             end
           end
-        end
-
-        def scope(context)
-          scope = model_klass
-          scope = ::HQ::GraphQL.default_scope(scope, context)
-          @default_scope&.call(scope, context) || scope
         end
 
         private
@@ -232,8 +274,9 @@ module HQ
             class_eval(&block) if block
           end
         end
-
       end
+
+      mixes_in_class_methods(ClassMethods)
     end
   end
 end

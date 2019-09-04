@@ -1,20 +1,33 @@
+# typed: true
+# frozen_string_literal: true
+
+require "rails"
 require "graphql"
+require "sorbet-runtime"
+require "hq/graphql/config"
 
 module HQ
   module GraphQL
+    extend T::Sig
+    extend T::Generic
 
+    @config = T.let(::HQ::GraphQL::Config.new, ::HQ::GraphQL::Config)
+
+    sig { returns(::HQ::GraphQL::Config) }
     def self.config
-      @config ||= ::ActiveSupport::OrderedOptions.new
+      @config
     end
 
     def self.configure(&block)
       config.instance_eval(&block)
     end
 
+    sig { params(scope: T.untyped, context: ::GraphQL::Query::Context).returns(T.untyped) }
     def self.default_scope(scope, context)
-      config.default_scope&.call(scope, context) || scope
+      config.default_scope.call(scope, context)
     end
 
+    sig { void }
     def self.reset!
       @root_queries = nil
       @types = nil
@@ -26,10 +39,10 @@ module HQ
       @root_queries ||= Set.new
     end
 
+    # sig { returns(T::Set[::HQ::GraphQL::Resource]) }
     def self.types
       @types ||= Set.new
     end
-
   end
 end
 

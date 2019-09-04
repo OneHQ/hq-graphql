@@ -1,6 +1,10 @@
+# typed: true
+# frozen_string_literal: true
+
 module HQ
   module GraphQL
     class InputObject < ::GraphQL::Schema::InputObject
+      extend T::Sig
       include Scalars
       include ::HQ::GraphQL::ActiveRecordExtensions
 
@@ -25,12 +29,8 @@ module HQ
         end
       end
 
-      def with_indifferent_access
-        to_h.with_indifferent_access
-      end
-
       #### Class Methods ####
-
+      sig { params(model_name: String, attributes: T::Boolean, associations: T::Boolean).void }
       def self.with_model(model_name, attributes: true, associations: false)
         self.model_name = model_name
         self.auto_load_attributes = attributes
@@ -72,7 +72,7 @@ module HQ
             argument name, input, required: false
           end
 
-          if !model_klass.nested_attributes_options.keys.include?(name.to_sym)
+          if !model_klass.nested_attributes_options.key?(name.to_sym)
             model_klass.accepts_nested_attributes_for name, allow_destroy: true
           end
 
@@ -85,7 +85,6 @@ module HQ
           argument column.name, ::HQ::GraphQL::Types.type_from_column(column), required: false
         end
       end
-
     end
   end
 end
