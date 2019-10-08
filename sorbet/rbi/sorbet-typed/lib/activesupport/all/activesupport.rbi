@@ -456,3 +456,181 @@ class Hash
   sig { returns(T.self_type) }
   def symbolize_keys!; end
 end
+
+module ActiveSupport::Inflector
+  sig do
+    params(
+      term: String,
+      uppercase_first_letter: T::Boolean
+    ).returns(String)
+  end
+  def camelize(term, uppercase_first_letter = true); end
+
+  sig { params(table_name: String).returns(String) }
+  def classify(table_name); end
+
+  sig { params(camel_cased_word: String).returns(T.untyped) }
+  def constantize(camel_cased_word); end
+
+  sig { params(underscored_word: String).returns(String) }
+  def dasherize(underscored_word); end
+
+  sig { params(path: String).returns(String) }
+  def deconstantize(path); end
+
+  sig { params(path: String).returns(String) }
+  def demodulize(path); end
+
+  sig do
+    params(
+      class_name: String,
+      separate_class_name_and_id_with_underscore: T::Boolean
+    ).returns(String)
+  end
+  def foreign_key(class_name, separate_class_name_and_id_with_underscore = true); end
+
+  sig do
+    params(
+      lower_case_and_underscored_word: String,
+      capitalize: T::Boolean,
+      keep_id_suffix: T::Boolean
+    ).returns(String)
+  end
+  def humanize(lower_case_and_underscored_word, capitalize: true, keep_id_suffix: false); end
+
+  sig { params(locale: Symbol, blk: T.untyped).returns(T.untyped) }
+  def inflections(locale = :en, &blk); end
+
+  sig { params(number: Integer).returns(String) }
+  def ordinal(number); end
+
+  sig { params(number: Integer).returns(String) }
+  def ordinalize(number); end
+
+  sig do
+    params(
+      string: String,
+      separator: String,
+      preserve_case: T::Boolean,
+      locale: Symbol
+    ).returns(String)
+  end
+  def parameterize(string, separator: '-', preserve_case: false, locale: nil); end
+
+  sig { params(word: String, locale: Symbol).returns(String) }
+  def pluralize(word, locale = :en); end
+
+  sig { params(camel_cased_word: String).returns(T.untyped) }
+  def safe_constantize(camel_cased_word); end
+
+  sig { params(word: String, locale: Symbol).returns(String) }
+  def singularize(word, locale = :en); end
+
+  sig { params(class_name: String).returns(String) }
+  def tableize(class_name); end
+
+  sig { params(word: String, keep_id_suffix: T::Boolean).returns(String) }
+  def titleize(word, keep_id_suffix: false); end
+
+  sig { params(string: String, replacement: String, locale: Symbol).returns(String) }
+  def transliterate(string, replacement = '?', locale: nil); end
+
+  sig { params(camel_cased_word: String).returns(String) }
+  def underscore(camel_cased_word); end
+
+  sig { params(string: String).returns(String) }
+  def upcase_first(string); end
+end
+
+
+# defines some of the methods at https://github.com/rails/rails/blob/v6.0.0/activesupport/lib/active_support/core_ext/time/calculations.rb
+# these get added to Time, but are available on TimeWithZone thanks to https://github.com/rails/rails/blob/v6.0.0/activesupport/lib/active_support/time_with_zone.rb#L520
+# this is not a complete definition!
+class ActiveSupport::TimeWithZone
+  sig { returns(ActiveSupport::TimeWithZone) }
+  def midnight; end
+
+  sig { returns(ActiveSupport::TimeWithZone) }
+  def beginning_of_day; end
+
+  sig { returns(ActiveSupport::TimeWithZone) }
+  def at_midnight; end
+
+  sig { returns(ActiveSupport::TimeWithZone) }
+  def at_beginning_of_day; end
+
+  sig { returns(ActiveSupport::TimeWithZone) }
+  def middle_of_day; end
+
+  sig { returns(ActiveSupport::TimeWithZone) }
+  def midday; end
+
+  sig { returns(ActiveSupport::TimeWithZone) }
+  def noon; end
+
+  sig { returns(ActiveSupport::TimeWithZone) }
+  def at_midday; end
+
+  sig { returns(ActiveSupport::TimeWithZone) }
+  def at_noon; end
+
+  sig { returns(ActiveSupport::TimeWithZone) }
+  def at_middle_of_day; end
+end
+
+# defines some of the methods at https://github.com/rails/rails/blob/v6.0.0/activesupport/lib/active_support/core_ext/time
+# this is not a complete definition!
+class Time
+  sig { returns(Time) }
+  def midnight; end
+
+  sig { returns(Time) }
+  def beginning_of_day; end
+
+  sig { returns(Time) }
+  def at_midnight; end
+
+  sig { returns(Time) }
+  def at_beginning_of_day; end
+
+  sig { returns(Time) }
+  def middle_of_day; end
+
+  sig { returns(Time) }
+  def midday; end
+
+  sig { returns(Time) }
+  def noon; end
+
+  sig { returns(Time) }
+  def at_midday; end
+
+  sig { returns(Time) }
+  def at_noon; end
+
+  sig { returns(Time) }
+  def at_middle_of_day; end
+
+  # https://github.com/rails/rails/blob/v6.0.0/activesupport/lib/active_support/core_ext/date_and_time/zones.rb
+  sig { params(zone: String).returns(T.any(Time, ActiveSupport::TimeWithZone)) }
+  def in_time_zone(zone = ::Time.zone); end
+end
+
+# defines some of the methods at https://github.com/rails/rails/tree/v6.0.0/activesupport/lib/active_support/core_ext/hash
+# this is not a complete definition!
+class Hash
+  sig { returns(T::Hash[String, T.untyped]) }
+  def stringify_keys; end
+
+  sig { returns(T::Hash[String, T.untyped]) }
+  def deep_stringify_keys; end
+
+  sig { returns(T::Hash[Symbol, T.untyped]) }
+  def symbolize_keys; end
+
+  sig { returns(T::Hash[Symbol, T.untyped]) }
+  def deep_symbolize_keys; end
+
+  sig { returns(T::Hash[Symbol, T.untyped]) }
+  def to_options; end
+end

@@ -2,6 +2,6 @@
 # rubocop:enable Naming/FileName
 # frozen_string_literal: true
 
-# typed: strong
+# typed: strict
 
 require "hq/graphql"

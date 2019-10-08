@@ -7,6 +7,8 @@ module HQ
       include Scalars
       include ::HQ::GraphQL::ActiveRecordExtensions
 
+      field_class ::HQ::GraphQL::Field::AssociationLoader
+
       def self.with_model(model_name, attributes: true, associations: true)
         self.model_name = model_name
         self.auto_load_attributes = attributes
@@ -36,9 +38,9 @@ module HQ
           name = association.name
           case association.macro
           when :has_many
-            field name, [type], null: false
+            field name, [type], null: false, loader_klass: model_name
           else
-            field name, type, null: true
+            field name, type, null: true, loader_klass: model_name
           end
         rescue ::HQ::GraphQL::Types::Error
           nil

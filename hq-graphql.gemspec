@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   s.add_dependency "rails",                     "~> 6.0"
 
   s.add_dependency "graphql",                   "~> 1.0", ">= 1.9.6"
+  s.add_dependency "graphql-batch",             "~> 0.4"
   s.add_dependency "pg",                        "~> 1.1"
   s.add_dependency "sorbet-runtime"
 
