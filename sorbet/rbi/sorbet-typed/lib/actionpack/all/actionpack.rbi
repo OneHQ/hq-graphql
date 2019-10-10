@@ -69,7 +69,7 @@ class ActionController::Parameters
 
   sig { params(block: T.untyped).returns(T.untyped) }
   def each_pair(&block); end
-  
+
   # each is an alias of each_pair
   sig { params(block: T.untyped).returns(T.untyped) }
   def each(&block); end
@@ -841,4 +841,15 @@ module ActionController::MimeResponds
 end
 
 class ActionController::MimeResponds::Collector
+  sig { params(block: T.nilable(T.proc.void)).void }
+  def html(&block); end
+
+  sig { params(block: T.nilable(T.proc.void)).void }
+  def js(&block); end
+
+  sig { params(block: T.nilable(T.proc.void)).void }
+  def json(&block); end
+
+  sig { params(block: T.nilable(T.proc.void)).void }
+  def xml(&block); end
 end

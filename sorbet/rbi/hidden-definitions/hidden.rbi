@@ -4097,12 +4097,6 @@ module ActionView::Helpers::UrlHelper
 
   def button_to(name=T.unsafe(nil), options=T.unsafe(nil), html_options=T.unsafe(nil), &block); end
 
-  def current_page?(options, check_parameters: T.unsafe(nil)); end
-
-  def link_to(name=T.unsafe(nil), options=T.unsafe(nil), html_options=T.unsafe(nil), &block); end
-
-  def link_to_if(condition, name, options=T.unsafe(nil), html_options=T.unsafe(nil), &block); end
-
   def link_to_unless(condition, name, options=T.unsafe(nil), html_options=T.unsafe(nil), &block); end
 
   def link_to_unless_current(name, options=T.unsafe(nil), html_options=T.unsafe(nil), &block); end
@@ -5465,9 +5459,7 @@ class Addrinfo
 end
 
 class Array
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   include ::JSON::Ext::Generator::GeneratorMethods::Array
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def bsearch(); end
 
   def bsearch_index(); end
@@ -5487,7 +5479,6 @@ class Array
   def shelljoin(); end
 
   def to_h(); end
-
 end
 
 class Array
@@ -5513,20 +5504,9 @@ class BigDecimal
 end
 
 class Binding
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def clone(); end
 
   def irb(); end
-
-  def local_variable_defined?(_); end
-
-  def local_variable_get(_); end
-
-  def local_variable_set(_, _1); end
-
-  def receiver(); end
-
-  def source_location(); end
 end
 
 Bundler::Deprecate = Gem::Deprecate
@@ -5544,6 +5524,8 @@ end
 
 class Bundler::FeatureFlag
   def github_https?(); end
+
+  def lockfile_upgrade_warning?(); end
 end
 
 class Bundler::Fetcher
@@ -5574,14 +5556,8 @@ class Bundler::Fetcher::AuthenticationRequiredError
   def initialize(remote_uri); end
 end
 
-class Bundler::Fetcher::AuthenticationRequiredError
-end
-
 class Bundler::Fetcher::BadAuthenticationError
   def initialize(remote_uri); end
-end
-
-class Bundler::Fetcher::BadAuthenticationError
 end
 
 class Bundler::Fetcher::Base
@@ -5607,9 +5583,6 @@ end
 
 class Bundler::Fetcher::CertificateFailureError
   def initialize(remote_uri); end
-end
-
-class Bundler::Fetcher::CertificateFailureError
 end
 
 class Bundler::Fetcher::CompactIndex
@@ -5674,12 +5647,6 @@ end
 class Bundler::Fetcher::Downloader
 end
 
-class Bundler::Fetcher::FallbackError
-end
-
-class Bundler::Fetcher::FallbackError
-end
-
 class Bundler::Fetcher::Index
   def fetch_spec(spec); end
 
@@ -5689,17 +5656,8 @@ end
 class Bundler::Fetcher::Index
 end
 
-class Bundler::Fetcher::NetworkDownError
-end
-
-class Bundler::Fetcher::NetworkDownError
-end
-
 class Bundler::Fetcher::SSLError
   def initialize(msg=T.unsafe(nil)); end
-end
-
-class Bundler::Fetcher::SSLError
 end
 
 class Bundler::Fetcher
@@ -5718,6 +5676,20 @@ class Bundler::Fetcher
   def self.redirect_limit(); end
 
   def self.redirect_limit=(redirect_limit); end
+end
+
+module Bundler::FileUtils
+  VERSION = ::T.let(nil, ::T.untyped)
+end
+
+class Bundler::FileUtils::Entry_
+  def link(dest); end
+end
+
+module Bundler::FileUtils
+  def self.cp_lr(src, dest, noop: T.unsafe(nil), verbose: T.unsafe(nil), dereference_root: T.unsafe(nil), remove_destination: T.unsafe(nil)); end
+
+  def self.link_entry(src, dest, dereference_root=T.unsafe(nil), remove_destination=T.unsafe(nil)); end
 end
 
 class Bundler::GemHelper
@@ -5761,7 +5733,9 @@ class Bundler::GemHelper
 
   def sh(cmd, &block); end
 
-  def sh_with_code(cmd, &block); end
+  def sh_with_input(cmd); end
+
+  def sh_with_status(cmd, &block); end
 
   def spec_path(); end
 
@@ -5967,58 +5941,11 @@ end
 module Bundler::Plugin::API::Source
 end
 
-class Bundler::Plugin::DSL
-  def _gem(name, *args); end
-
-  def inferred_plugins(); end
-
-  def plugin(name, *args); end
-end
-
-class Bundler::Plugin::DSL::PluginGemfileError
-end
-
-class Bundler::Plugin::DSL::PluginGemfileError
-end
-
-class Bundler::Plugin::DSL
-end
-
 module Bundler::Plugin::Events
   GEM_AFTER_INSTALL = ::T.let(nil, ::T.untyped)
   GEM_AFTER_INSTALL_ALL = ::T.let(nil, ::T.untyped)
   GEM_BEFORE_INSTALL = ::T.let(nil, ::T.untyped)
   GEM_BEFORE_INSTALL_ALL = ::T.let(nil, ::T.untyped)
-end
-
-module Bundler::Plugin::Events
-  def self.defined_event?(event); end
-end
-
-class Bundler::Plugin::Index
-  def command_plugin(command); end
-
-  def commands(); end
-
-  def global_index_file(); end
-
-  def hook_plugins(event); end
-
-  def index_file(); end
-
-  def installed?(name); end
-
-  def load_paths(name); end
-
-  def local_index_file(); end
-
-  def plugin_path(name); end
-
-  def register_plugin(name, path, load_paths, commands, sources, hooks); end
-
-  def source?(source); end
-
-  def source_plugin(name); end
 end
 
 class Bundler::Plugin::Index::CommandConflict
@@ -6033,9 +5960,6 @@ class Bundler::Plugin::Index::SourceConflict
 end
 
 class Bundler::Plugin::Index::SourceConflict
-end
-
-class Bundler::Plugin::Index
 end
 
 class Bundler::Plugin::Installer
@@ -6105,6 +6029,10 @@ class Bundler::RubyGemsGemInstaller
 end
 
 class Bundler::RubyGemsGemInstaller
+end
+
+class Bundler::RubygemsIntegration::MoreFuture
+  def default_stubs(); end
 end
 
 class Bundler::Settings::Mirror
@@ -6350,14 +6278,6 @@ class Byebug::WidthSetting
   DEFAULT = ::T.let(nil, ::T.untyped)
 end
 
-class CGI
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class CGI::Cookie
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
 module CGI::HtmlExtension
   def a(href=T.unsafe(nil)); end
 
@@ -6531,10 +6451,6 @@ end
 module DRb::DRbUndumped
 end
 
-class Data
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
 class DatabaseCleaner::Safeguard
   CHECKS = ::T.let(nil, ::T.untyped)
 end
@@ -6548,7 +6464,6 @@ class DatabaseCleaner::Safeguard::RemoteDatabaseUrl
 end
 
 class Date
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   DATE_FORMATS = ::T.let(nil, ::T.untyped)
 end
 
@@ -6596,7 +6511,6 @@ class Delegator
 end
 
 class DidYouMean::ClassNameChecker
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def class_name(); end
 
   def class_names(); end
@@ -6642,7 +6556,6 @@ module DidYouMean::Levenshtein
 end
 
 class DidYouMean::MethodNameChecker
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def corrections(); end
 
   def initialize(exception); end
@@ -6656,7 +6569,6 @@ class DidYouMean::MethodNameChecker
 end
 
 class DidYouMean::NullChecker
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def corrections(); end
 
   def initialize(*_); end
@@ -6670,14 +6582,12 @@ class DidYouMean::PlainFormatter
 end
 
 class DidYouMean::SpellChecker
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def correct(input); end
 
   def initialize(dictionary:); end
 end
 
 class DidYouMean::VariableNameChecker
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def corrections(); end
 
   def cvar_names(); end
@@ -6700,16 +6610,10 @@ module DidYouMean
   def self.formatter=(formatter); end
 end
 
-class Digest::Class
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
 class Dir
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def children(); end
 
   def each_child(); end
-
 end
 
 class Dir
@@ -6725,7 +6629,6 @@ class Dir
 end
 
 class ERB
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def def_method(mod, methodname, fname=T.unsafe(nil)); end
 
   def def_module(methodname=T.unsafe(nil)); end
@@ -6733,20 +6636,7 @@ class ERB
   def result_with_hash(hash); end
 end
 
-class ERB::Compiler
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class ERB::Compiler::Buffer
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class ERB::Compiler::PercentLine
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
 class ERB::Compiler::Scanner
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   DEFAULT_ETAGS = ::T.let(nil, ::T.untyped)
   DEFAULT_STAGS = ::T.let(nil, ::T.untyped)
 end
@@ -6766,10 +6656,7 @@ module ERB::Util
   def self.unwrapped_html_escape(s); end
 end
 
-Emitter = Psych::Stream::Emitter
-
 class Encoding
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def _dump(*_); end
 end
 
@@ -6887,11 +6774,9 @@ module Enumerable
 end
 
 class Enumerator
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def +(_); end
 
   def each_with_index(); end
-
 end
 
 class Enumerator::ArithmeticSequence
@@ -6918,7 +6803,6 @@ class Enumerator::Chain
 end
 
 class Enumerator::Generator
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def each(*_, &blk); end
 
   def initialize(*_); end
@@ -6932,10 +6816,6 @@ class Enumerator::Lazy
   def force(*_); end
 
   def slice_when(*_); end
-end
-
-class Enumerator::Yielder
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 class Errno::EAUTH
@@ -7202,9 +7082,7 @@ module Etc
 end
 
 class Exception
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def full_message(*_); end
-
 end
 
 class Exception
@@ -7248,7 +7126,7 @@ class ExitCalledError
 end
 
 module FactoryBot
-  DEPRECATOR = ::T.let(nil, ::T.untyped)
+  Deprecation = ::T.let(nil, ::T.untyped)
   VERSION = ::T.let(nil, ::T.untyped)
 end
 
@@ -7258,6 +7136,11 @@ end
 
 class FactoryBot::Evaluation
   include ::Observable
+end
+
+module FactoryBot::Internal
+  DEFAULT_CALLBACKS = ::T.let(nil, ::T.untyped)
+  DEFAULT_STRATEGIES = ::T.let(nil, ::T.untyped)
 end
 
 class FactoryBot::Strategy::Stub
@@ -7320,13 +7203,10 @@ class Faker::Vehicle
 end
 
 class FalseClass
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   include ::JSON::Ext::Generator::GeneratorMethods::FalseClass
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 class Fiber
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def resume(*_); end
 
   def transfer(*_); end
@@ -7343,7 +7223,6 @@ class File
 end
 
 class File::Stat
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def size?(); end
 end
 
@@ -7359,7 +7238,6 @@ class File
   def self.mkfifo(*_); end
 
   def self.probe_stat_in(dir); end
-
 end
 
 module FileUtils
@@ -7367,33 +7245,29 @@ module FileUtils
 end
 
 module FileUtils::DryRun
-  include ::FileUtils::LowMethods
   include ::FileUtils
   include ::FileUtils::StreamUtils_
+  include ::FileUtils::LowMethods
 end
 
 module FileUtils::DryRun
   extend ::FileUtils::DryRun
-  extend ::FileUtils::LowMethods
   extend ::FileUtils
   extend ::FileUtils::StreamUtils_
-end
-
-class FileUtils::Entry_
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
+  extend ::FileUtils::LowMethods
 end
 
 module FileUtils::NoWrite
-  include ::FileUtils::LowMethods
   include ::FileUtils
   include ::FileUtils::StreamUtils_
+  include ::FileUtils::LowMethods
 end
 
 module FileUtils::NoWrite
   extend ::FileUtils::NoWrite
-  extend ::FileUtils::LowMethods
   extend ::FileUtils
   extend ::FileUtils::StreamUtils_
+  extend ::FileUtils::LowMethods
 end
 
 module FileUtils::Verbose
@@ -7421,7 +7295,6 @@ module Find
 end
 
 class Float
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   include ::JSON::Ext::Generator::GeneratorMethods::Float
   def to_d(precision=T.unsafe(nil)); end
 end
@@ -7473,48 +7346,12 @@ module GC
   def self.verify_transient_heap_internal_consistency(); end
 end
 
-class Gem::BasicSpecification
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class Gem::Dependency
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class Gem::ErrorReason
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class Gem::List
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class Gem::PathSupport
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class Gem::Platform
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class Gem::Requirement
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
 class Gem::Resolver::Molinillo::DependencyGraph::Log
   extend ::Enumerable
 end
 
 class Gem::Specification
   extend ::Enumerable
-end
-
-class Gem::StubSpecification::StubLine
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class Gem::Version
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 module GraphQL
@@ -7540,6 +7377,12 @@ class GraphQL::Backtrace::TracedError
   CAUSE_BACKTRACE_PREVIEW_LENGTH = ::T.let(nil, ::T.untyped)
   MESSAGE_TEMPLATE = ::T.let(nil, ::T.untyped)
 end
+
+module GraphQL::Batch
+  VERSION = ::T.let(nil, ::T.untyped)
+end
+
+GraphQL::Batch::BrokenPromiseError = Promise::BrokenError
 
 module GraphQL::Compatibility::ExecutionSpecification::SpecificationSchema
   BOGUS_NODE = ::T.let(nil, ::T.untyped)
@@ -7934,9 +7777,7 @@ module HQ::GraphQL
 end
 
 class Hash
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   include ::JSON::Ext::Generator::GeneratorMethods::Hash
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def <(_); end
 
   def <=(_); end
@@ -8459,7 +8300,6 @@ module I18n
 end
 
 class IO
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def beep(); end
 
   def cooked(); end
@@ -8539,7 +8379,6 @@ class IO
   def self.foreach(*_); end
 
   def self.pipe(*_); end
-
 end
 
 class IPAddr
@@ -9285,7 +9124,6 @@ module IRB
 end
 
 class Integer
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   include ::JSON::Ext::Generator::GeneratorMethods::Integer
   def allbits?(_); end
 
@@ -9300,7 +9138,6 @@ class Integer
   def to_bn(); end
 
   def to_d(); end
-
   GMP_VERSION = ::T.let(nil, ::T.untyped)
 end
 
@@ -9309,15 +9146,10 @@ class Integer
 end
 
 class JSON::Ext::Generator::State
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class JSON::Ext::Generator::State
   def self.from_state(_); end
 end
 
 class JSON::Ext::Parser
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def initialize(*_); end
 end
 
@@ -9326,8 +9158,6 @@ JSON::Parser = JSON::Ext::Parser
 JSON::State = JSON::Ext::Generator::State
 
 JSON::UnparserError = JSON::GeneratorError
-
-JSONTree = Psych::Visitors::JSONTree
 
 module JaroWinkler
   VERSION = ::T.let(nil, ::T.untyped)
@@ -9387,18 +9217,15 @@ class LocalJumpError
 end
 
 class Logger
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   SEV_LABEL = ::T.let(nil, ::T.untyped)
 end
 
 class Logger::Formatter
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   Format = ::T.let(nil, ::T.untyped)
 end
 
 class Logger::LogDevice
   include ::MonitorMixin
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 module Logger::Period
@@ -9426,14 +9253,6 @@ end
 
 module Marshal
   def self.restore(*_); end
-end
-
-class MatchData
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class Method
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 Methods = T::Private::Methods
@@ -9784,7 +9603,6 @@ end
 
 class Module
   include ::Module::Concerning
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def attr_internal(*attrs); end
 
   def attr_internal_accessor(*attrs); end
@@ -9835,7 +9653,6 @@ class Module
 end
 
 class Monitor
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def enter(); end
 
   def exit(); end
@@ -9866,7 +9683,6 @@ module MonitorMixin
 end
 
 class MonitorMixin::ConditionVariable
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def broadcast(); end
 
   def initialize(monitor); end
@@ -9896,7 +9712,6 @@ class NameError
 end
 
 class Net::BufferedIO
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def write_timeout(); end
 
   def write_timeout=(write_timeout); end
@@ -9920,8 +9735,6 @@ class Net::HTTP
   def write_timeout=(sec); end
   ENVIRONMENT_VARIABLE_IS_MULTIUSER_SAFE = ::T.let(nil, ::T.untyped)
 end
-
-Net::HTTP::ProxyMod = Net::HTTP::ProxyDelta
 
 class Net::HTTPAlreadyReported
   HAS_BODY = ::T.let(nil, ::T.untyped)
@@ -9952,15 +9765,13 @@ end
 class Net::HTTPGatewayTimeout
 end
 
-class Net::HTTPGenericRequest
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
+class Net::HTTPInformation
 end
 
-class Net::HTTPGenericRequest::Chunker
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
+Net::HTTPInformationCode::EXCEPTION_TYPE = Net::HTTPError
 
-Net::HTTPInformationCode = Net::HTTPInformation
+class Net::HTTPInformation
+end
 
 class Net::HTTPLoopDetected
   HAS_BODY = ::T.let(nil, ::T.untyped)
@@ -10008,9 +9819,13 @@ end
 class Net::HTTPRangeNotSatisfiable
 end
 
-Net::HTTPRedirection::EXCEPTION_TYPE = Net::HTTPRetriableError
+class Net::HTTPRedirection
+end
 
-Net::HTTPRedirectionCode = Net::HTTPRedirection
+Net::HTTPRedirectionCode::EXCEPTION_TYPE = Net::HTTPRetriableError
+
+class Net::HTTPRedirection
+end
 
 class Net::HTTPRequestTimeout
   HAS_BODY = ::T.let(nil, ::T.untyped)
@@ -10023,25 +9838,29 @@ Net::HTTPRequestURITooLarge = Net::HTTPURITooLong
 
 Net::HTTPResponceReceiver = Net::HTTPResponse
 
-class Net::HTTPResponse
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class Net::HTTPResponse::Inflater
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
 Net::HTTPRetriableCode = Net::HTTPRedirection
 
 Net::HTTPServerError::EXCEPTION_TYPE = Net::HTTPFatalError
 
 Net::HTTPServerErrorCode = Net::HTTPServerError
 
-Net::HTTPSession = Net::HTTP
+class Net::HTTP
+end
 
-Net::HTTPSuccess::EXCEPTION_TYPE = Net::HTTPError
+Net::HTTPSession::ProxyDelta = Net::HTTP::ProxyDelta
 
-Net::HTTPSuccessCode = Net::HTTPSuccess
+Net::HTTPSession::ProxyMod = Net::HTTP::ProxyDelta
+
+class Net::HTTP
+end
+
+class Net::HTTPSuccess
+end
+
+Net::HTTPSuccessCode::EXCEPTION_TYPE = Net::HTTPError
+
+class Net::HTTPSuccess
+end
 
 class Net::HTTPURITooLong
   HAS_BODY = ::T.let(nil, ::T.untyped)
@@ -10065,22 +9884,10 @@ Net::NetPrivate::Socket = Net::InternetMessageIO
 
 Net::ProtocRetryError = Net::ProtoRetriableError
 
-class Net::Protocol
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class Net::ReadAdapter
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
 class Net::ReadTimeout
   def initialize(io=T.unsafe(nil)); end
 
   def io(); end
-end
-
-class Net::WriteAdapter
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 class Net::WriteTimeout
@@ -10093,23 +9900,19 @@ class Net::WriteTimeout
 end
 
 class NilClass
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   include ::JSON::Ext::Generator::GeneratorMethods::NilClass
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def to_d(); end
 
   def to_i(); end
 end
 
 class NoMethodError
-  include ::DidYouMean::Correctable
   def args(); end
 
   def private_call?(); end
 end
 
 class Numeric
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def byte(); end
 
   def bytes(); end
@@ -10118,13 +9921,9 @@ class Numeric
 
   def exabytes(); end
 
-  def finite?(); end
-
   def gigabyte(); end
 
   def gigabytes(); end
-
-  def infinite?(); end
 
   def kilobyte(); end
 
@@ -10141,7 +9940,6 @@ class Numeric
   def terabyte(); end
 
   def terabytes(); end
-
   EXABYTE = ::T.let(nil, ::T.untyped)
   GIGABYTE = ::T.let(nil, ::T.untyped)
   KILOBYTE = ::T.let(nil, ::T.untyped)
@@ -10151,9 +9949,9 @@ class Numeric
 end
 
 class Object
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-  include ::PP::ObjectMixin
   include ::JSON::Ext::Generator::GeneratorMethods::Object
+  include ::PP::ObjectMixin
+  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def html_safe?(); end
 
   def to_yaml(options=T.unsafe(nil)); end
@@ -10181,7 +9979,6 @@ class Object
 end
 
 class ObjectSpace::WeakMap
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def [](_); end
 
   def []=(_, _1); end
@@ -10235,14 +10032,12 @@ module Observable
 end
 
 class OpenSSL::ASN1::ASN1Data
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def indefinite_length(); end
 
   def indefinite_length=(indefinite_length); end
 end
 
 class OpenSSL::BN
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def +@(); end
 
   def -@(); end
@@ -10252,19 +10047,7 @@ class OpenSSL::BN
   def negative?(); end
 end
 
-class OpenSSL::Cipher
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class OpenSSL::Config
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class OpenSSL::Engine
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class OpenSSL::HMAC
+module OpenSSL::Buffering
   include ::ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
@@ -10281,60 +10064,14 @@ module OpenSSL::KDF
   def self.pbkdf2_hmac(*_); end
 end
 
-class OpenSSL::Netscape::SPKI
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class OpenSSL::OCSP::BasicResponse
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class OpenSSL::OCSP::CertificateId
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
 class OpenSSL::OCSP::Request
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def signed?(); end
-end
-
-class OpenSSL::OCSP::Response
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class OpenSSL::OCSP::SingleResponse
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class OpenSSL::PKCS12
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class OpenSSL::PKCS7
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class OpenSSL::PKCS7::RecipientInfo
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 OpenSSL::PKCS7::Signer = OpenSSL::PKCS7::SignerInfo
 
-class OpenSSL::PKCS7::SignerInfo
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class OpenSSL::PKey::EC::Group
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
 class OpenSSL::PKey::EC::Point
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def to_octet_string(_); end
-end
-
-class OpenSSL::PKey::PKey
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 class OpenSSL::PKey::RSA
@@ -10357,7 +10094,6 @@ module OpenSSL::SSL
 end
 
 class OpenSSL::SSL::SSLContext
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def add_certificate(*_); end
 
   def alpn_protocols(); end
@@ -10376,19 +10112,10 @@ class OpenSSL::SSL::SSLContext
   DEFAULT_TMP_DH_CALLBACK = ::T.let(nil, ::T.untyped)
 end
 
-class OpenSSL::SSL::SSLServer
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
 class OpenSSL::SSL::SSLSocket
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def alpn_protocol(); end
 
   def tmp_key(); end
-end
-
-class OpenSSL::SSL::Session
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 module OpenSSL::X509
@@ -10396,79 +10123,33 @@ module OpenSSL::X509
 end
 
 class OpenSSL::X509::Attribute
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def ==(other); end
 end
 
 class OpenSSL::X509::CRL
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def ==(other); end
-end
-
-class OpenSSL::X509::Certificate
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 class OpenSSL::X509::Extension
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def ==(other); end
 end
 
-class OpenSSL::X509::ExtensionFactory
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
 class OpenSSL::X509::Name
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def to_utf8(); end
 end
 
 class OpenSSL::X509::Request
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def ==(other); end
 end
 
 class OpenSSL::X509::Revoked
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def ==(other); end
 
   def to_der(); end
 end
 
-class OpenSSL::X509::Store
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class OpenSSL::X509::StoreContext
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
 module OpenSSL
   def self.fips_mode(); end
-end
-
-class OpenStruct
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class OptionParser
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class OptionParser::CompletingHash
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class OptionParser::List
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class OptionParser::OptionMap
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class OptionParser::Switch
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 module Parallel
@@ -10497,6 +10178,7 @@ class Parser::Lexer
   KEYWORDS = ::T.let(nil, ::T.untyped)
   KEYWORDS_BEGIN = ::T.let(nil, ::T.untyped)
   LEX_STATES = ::T.let(nil, ::T.untyped)
+  NUMPARAM_MAX = ::T.let(nil, ::T.untyped)
   PUNCTUATION = ::T.let(nil, ::T.untyped)
   PUNCTUATION_BEGIN = ::T.let(nil, ::T.untyped)
   REGEXP_META_CHARACTERS = ::T.let(nil, ::T.untyped)
@@ -10534,7 +10216,6 @@ class Parser::Source::TreeRewriter
 end
 
 class Pathname
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def empty?(); end
 
   def fnmatch?(*_); end
@@ -10542,11 +10223,9 @@ class Pathname
   def glob(*_); end
 
   def make_symlink(_); end
-
 end
 
 class Proc
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def <<(_); end
 
   def ===(*_); end
@@ -10564,13 +10243,8 @@ module Process
   CLOCK_UPTIME_RAW_APPROX = ::T.let(nil, ::T.untyped)
 end
 
-class Process::Status
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
 module Process::Sys
   def self.getegid(); end
-
 end
 
 class Process::Tms
@@ -10601,7 +10275,6 @@ module Process
   def self.last_status(); end
 
   def self.setpgrp(); end
-
 end
 
 class ProgressBar::Components::Bar
@@ -10655,6 +10328,10 @@ end
 
 class ProgressBar::Time
   TIME_MOCKING_LIBRARY_METHODS = ::T.let(nil, ::T.untyped)
+end
+
+class Promise
+  VERSION = ::T.let(nil, ::T.untyped)
 end
 
 module Psych
@@ -11477,6 +11154,17 @@ class RSpec::Core::ConfigurationOptions
   UNPROCESSABLE_OPTIONS = ::T.let(nil, ::T.untyped)
 end
 
+class RSpec::Core::DidYouMean
+  def call(); end
+
+  def initialize(relative_file_name); end
+
+  def relative_file_name(); end
+end
+
+class RSpec::Core::DidYouMean
+end
+
 RSpec::Core::Example::AllExceptionsExcludingDangerousOnesOnRubiesThatAllowIt = RSpec::Support::AllExceptionsExceptOnesWeMustNotRescue
 
 class RSpec::Core::ExampleGroup
@@ -11582,6 +11270,8 @@ class RSpec::Core::Formatters::DocumentationFormatter
   def example_passed(passed); end
 
   def example_pending(pending); end
+
+  def example_started(_notification); end
 end
 
 class RSpec::Core::Formatters::DocumentationFormatter
@@ -11589,6 +11279,17 @@ end
 
 class RSpec::Core::Formatters::ExceptionPresenter
   PENDING_DETAIL_FORMATTER = ::T.let(nil, ::T.untyped)
+end
+
+class RSpec::Core::Formatters::FailureListFormatter
+  def dump_profile(_profile); end
+
+  def example_failed(failure); end
+
+  def message(_message); end
+end
+
+class RSpec::Core::Formatters::FailureListFormatter
 end
 
 class RSpec::Core::Formatters::FallbackMessageFormatter
@@ -11849,7 +11550,6 @@ class Racc::CparseParams
 end
 
 class Racc::Parser
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   Racc_Main_Parsing_Routine = ::T.let(nil, ::T.untyped)
   Racc_Runtime_Core_Id_C = ::T.let(nil, ::T.untyped)
   Racc_Runtime_Core_Revision = ::T.let(nil, ::T.untyped)
@@ -13919,25 +13619,8 @@ module Rails::VERSION
   TINY = ::T.let(nil, ::T.untyped)
 end
 
-class Rainbow::Color::Named
-  NAMES = ::T.let(nil, ::T.untyped)
-end
-
-class Rainbow::Presenter
-  TERM_EFFECTS = ::T.let(nil, ::T.untyped)
-end
-
-module Rainbow::X11ColorNames
-  NAMES = ::T.let(nil, ::T.untyped)
-end
-
-class Random
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
 module Random::Formatter
   def alphanumeric(n=T.unsafe(nil)); end
-
   ALPHANUMERIC = ::T.let(nil, ::T.untyped)
 end
 
@@ -13949,7 +13632,6 @@ class Random
 end
 
 class Range
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def %(_); end
 
   def entries(); end
@@ -14057,7 +13739,6 @@ module Readline
 end
 
 class Regexp
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def match?(*_); end
 
   def multiline?(); end
@@ -15068,6 +14749,7 @@ end
 class RuboCop::Cop::Layout::MultilineBlockLayout
   ARG_MSG = ::T.let(nil, ::T.untyped)
   MSG = ::T.let(nil, ::T.untyped)
+  PIPE_SIZE = ::T.let(nil, ::T.untyped)
 end
 
 class RuboCop::Cop::Layout::MultilineHashBraceLayout
@@ -15304,14 +14986,8 @@ class RuboCop::Cop::Lint::FloatOutOfRange
 end
 
 class RuboCop::Cop::Lint::FormatParameterMismatch
-  DIGIT_DOLLAR_FLAG = ::T.let(nil, ::T.untyped)
-  FIELD_REGEX = ::T.let(nil, ::T.untyped)
   KERNEL = ::T.let(nil, ::T.untyped)
   MSG = ::T.let(nil, ::T.untyped)
-  NAMED_FIELD_REGEX = ::T.let(nil, ::T.untyped)
-  NAMED_INTERPOLATION = ::T.let(nil, ::T.untyped)
-  PERCENT = ::T.let(nil, ::T.untyped)
-  PERCENT_PERCENT = ::T.let(nil, ::T.untyped)
   SHOVEL = ::T.let(nil, ::T.untyped)
   STRING_TYPES = ::T.let(nil, ::T.untyped)
 end
@@ -15462,6 +15138,11 @@ class RuboCop::Cop::Lint::ScriptPermission
   SHEBANG = ::T.let(nil, ::T.untyped)
 end
 
+class RuboCop::Cop::Lint::SendWithMixinArgument
+  MIXIN_METHODS = ::T.let(nil, ::T.untyped)
+  MSG = ::T.let(nil, ::T.untyped)
+end
+
 class RuboCop::Cop::Lint::ShadowedArgument
   MSG = ::T.let(nil, ::T.untyped)
 end
@@ -15604,6 +15285,10 @@ end
 class RuboCop::Cop::Metrics::Utils::AbcSizeCalculator
   BRANCH_NODES = ::T.let(nil, ::T.untyped)
   CONDITION_NODES = ::T.let(nil, ::T.untyped)
+end
+
+class RuboCop::Cop::Migration::DepartmentName
+  MSG = ::T.let(nil, ::T.untyped)
 end
 
 module RuboCop::Cop::MultilineExpressionIndentation
@@ -16371,9 +16056,7 @@ class RuboCop::Cop::Style::FormatString
 end
 
 class RuboCop::Cop::Style::FormatStringToken
-  FIELD_CHARACTERS = ::T.let(nil, ::T.untyped)
   FORMAT_STRING_METHODS = ::T.let(nil, ::T.untyped)
-  STYLE_PATTERNS = ::T.let(nil, ::T.untyped)
 end
 
 class RuboCop::Cop::Style::FrozenStringLiteralComment
@@ -16412,7 +16095,8 @@ end
 
 class RuboCop::Cop::Style::IfUnlessModifier
   ASSIGNMENT_TYPES = ::T.let(nil, ::T.untyped)
-  MSG = ::T.let(nil, ::T.untyped)
+  MSG_USE_MODIFIER = ::T.let(nil, ::T.untyped)
+  MSG_USE_NORMAL = ::T.let(nil, ::T.untyped)
 end
 
 class RuboCop::Cop::Style::IfUnlessModifierOfIfUnless
@@ -16921,6 +16605,19 @@ module RuboCop::Cop::Util
   LITERAL_REGEX = ::T.let(nil, ::T.untyped)
 end
 
+class RuboCop::Cop::Utils::FormatString
+  DIGIT_DOLLAR = ::T.let(nil, ::T.untyped)
+  FLAG = ::T.let(nil, ::T.untyped)
+  NAME = ::T.let(nil, ::T.untyped)
+  NUMBER = ::T.let(nil, ::T.untyped)
+  NUMBER_ARG = ::T.let(nil, ::T.untyped)
+  PRECISION = ::T.let(nil, ::T.untyped)
+  SEQUENCE = ::T.let(nil, ::T.untyped)
+  TEMPLATE_NAME = ::T.let(nil, ::T.untyped)
+  TYPE = ::T.let(nil, ::T.untyped)
+  WIDTH = ::T.let(nil, ::T.untyped)
+end
+
 class RuboCop::Cop::VariableForce
   ARGUMENT_DECLARATION_TYPES = ::T.let(nil, ::T.untyped)
   LOGICAL_OPERATOR_ASSIGNMENT_TYPES = ::T.let(nil, ::T.untyped)
@@ -16984,6 +16681,13 @@ end
 class RuboCop::Formatter::HTMLFormatter::ERBContext
   LOGO_IMAGE_PATH = ::T.let(nil, ::T.untyped)
   SEVERITY_COLORS = ::T.let(nil, ::T.untyped)
+end
+
+class RuboCop::Formatter::PacmanFormatter
+  FALLBACK_TERMINAL_WIDTH = ::T.let(nil, ::T.untyped)
+  GHOST = ::T.let(nil, ::T.untyped)
+  PACDOT = ::T.let(nil, ::T.untyped)
+  PACMAN = ::T.let(nil, ::T.untyped)
 end
 
 class RuboCop::Formatter::ProgressFormatter
@@ -18022,10 +17726,6 @@ module RubyToken
   def self.def_token(token_n, super_token=T.unsafe(nil), reading=T.unsafe(nil), *opts); end
 end
 
-class RubyVM
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
 module RubyVM::AbstractSyntaxTree
 end
 
@@ -18057,7 +17757,6 @@ module RubyVM::AbstractSyntaxTree
 end
 
 class RubyVM::InstructionSequence
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def absolute_path(); end
 
   def base_label(); end
@@ -18131,7 +17830,6 @@ module SecureRandom
 end
 
 class Set
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def ==(other); end
 
   def ===(o); end
@@ -18304,10 +18002,6 @@ class Socket
   TCP_NOPUSH = ::T.let(nil, ::T.untyped)
 end
 
-class Socket::AncillaryData
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
 module Socket::Constants
   AF_CCITT = ::T.let(nil, ::T.untyped)
   AF_CHAOS = ::T.let(nil, ::T.untyped)
@@ -18397,18 +18091,6 @@ module Socket::Constants
   SO_WANTOOBFLAG = ::T.let(nil, ::T.untyped)
   TCP_NOOPT = ::T.let(nil, ::T.untyped)
   TCP_NOPUSH = ::T.let(nil, ::T.untyped)
-end
-
-class Socket::Option
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class Socket::UDPSource
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class Sorbet
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 class Sorbet::Private::ConstantLookupCache
@@ -18827,9 +18509,7 @@ class StopIteration
 end
 
 class String
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   include ::JSON::Ext::Generator::GeneratorMethods::String
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def +@(); end
 
   def -@(); end
@@ -18837,14 +18517,6 @@ class String
   def []=(*_); end
 
   def casecmp?(_); end
-
-  def delete_prefix(_); end
-
-  def delete_prefix!(_); end
-
-  def delete_suffix(_); end
-
-  def delete_suffix!(_); end
 
   def each_grapheme_cluster(); end
 
@@ -18873,7 +18545,6 @@ class String
   def unicode_normalized?(*_); end
 
   def unpack1(_); end
-
   BLANK_RE = ::T.let(nil, ::T.untyped)
   ENCODED_BLANKS = ::T.let(nil, ::T.untyped)
 end
@@ -18882,11 +18553,9 @@ class StringIO
   def length(); end
 
   def truncate(_); end
-
 end
 
 class StringScanner
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def <<(_); end
 
   def [](_); end
@@ -18981,7 +18650,6 @@ class StringScanner
 end
 
 class Struct
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def [](_); end
 
   def []=(_, _1); end
@@ -19079,10 +18747,6 @@ Struct::Passwd = Etc::Passwd
 
 Struct::Tms = Process::Tms
 
-class Symbol
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
 class SystemCallError
   def errno(); end
 end
@@ -19124,34 +18788,6 @@ class Tempfile::Remover
 end
 
 class Tempfile::Remover
-end
-
-class Thread
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class Thread::Backtrace
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class Thread::Backtrace::Location
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class Thread::ConditionVariable
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class Thread::Mutex
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class Thread::Queue
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
-class ThreadGroup
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 module ThreadSafe
@@ -19412,13 +19048,11 @@ module ThreadSafe::Util
 end
 
 class Time
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   COMMON_YEAR_DAYS_IN_MONTH = ::T.let(nil, ::T.untyped)
   DATE_FORMATS = ::T.let(nil, ::T.untyped)
 end
 
 class TracePoint
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def __enable(_, _1); end
 
   def eval_script(); end
@@ -19431,9 +19065,7 @@ class TracePoint
 end
 
 class TrueClass
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   include ::JSON::Ext::Generator::GeneratorMethods::TrueClass
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 module URI
@@ -19475,133 +19107,6 @@ class URI::File
 end
 
 class URI::File
-end
-
-class URI::Generic
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-  def +(oth); end
-
-  def -(oth); end
-
-  def ==(oth); end
-
-  def absolute(); end
-
-  def absolute?(); end
-
-  def coerce(oth); end
-
-  def component(); end
-
-  def component_ary(); end
-
-  def default_port(); end
-
-  def eql?(oth); end
-
-  def find_proxy(env=T.unsafe(nil)); end
-
-  def fragment(); end
-
-  def fragment=(v); end
-
-  def hierarchical?(); end
-
-  def host(); end
-
-  def host=(v); end
-
-  def hostname(); end
-
-  def hostname=(v); end
-
-  def initialize(scheme, userinfo, host, port, registry, path, opaque, query, fragment, parser=T.unsafe(nil), arg_check=T.unsafe(nil)); end
-
-  def merge(oth); end
-
-  def merge!(oth); end
-
-  def normalize(); end
-
-  def normalize!(); end
-
-  def opaque(); end
-
-  def opaque=(v); end
-
-  def parser(); end
-
-  def password(); end
-
-  def password=(password); end
-
-  def path(); end
-
-  def path=(v); end
-
-  def port(); end
-
-  def port=(v); end
-
-  def query(); end
-
-  def query=(v); end
-
-  def registry(); end
-
-  def registry=(v); end
-
-  def relative?(); end
-
-  def route_from(oth); end
-
-  def route_to(oth); end
-
-  def scheme(); end
-
-  def scheme=(v); end
-
-  def select(*components); end
-
-  def set_host(v); end
-
-  def set_opaque(v); end
-
-  def set_password(v); end
-
-  def set_path(v); end
-
-  def set_port(v); end
-
-  def set_registry(v); end
-
-  def set_scheme(v); end
-
-  def set_user(v); end
-
-  def set_userinfo(user, password=T.unsafe(nil)); end
-
-  def user(); end
-
-  def user=(user); end
-
-  def userinfo(); end
-
-  def userinfo=(userinfo); end
-end
-
-class URI::Generic
-  def self.build(args); end
-
-  def self.build2(args); end
-
-  def self.component(); end
-
-  def self.default_port(); end
-
-  def self.use_proxy?(hostname, addr, port, no_proxy); end
-
-  def self.use_registry(); end
 end
 
 class URI::HTTP
@@ -19667,7 +19172,6 @@ URI::Parser = URI::RFC2396_Parser
 URI::REGEXP = URI::RFC2396_REGEXP
 
 class URI::RFC2396_Parser
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def escape(str, unsafe=T.unsafe(nil)); end
 
   def extract(str, schemes=T.unsafe(nil)); end
@@ -19690,7 +19194,6 @@ class URI::RFC2396_Parser
 end
 
 class URI::RFC3986_Parser
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def join(*uris); end
 
   def parse(uri); end
@@ -19719,7 +19222,6 @@ module URI
 end
 
 class UnboundMethod
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
   def clone(); end
 
   def original_name(); end
@@ -19747,12 +19249,6 @@ end
 module UnicodeNormalize
 end
 
-Visitor = Psych::Visitors::Visitor
-
-class WEBrick::HTTPServlet::AbstractServlet
-  include ::ActiveSupport::ToJsonWithActiveSupportEncoder
-end
-
 module Warning
   def warn(_); end
 end
@@ -19777,8 +19273,6 @@ class WeakRef
 end
 
 YAML = Psych
-
-YAMLTree = Psych::Visitors::YAMLTree
 
 module Zlib
   ASCII = ::T.let(nil, ::T.untyped)

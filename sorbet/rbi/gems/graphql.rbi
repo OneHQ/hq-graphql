@@ -7,7 +7,7 @@
 #
 #   https://github.com/sorbet/sorbet-typed/new/master?filename=lib/graphql/all/graphql.rbi
 #
-# graphql-1.9.11
+# graphql-1.9.12
 module GraphQL
   def self.parse(graphql_string, tracer: nil); end
   def self.parse_file(filename); end
@@ -1300,9 +1300,7 @@ class GraphQL::Analysis::AST::QueryComplexity < GraphQL::Analysis::AST::Analyzer
   def initialize(query); end
   def max_possible_complexity; end
   def on_enter_field(node, parent, visitor); end
-  def on_enter_fragment_spread(node, _, visitor); end
   def on_leave_field(node, parent, visitor); end
-  def on_leave_fragment_spread(node, _, visitor); end
   def result; end
   def selection_key(response_path, query); end
 end
@@ -1322,9 +1320,7 @@ end
 class GraphQL::Analysis::AST::QueryDepth < GraphQL::Analysis::AST::Analyzer
   def initialize(query); end
   def on_enter_field(node, parent, visitor); end
-  def on_enter_fragment_spread(node, _, visitor); end
   def on_leave_field(node, parent, visitor); end
-  def on_leave_fragment_spread(node, _, visitor); end
   def result; end
 end
 class GraphQL::Analysis::AST::MaxQueryDepth < GraphQL::Analysis::AST::QueryDepth
@@ -1502,11 +1498,11 @@ class GraphQL::Execution::Interpreter::HashResponse
 end
 class GraphQL::Execution::Interpreter::Runtime
   def add_dead_path(path); end
-  def after_lazy(obj, owner:, field:, path:, eager: nil); end
+  def after_lazy(lazy_obj, owner:, field:, path:, owner_object:, arguments:, eager: nil); end
   def arg_to_value(graphql_object, arg_type, ast_value); end
   def arguments(graphql_object, arg_owner, ast_node_or_hash); end
   def context; end
-  def continue_field(path, value, field, type, ast_node, next_selections, is_non_null); end
+  def continue_field(path, value, field, type, ast_node, next_selections, is_non_null, owner_object, arguments); end
   def continue_value(path, value, field, is_non_null, ast_node); end
   def dead_path?(path); end
   def directives_include?(node, graphql_object, parent_type); end
@@ -1626,6 +1622,12 @@ class GraphQL::Execution::Multiplex
 end
 module GraphQL::Execution::Typecast
   def self.subtype?(parent_type, child_type); end
+end
+class GraphQL::Execution::Errors
+  def initialize(schema); end
+  def self.use(schema); end
+  def trace(event, data); end
+  def with_error_handling(trace_data); end
 end
 module GraphQL::Dig
   def dig(own_key, *rest_keys); end
@@ -3482,6 +3484,7 @@ module GraphQL::StaticValidation::FieldsWillMerge
   def on_field(node, _parent); end
   def on_operation_definition(node, _parent); end
   def possible_arguments(field1, field2); end
+  def serialize_arg(arg_value); end
 end
 class GraphQL::StaticValidation::FieldsWillMerge::Field < Struct
   def definition; end

@@ -8,6 +8,7 @@ module ActiveModel::Conversion; end
 module ActiveModel::Naming; end
 module ActiveModel::SecurePassword; end
 module ActiveRecord::Aggregations; end
+module ActiveRecord::Associations::Preloader; end
 module ActiveRecord::AttributeAssignment; end
 module ActiveRecord::AttributeDecorators; end
 module ActiveRecord::AttributeMethods::BeforeTypeCast; end
@@ -20,12 +21,8 @@ module ActiveRecord::Attributes; end
 module ActiveRecord::AutosaveAssociation; end
 module ActiveRecord::Callbacks; end
 module ActiveRecord::CollectionCacheKey; end
-module ActiveRecord::ConnectionAdapters::TableDefinition; end
-module ActiveRecord::ConnectionAdapters::TableDefinition; end
-module ActiveRecord::ConnectionAdapters::TableDefinition; end
-module ActiveRecord::ConnectionAdapters::TableDefinition; end
-module ActiveRecord::ConnectionAdapters::TableDefinition; end
-module ActiveRecord::ConnectionAdapters::TableDefinition; end
+module ActiveRecord::ConnectionAdapters::ColumnDefinition; end
+module ActiveRecord::ConnectionAdapters::ColumnDefinition; end
 module ActiveRecord::ConnectionHandling; end
 module ActiveRecord::Core; end
 module ActiveRecord::CounterCache; end
@@ -36,7 +33,6 @@ module ActiveRecord::Enum; end
 module ActiveRecord::Explain; end
 module ActiveRecord::Integration; end
 module ActiveRecord::Locking::Optimistic; end
-module ActiveRecord::Locking::Pessimistic; end
 module ActiveRecord::ModelSchema; end
 module ActiveRecord::NoTouching; end
 module ActiveRecord::QueryCache::ClassMethods; end
@@ -52,6 +48,15 @@ module ActiveRecord::Timestamp; end
 module ActiveRecord::TouchLater; end
 module ActiveRecord::Transactions; end
 module ActiveRecord::Translation; end
+module ActiveStorage::Blob::Analyzable; end
+module ActiveStorage::Blob::Analyzable; end
+module ActiveStorage::Blob::Analyzable; end
+module ActiveStorage::Blob::Analyzable; end
+module ActiveStorage::Blob::Identifiable; end
+module ActiveStorage::Blob::Identifiable; end
+module ActiveStorage::Blob::Identifiable; end
+module ActiveStorage::Blob::Identifiable; end
+module ActiveStorage::Variant; end
 module T::Private::Methods::MethodHooks; end
 module T::Private::Methods::MethodHooks; end
 module T::Private::Methods::MethodHooks; end

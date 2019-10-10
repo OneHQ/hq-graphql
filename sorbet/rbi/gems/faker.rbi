@@ -7,7 +7,7 @@
 #
 #   https://github.com/sorbet/sorbet-typed/new/master?filename=lib/faker/all/faker.rbi
 #
-# faker-2.2.0
+# faker-2.5.0
 module Faker
 end
 module Faker::Base58
@@ -30,6 +30,13 @@ end
 class Faker::UniqueGenerator::RetryLimitExceeded < StandardError
 end
 class Faker::Blockchain
+end
+class Faker::Blockchain::Aeternity < Faker::Base
+  def self.address; end
+  def self.contract; end
+  def self.oracle; end
+  def self.rand_strings(length = nil); end
+  def self.transaction; end
 end
 class Faker::Blockchain::Bitcoin < Faker::Base
   def self.address; end
@@ -685,6 +692,7 @@ class Faker::Omniauth < Faker::Base
   def initialize(name: nil, email: nil); end
   def last_name; end
   def name; end
+  def self.apple(name: nil, email: nil, uid: nil); end
   def self.city_state; end
   def self.facebook(legacy_name = nil, legacy_email = nil, legacy_username = nil, legacy_uid = nil, name: nil, email: nil, username: nil, uid: nil); end
   def self.gender; end
@@ -724,7 +732,10 @@ class Faker::Relationship < Faker::Base
   def self.spouse; end
 end
 class Faker::Restaurant < Faker::Base
+  def self.description; end
   def self.name; end
+  def self.review; end
+  def self.type; end
 end
 class Faker::Science < Faker::Base
   def self.element; end
@@ -1190,6 +1201,7 @@ class Faker::TvShows::DrWho < Faker::Base
   def self.quote; end
   def self.specie; end
   def self.the_doctor; end
+  def self.villain; end
   def self.villian; end
 end
 class Faker::TvShows::DumbAndDumber < Faker::Base
@@ -1344,6 +1356,7 @@ class Faker::Base
   def self.shuffle(list); end
   def self.translate(*args); end
   def self.unique(max_retries = nil); end
+  def self.warn_for_deprecated_arguments; end
   def self.warn_with_uplevel(message, uplevel: nil); end
   def self.with_locale(tmp_locale = nil); end
 end

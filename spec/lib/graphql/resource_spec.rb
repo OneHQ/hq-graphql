@@ -29,6 +29,7 @@ describe ::HQ::GraphQL::Resource do
     Class.new(GraphQL::Schema) do
       query(RootQuery)
       mutation(RootMutation)
+      use(::GraphQL::Batch)
     end
   end
 

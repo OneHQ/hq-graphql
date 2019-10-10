@@ -3,6 +3,7 @@
 
 require "rails"
 require "graphql"
+require "graphql/batch"
 require "sorbet-runtime"
 require "hq/graphql/config"
 
@@ -49,8 +50,10 @@ end
 require "hq/graphql/active_record_extensions"
 require "hq/graphql/scalars"
 
+require "hq/graphql/field"
 require "hq/graphql/inputs"
 require "hq/graphql/input_object"
+require "hq/graphql/loaders"
 require "hq/graphql/mutation"
 require "hq/graphql/object"
 require "hq/graphql/resource"
