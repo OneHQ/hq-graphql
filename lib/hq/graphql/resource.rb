@@ -12,6 +12,7 @@ module HQ
         super
         ::HQ::GraphQL.types << base
         base.include Scalars
+        base.include ::GraphQL::Types
       end
 
       module ClassMethods
@@ -230,9 +231,8 @@ module HQ
             def_root field_name, is_array: false, null: true do
               klass = scoped_self.model_klass
               primary_key = klass.primary_key
-              pk_column = klass.columns.detect { |c| c.name == primary_key.to_s }
 
-              argument primary_key, ::HQ::GraphQL::Types.type_from_column(pk_column), required: true
+              argument primary_key, ::GraphQL::Types::ID, required: true
 
               define_method(:resolve) do |**attrs|
                 scoped_self.find_record(attrs, context)
