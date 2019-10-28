@@ -20,9 +20,7 @@ module HQ
               lazy_load do
                 klass = model_name.constantize
                 primary_key = klass.primary_key
-                pk_column = klass.columns.detect { |c| c.name == primary_key.to_s }
-
-                argument primary_key, ::HQ::GraphQL::Types.type_from_column(pk_column), required: true
+                argument primary_key, ::GraphQL::Types::ID, required: true
               end
             end
 
