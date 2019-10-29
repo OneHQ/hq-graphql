@@ -48,6 +48,7 @@ module ActiveRecord::Timestamp; end
 module ActiveRecord::TouchLater; end
 module ActiveRecord::Transactions; end
 module ActiveRecord::Translation; end
+module ActiveRecord::Validations::PresenceValidator; end
 module ActiveStorage::Blob::Analyzable; end
 module ActiveStorage::Blob::Analyzable; end
 module ActiveStorage::Blob::Analyzable; end

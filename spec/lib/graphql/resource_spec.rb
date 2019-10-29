@@ -22,7 +22,11 @@ describe ::HQ::GraphQL::Resource do
   end
 
   let(:root_mutation) do
-    Class.new(::HQ::GraphQL::RootMutation)
+    Class.new(::HQ::GraphQL::RootMutation) do
+      # Add a mutation, otherwise we receive:
+      #   RootMutation is invalid: RootMutation must define at least 1 field. 0 defined.
+      field :do_nothing, String, null: true
+    end
   end
 
   let(:schema) do
@@ -49,9 +53,23 @@ describe ::HQ::GraphQL::Resource do
     end
 
     it "creates query fields" do
-      ::HQ::GraphQL::Types[Advisor].graphql_definition
+      query_klass = ::HQ::GraphQL::Types[Advisor]
+      query_klass.graphql_definition
       expected = ["id", "organizationId", "name", "createdAt", "updatedAt"]
-      expect(::HQ::GraphQL::Types[Advisor].fields.keys).to contain_exactly(*expected)
+      aggregate_failures do
+        expect(query_klass.fields.keys).to contain_exactly(*expected)
+        expect(query_klass.fields.values.map(&:type)).to be_all { |f| f.kind_of? ::GraphQL::Schema::NonNull }
+      end
+    end
+
+    it "creates nil query fields" do
+      query_klass = ::HQ::GraphQL::Types[Advisor, true]
+      query_klass.graphql_definition
+      expected = ["id", "organizationId", "name", "createdAt", "updatedAt"]
+      aggregate_failures do
+        expect(query_klass.fields.keys).to contain_exactly(*expected)
+        expect(query_klass.fields.values.map(&:type)).to be_none { |f| f.kind_of? ::GraphQL::Schema::NonNull }
+      end
     end
 
     it "creates query graphql name" do

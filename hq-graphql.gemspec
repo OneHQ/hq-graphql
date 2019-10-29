@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
   s.add_dependency "graphql-batch",             "~> 0.4"
   s.add_dependency "pg",                        "~> 1.1"
   s.add_dependency "sorbet-runtime"
+  s.add_dependency "sprockets",                 "< 4.0.0"
 
   s.add_development_dependency "byebug",                                  "~> 11.0"
   s.add_development_dependency "combustion",                              "~> 1.1"

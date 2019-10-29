@@ -7,7 +7,7 @@
 #
 #   https://github.com/sorbet/sorbet-typed/new/master?filename=lib/graphql/all/graphql.rbi
 #
-# graphql-1.9.12
+# graphql-1.9.14
 module GraphQL
   def self.parse(graphql_string, tracer: nil); end
   def self.parse_file(filename); end
@@ -585,6 +585,8 @@ module GraphQL::Language::Lexer
   def self.emit_string(ts, te, meta, block:); end
   def self.graphql_lexer_en_main; end
   def self.graphql_lexer_en_main=(arg0); end
+  def self.graphql_lexer_en_str; end
+  def self.graphql_lexer_en_str=(arg0); end
   def self.graphql_lexer_error; end
   def self.graphql_lexer_error=(arg0); end
   def self.graphql_lexer_first_final; end
@@ -2018,6 +2020,7 @@ module GraphQL::Schema::Validation::Rules
   def self.assert_property(property_name, *allowed_classes); end
   def self.assert_property_list_of(property_name, list_member_class); end
   def self.assert_property_mapping(property_name, from_class, to_class); end
+  def self.count_at_least(item_name, minimum_count, get_items_proc); end
 end
 class GraphQL::Schema::Warden
   def arguments(argument_owner); end
@@ -2580,6 +2583,10 @@ class GraphQL::Types::Int < GraphQL::Schema::Scalar
   def self.coerce_input(value, _ctx); end
   def self.coerce_result(value, ctx); end
 end
+class GraphQL::Types::ISO8601Date < GraphQL::Schema::Scalar
+  def self.coerce_input(str_value, _ctx); end
+  def self.coerce_result(value, _ctx); end
+end
 class GraphQL::Types::ISO8601DateTime < GraphQL::Schema::Scalar
   def self.coerce_input(str_value, _ctx); end
   def self.coerce_result(value, _ctx); end
@@ -2912,6 +2919,7 @@ class GraphQL::Query
   def ast_analyzers(*args, &block); end
   def context; end
   def document; end
+  def executed?; end
   def find_operation(operations, operation_name); end
   def fragments; end
   def get_field(*args, &block); end
@@ -2975,6 +2983,7 @@ class GraphQL::Query::Arguments
   def self.argument_definitions=(arg0); end
   def self.construct_arguments_class(argument_owner); end
   def to_h; end
+  def to_hash; end
   def to_kwargs; end
   def unwrap_value(value); end
   def values(*args, &block); end

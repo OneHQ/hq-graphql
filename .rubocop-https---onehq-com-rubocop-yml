@@ -159,7 +159,7 @@ Rails/LexicallyScopedActionFilter:
 
 Rails/Output:
   Enabled: false
-  
+
 Rails/SkipsModelValidations:
   Enabled: true
   Whitelist: [update_all]
@@ -218,8 +218,4 @@ Style/StringLiterals:
   EnforcedStyle: double_quotes
 
 Style/TrivialAccessors:
-  Enabled: true
-
-# Use quotes for string literals when they are enough.
-Style/UnneededPercentQ:
   Enabled: true

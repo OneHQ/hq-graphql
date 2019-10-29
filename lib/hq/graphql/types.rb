@@ -8,11 +8,12 @@ module HQ
         MISSING_TYPE_MSG = "The GraphQL type for `%{klass}` is missing."
       end
 
-      def self.[](key)
-        @types ||= Hash.new do |hash, klass|
-          hash[klass] = klass_for(klass)
+      def self.[](key, *args)
+        @types ||= Hash.new do |hash, options|
+          klass, nil_klass = Array(options)
+          hash[klass] = nil_klass ? nil_query_klass(klass) : klass_for(klass)
         end
-        @types[key]
+        @types[[key, *args]]
       end
 
       def self.type_from_column(column)
@@ -43,10 +44,18 @@ module HQ
       class << self
         private
 
+        def nil_query_klass(klass_or_string)
+          find_klass(klass_or_string, :nil_query_klass)
+        end
+
         def klass_for(klass_or_string)
+          find_klass(klass_or_string, :query_klass)
+        end
+
+        def find_klass(klass_or_string, method)
           klass = klass_or_string.is_a?(String) ? klass_or_string.constantize : klass_or_string
-          ::HQ::GraphQL.types.detect { |t| t.model_klass == klass }&.query_klass ||
-          ::HQ::GraphQL.types.detect { |t| t.model_klass == klass.base_class }&.query_klass ||
+          ::HQ::GraphQL.types.detect { |t| t.model_klass == klass }&.send(method) ||
+          ::HQ::GraphQL.types.detect { |t| t.model_klass == klass.base_class }&.send(method) ||
              raise(Error, Error::MISSING_TYPE_MSG % { klass: klass.name })
         end
       end
