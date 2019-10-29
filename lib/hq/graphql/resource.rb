@@ -54,6 +54,10 @@ module HQ
           @input_klass ||= build_input_object
         end
 
+        def nil_query_klass
+          @nil_query_klass ||= build_graphql_object(name: "#{graphql_name}Copy", auto_nil: false)
+        end
+
         def query_klass
           @query_klass ||= build_graphql_object
         end
@@ -103,7 +107,8 @@ module HQ
             copy_mutation = ::HQ::GraphQL::Resource::Mutation.build(
               model_name,
               graphql_name: "#{scoped_graphql_name}Copy",
-              require_primary_key: true
+              require_primary_key: true,
+              nil_klass: true
             ) do
               define_method(:resolve) do |**args|
                 resource = scoped_self.find_record(args, context)
@@ -251,8 +256,8 @@ module HQ
 
         private
 
-        def build_graphql_object(**options, &block)
-          scoped_graphql_name = graphql_name
+        def build_graphql_object(name: graphql_name, **options, &block)
+          scoped_graphql_name = name
           scoped_model_name = model_name
           Class.new(::HQ::GraphQL::Object) do
             graphql_name scoped_graphql_name
