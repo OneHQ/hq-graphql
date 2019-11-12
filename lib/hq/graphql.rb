@@ -23,6 +23,11 @@ module HQ
       config.instance_eval(&block)
     end
 
+    sig { params(object: T.untyped, context: ::GraphQL::Query::Context).returns(T::Boolean) }
+    def self.authorized?(object, context)
+      config.authorize.call(object, context)
+    end
+
     sig { params(scope: T.untyped, context: ::GraphQL::Query::Context).returns(T.untyped) }
     def self.default_scope(scope, context)
       config.default_scope.call(scope, context)

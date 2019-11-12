@@ -159,7 +159,7 @@ Rails/LexicallyScopedActionFilter:
 
 Rails/Output:
   Enabled: false
-
+  
 Rails/SkipsModelValidations:
   Enabled: true
   Whitelist: [update_all]
@@ -203,6 +203,10 @@ Style/RedundantBegin:
   Enabled: true
 
 Style/RedundantFreeze:
+  Enabled: true
+  
+# Use quotes for string literals when they are enough.
+Style/RedundantPercentQ:
   Enabled: true
 
 Style/RedundantReturn:

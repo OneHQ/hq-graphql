@@ -389,9 +389,66 @@ describe ::HQ::GraphQL::Resource do
       end
     end
 
+    context "with authorization" do
+      before(:each) do
+        allow(::HQ::GraphQL.config).to receive(:authorize) { ->(object, ctx) { false } }
+      end
+
+      it "fetches results" do
+        advisor = FactoryBot.create(:advisor)
+        results = schema.execute(find_advisor, variables: { id: advisor.id })
+        data = results["data"]
+        expect(data).to be_nil
+      end
+
+      it "creates" do
+        organization = FactoryBot.create(:organization)
+        name = "Bob"
+        results = schema.execute(create_mutation, variables: { attributes: { name: name, organizationId: organization.id } })
+        data = results["data"]
+
+        aggregate_failures do
+          expect(data).to be_nil
+          expect(Advisor.where(name: name).exists?).to eql false
+        end
+      end
+
+      it "updates" do
+        advisor = FactoryBot.create(:advisor)
+        name = "Bob"
+        organization_name = "Foo"
+
+        results = schema.execute(update_mutation, variables: {
+          id: advisor.id,
+          attributes: {
+            name: name,
+            organization: { id: advisor.organization_id, name: organization_name }
+          }
+        })
+
+        data = results["data"]
+        aggregate_failures do
+          expect(data).to be_nil
+          expect(Advisor.find(advisor.id).name).to eql advisor.name
+          expect(Organization.find(advisor.organization_id).name).to eql advisor.organization.name
+        end
+      end
+
+      it "destroys" do
+        advisor = FactoryBot.create(:advisor)
+        results = schema.execute(destroy_mutation, variables: { id: advisor.id })
+
+        data = results["data"]
+        aggregate_failures do
+          expect(data).to be_nil
+          expect(Advisor.where(id: advisor.id).exists?).to eql true
+        end
+      end
+    end
+
     context "with a global scope" do
       before(:each) do
-        allow(::HQ::GraphQL).to receive(:default_scope) { Advisor.none }
+        allow(::HQ::GraphQL.config).to receive(:default_scope) { ->(_scope, _context) { Advisor.none } }
       end
 
       it "returns nothing" do

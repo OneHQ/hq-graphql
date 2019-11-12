@@ -7,7 +7,7 @@
 #
 #   https://github.com/sorbet/sorbet-typed/new/master?filename=lib/combustion/all/combustion.rbi
 #
-# combustion-1.1.1
+# combustion-1.1.2
 module Combustion
   def path; end
   def path=(obj); end
