@@ -7,6 +7,9 @@ module HQ
     class Config < T::Struct
       DefaultScopeProc = T.type_alias { T.proc.params(arg0: T.untyped, arg1: ::GraphQL::Query::Context).returns(T.untyped) }
       prop :default_scope, DefaultScopeProc, default: ->(scope, _context) { scope }
+
+      AuthorizeProc = T.type_alias { T.proc.params(arg0: T.untyped, arg1: ::GraphQL::Query::Context).returns(T::Boolean) }
+      prop :authorize, AuthorizeProc, default: ->(_object, _context) { true }
     end
   end
 end

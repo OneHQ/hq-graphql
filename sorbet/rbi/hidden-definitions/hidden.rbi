@@ -6749,8 +6749,6 @@ module Enumerable
 
   def including(*elements); end
 
-  def index_by(); end
-
   def index_with(default=T.unsafe(nil)); end
 
   def many?(); end
@@ -7138,6 +7136,7 @@ class Faker::IDNumber
   BRAZILIAN_ID_FROM = ::T.let(nil, ::T.untyped)
   BRAZILIAN_ID_TO = ::T.let(nil, ::T.untyped)
   CHECKS = ::T.let(nil, ::T.untyped)
+  CHILEAN_MODULO = ::T.let(nil, ::T.untyped)
   INVALID_SSN = ::T.let(nil, ::T.untyped)
   ZA_CITIZENSHIP_DIGITS = ::T.let(nil, ::T.untyped)
   ZA_RACE_DIGIT = ::T.let(nil, ::T.untyped)
@@ -7455,6 +7454,10 @@ class GraphQL::Language::Nodes::AbstractNode
   NO_CHILDREN = ::T.let(nil, ::T.untyped)
 end
 
+class GraphQL::Language::Nodes::Field
+  NONE = ::T.let(nil, ::T.untyped)
+end
+
 class GraphQL::Language::Parser
   EMPTY_ARRAY = ::T.let(nil, ::T.untyped)
   Racc_arg = ::T.let(nil, ::T.untyped)
@@ -7574,6 +7577,8 @@ end
 
 module GraphQL::Schema::Member::HasFields
   CONFLICT_FIELD_NAMES = ::T.let(nil, ::T.untyped)
+  GRAPHQL_RUBY_KEYWORDS = ::T.let(nil, ::T.untyped)
+  RUBY_KEYWORDS = ::T.let(nil, ::T.untyped)
 end
 
 class GraphQL::Schema::Object
@@ -7758,8 +7763,6 @@ class Hash
 
   def default_proc=(default_proc); end
 
-  def dig(*_); end
-
   def fetch_values(*_); end
 
   def filter!(); end
@@ -7790,7 +7793,9 @@ class Hash
 end
 
 class Hash
-  def self.from_xml(xml, disallowed_types=T.unsafe(nil)); end
+  def self.from_trusted_xml(xml); end
+
+  def self.try_convert(_); end
 end
 
 HashWithIndifferentAccess = ActiveSupport::HashWithIndifferentAccess
@@ -8341,8 +8346,6 @@ class IO
   def self.default_console_size(); end
 
   def self.foreach(*_); end
-
-  def self.pipe(*_); end
 end
 
 class IPAddr
@@ -9372,6 +9375,8 @@ module Minitest::Assertions
 
   def assert_output(stdout=T.unsafe(nil), stderr=T.unsafe(nil)); end
 
+  def assert_path_exists(path, msg=T.unsafe(nil)); end
+
   def assert_predicate(o1, op, msg=T.unsafe(nil)); end
 
   def assert_respond_to(obj, meth, msg=T.unsafe(nil)); end
@@ -9391,6 +9396,8 @@ module Minitest::Assertions
   def diff(exp, act); end
 
   def exception_details(e, msg); end
+
+  def fail_after(y, m, d, msg); end
 
   def flunk(msg=T.unsafe(nil)); end
 
@@ -9414,6 +9421,8 @@ module Minitest::Assertions
 
   def refute_operator(o1, op, o2=T.unsafe(nil), msg=T.unsafe(nil)); end
 
+  def refute_path_exists(path, msg=T.unsafe(nil)); end
+
   def refute_predicate(o1, op, msg=T.unsafe(nil)); end
 
   def refute_respond_to(obj, meth, msg=T.unsafe(nil)); end
@@ -9422,7 +9431,11 @@ module Minitest::Assertions
 
   def skip(msg=T.unsafe(nil), bt=T.unsafe(nil)); end
 
+  def skip_until(y, m, d, msg); end
+
   def skipped?(); end
+
+  def things_to_diff(exp, act); end
   E = ::T.let(nil, ::T.untyped)
   UNDEFINED = ::T.let(nil, ::T.untyped)
 end
@@ -9439,6 +9452,8 @@ module Minitest::Guard
   def maglev?(platform=T.unsafe(nil)); end
 
   def mri?(platform=T.unsafe(nil)); end
+
+  def osx?(platform=T.unsafe(nil)); end
 
   def rubinius?(platform=T.unsafe(nil)); end
 
@@ -9729,13 +9744,7 @@ end
 class Net::HTTPGatewayTimeout
 end
 
-class Net::HTTPInformation
-end
-
-Net::HTTPInformationCode::EXCEPTION_TYPE = Net::HTTPError
-
-class Net::HTTPInformation
-end
+Net::HTTPInformationCode = Net::HTTPInformation
 
 class Net::HTTPLoopDetected
   HAS_BODY = ::T.let(nil, ::T.untyped)
@@ -13577,6 +13586,7 @@ end
 
 module Random::Formatter
   def alphanumeric(n=T.unsafe(nil)); end
+
   ALPHANUMERIC = ::T.let(nil, ::T.untyped)
 end
 
@@ -19167,6 +19177,7 @@ module URI
   def self.get_encoding(label); end
 
   def self.parser(); end
+
 end
 
 class UnboundMethod

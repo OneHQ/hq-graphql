@@ -9,6 +9,10 @@ module HQ
 
       field_class ::HQ::GraphQL::Field::AssociationLoader
 
+      def self.authorized?(object, context)
+        super && ::HQ::GraphQL.authorized?(object, context)
+      end
+
       def self.with_model(model_name, attributes: true, associations: true, auto_nil: true)
         self.model_name = model_name
         self.auto_load_attributes = attributes
