@@ -5,6 +5,7 @@ require "rails"
 require "graphql"
 require "graphql/batch"
 require "sorbet-runtime"
+require "hq/graphql/field"
 require "hq/graphql/config"
 
 module HQ
@@ -23,9 +24,14 @@ module HQ
       config.instance_eval(&block)
     end
 
-    sig { params(object: T.untyped, context: ::GraphQL::Query::Context).returns(T::Boolean) }
-    def self.authorized?(object, context)
-      config.authorize.call(object, context)
+    sig { params(action: T.untyped, object: T.untyped, context: ::GraphQL::Query::Context).returns(T::Boolean) }
+    def self.authorized?(action, object, context)
+      !config.authorize || T.must(config.authorize).call(action, object, context)
+    end
+
+    sig { params(action: T.untyped, field: ::HQ::GraphQL::Field, object: T.untyped, context: ::GraphQL::Query::Context).returns(T::Boolean) }
+    def self.authorize_field(action, field, object, context)
+      !config.authorize_field || T.must(config.authorize_field).call(action, field, object, context)
     end
 
     sig { params(scope: T.untyped, context: ::GraphQL::Query::Context).returns(T.untyped) }
@@ -55,7 +61,6 @@ end
 require "hq/graphql/active_record_extensions"
 require "hq/graphql/scalars"
 
-require "hq/graphql/field"
 require "hq/graphql/inputs"
 require "hq/graphql/input_object"
 require "hq/graphql/loaders"

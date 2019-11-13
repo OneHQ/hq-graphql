@@ -8,8 +8,8 @@ module HQ
         super
         base.class_eval do
           lazy_load do
-            ::HQ::GraphQL.root_queries.each do |field_name:, resolver:|
-              field field_name, resolver: resolver.call
+            ::HQ::GraphQL.root_queries.each do |field_name:, resolver:, model_name:|
+              field field_name, resolver: resolver.call, klass: model_name
             end
           end
         end

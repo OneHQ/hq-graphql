@@ -390,30 +390,41 @@ describe ::HQ::GraphQL::Resource do
     end
 
     context "with authorization" do
-      before(:each) do
-        allow(::HQ::GraphQL.config).to receive(:authorize) { ->(object, ctx) { false } }
-      end
-
-      it "fetches results" do
+      it "fails to fetch results" do
         advisor = FactoryBot.create(:advisor)
+        allow(::HQ::GraphQL.config).to receive(:authorize) do
+          ->(_action, object, _ctx) do
+            !(object.class == Advisor && object.name == advisor.name)
+          end
+        end
         results = schema.execute(find_advisor, variables: { id: advisor.id })
         data = results["data"]
-        expect(data).to be_nil
+        expect(data["advisor"]).to be_nil
       end
 
-      it "creates" do
+      it "fails to create" do
+        allow(::HQ::GraphQL.config).to receive(:authorize) do
+          ->(action, object, _ctx) do
+            !(action == :create && object.to_s == "Advisor")
+          end
+        end
         organization = FactoryBot.create(:organization)
         name = "Bob"
         results = schema.execute(create_mutation, variables: { attributes: { name: name, organizationId: organization.id } })
         data = results["data"]
 
         aggregate_failures do
-          expect(data).to be_nil
+          expect(data["createAdvisor"]).to be_nil
           expect(Advisor.where(name: name).exists?).to eql false
         end
       end
 
-      it "updates" do
+      it "fails to update" do
+        allow(::HQ::GraphQL.config).to receive(:authorize) do
+          ->(action, object, _ctx) do
+            !(action == :update && object.to_s == "Advisor")
+          end
+        end
         advisor = FactoryBot.create(:advisor)
         name = "Bob"
         organization_name = "Foo"
@@ -428,19 +439,24 @@ describe ::HQ::GraphQL::Resource do
 
         data = results["data"]
         aggregate_failures do
-          expect(data).to be_nil
+          expect(data["updateAdvisor"]).to be_nil
           expect(Advisor.find(advisor.id).name).to eql advisor.name
           expect(Organization.find(advisor.organization_id).name).to eql advisor.organization.name
         end
       end
 
-      it "destroys" do
+      it "fails to destroy" do
+        allow(::HQ::GraphQL.config).to receive(:authorize) do
+          ->(action, object, _ctx) do
+            !(action == :destroy && object.to_s == "Advisor")
+          end
+        end
         advisor = FactoryBot.create(:advisor)
         results = schema.execute(destroy_mutation, variables: { id: advisor.id })
 
         data = results["data"]
         aggregate_failures do
-          expect(data).to be_nil
+          expect(data["destroyAdvisor"]).to be_nil
           expect(Advisor.where(id: advisor.id).exists?).to eql true
         end
       end
