@@ -18,8 +18,9 @@ module HQ
         include Kernel
 
         attr_accessor :model_name,
-                    :auto_load_attributes,
-                    :auto_load_associations
+                      :authorize_action,
+                      :auto_load_attributes,
+                      :auto_load_associations
 
         sig { params(block: T.nilable(T.proc.void)).returns(T::Array[T.proc.void]) }
         def lazy_load(&block)

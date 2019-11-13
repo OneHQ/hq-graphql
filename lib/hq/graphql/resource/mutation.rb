@@ -5,9 +5,13 @@ module HQ
   module GraphQL
     module Resource
       module Mutation
-        def self.build(model_name, graphql_name:, require_primary_key: false, nil_klass: false, &block)
+        def self.build(model_name, action:, graphql_name:, require_primary_key: false, nil_klass: false, &block)
           Class.new(::HQ::GraphQL::Mutation) do
             graphql_name graphql_name
+
+            define_method(:ready?) do |*args|
+              super(*args) && ::HQ::GraphQL.authorized?(action, model_name, context)
+            end
 
             lazy_load do
               field :errors, ::HQ::GraphQL::Types::Object, null: false

@@ -78,7 +78,7 @@ module HQ
           scoped_self = self
 
           if create
-            create_mutation = ::HQ::GraphQL::Resource::Mutation.build(model_name, graphql_name: "#{scoped_graphql_name}Create") do
+            create_mutation = ::HQ::GraphQL::Resource::Mutation.build(model_name, action: :create, graphql_name: "#{scoped_graphql_name}Create") do
               define_method(:resolve) do |**args|
                 resource = scoped_self.new_record(context)
                 resource.assign_attributes(args[:attributes].format_nested_attributes)
@@ -106,6 +106,7 @@ module HQ
           if copy
             copy_mutation = ::HQ::GraphQL::Resource::Mutation.build(
               model_name,
+              action: :copy,
               graphql_name: "#{scoped_graphql_name}Copy",
               require_primary_key: true,
               nil_klass: true
@@ -141,6 +142,7 @@ module HQ
           if update
             update_mutation = ::HQ::GraphQL::Resource::Mutation.build(
               model_name,
+              action: :update,
               graphql_name: "#{scoped_graphql_name}Update",
               require_primary_key: true
             ) do
@@ -179,6 +181,7 @@ module HQ
           if destroy
             destroy_mutation = ::HQ::GraphQL::Resource::Mutation.build(
               model_name,
+              action: :destroy,
               graphql_name: "#{scoped_graphql_name}Destroy",
               require_primary_key: true
             ) do
@@ -224,7 +227,7 @@ module HQ
             end
           }
           ::HQ::GraphQL.root_queries << {
-            field_name: field_name, resolver: resolver
+            field_name: field_name, resolver: resolver, model_name: model_name
           }
         end
 

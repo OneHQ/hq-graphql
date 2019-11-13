@@ -7,10 +7,14 @@ module HQ
       include Scalars
       include ::HQ::GraphQL::ActiveRecordExtensions
 
-      field_class ::HQ::GraphQL::Field::AssociationLoader
+      field_class ::HQ::GraphQL::Field
+
+      def self.authorize_action(action)
+        self.authorized_action = action
+      end
 
       def self.authorized?(object, context)
-        super && ::HQ::GraphQL.authorized?(object, context)
+        super && ::HQ::GraphQL.authorized?(authorized_action, object, context)
       end
 
       def self.with_model(model_name, attributes: true, associations: true, auto_nil: true)
@@ -36,15 +40,20 @@ module HQ
 
       class << self
         private
+        attr_writer :authorized_action
+
+        def authorized_action
+          @authorized_action ||= :read
+        end
 
         def field_from_association(association, auto_nil:)
           type = ::HQ::GraphQL::Types[association.klass]
           name = association.name
           case association.macro
           when :has_many
-            field name, [type], null: false, loader_klass: model_name
+            field name, [type], null: false, klass: model_name
           else
-            field name, type, null: !auto_nil || !association_required?(association), loader_klass: model_name
+            field name, type, null: !auto_nil || !association_required?(association), klass: model_name
           end
         rescue ::HQ::GraphQL::Types::Error
           nil
