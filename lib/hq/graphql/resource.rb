@@ -231,7 +231,7 @@ module HQ
           }
         end
 
-        def root_query(find_one: true, find_all: true)
+        def root_query(find_one: true, find_all: true, pagination: false, per_page_max: 250)
           field_name = graphql_name.underscore
           scoped_self = self
 
@@ -250,8 +250,19 @@ module HQ
 
           if find_all
             def_root field_name.pluralize, is_array: true, null: false do
-              define_method(:resolve) do |**_attrs|
-                scoped_self.scope(context).all
+              argument :page, Integer, required: false
+              argument :per_page, Integer, required: false
+
+              define_method(:resolve) do |page: nil, per_page: nil, **_attrs|
+                scope = scoped_self.scope(context).all
+
+                if pagination || page || per_page
+                  page ||= 0
+                  limit = [per_page_max, *per_page].min
+                  scope = scope.limit(limit).offset(page * limit)
+                end
+
+                scope
               end
             end
           end
