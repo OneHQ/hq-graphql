@@ -261,8 +261,23 @@ describe ::HQ::GraphQL::Resource do
   context "execution" do
     let(:find_advisor) {
       <<-GRAPHQL
-        query findAdvisor($id: ID!){
+        query findAdvisor($id: ID!) {
           advisor(id: $id) {
+            name
+            organizationId
+
+            organization {
+              name
+            }
+          }
+        }
+      GRAPHQL
+    }
+
+    let(:find_advisors) {
+      <<-GRAPHQL
+        query findAdvisors($perPage: Int) {
+          advisors(perPage: $perPage) {
             name
             organizationId
 
@@ -276,7 +291,7 @@ describe ::HQ::GraphQL::Resource do
 
     let(:create_mutation) {
       <<-GRAPHQL
-        mutation createAdvisor($attributes: AdvisorInput!){
+        mutation createAdvisor($attributes: AdvisorInput!) {
           createAdvisor(attributes: $attributes) {
             errors
             resource {
@@ -290,7 +305,7 @@ describe ::HQ::GraphQL::Resource do
 
     let(:update_mutation) {
       <<-GRAPHQL
-        mutation updateAdvisor($id: ID!, $attributes: AdvisorInput!){
+        mutation updateAdvisor($id: ID!, $attributes: AdvisorInput!) {
           updateAdvisor(id: $id, attributes: $attributes) {
             errors
             resource {
@@ -306,7 +321,7 @@ describe ::HQ::GraphQL::Resource do
 
     let(:destroy_mutation) {
       <<-GRAPHQL
-        mutation destroyAdvisor($id: ID!){
+        mutation destroyAdvisor($id: ID!) {
           destroyAdvisor(id: $id) {
             errors
             resource {
@@ -339,6 +354,13 @@ describe ::HQ::GraphQL::Resource do
         expect(data["organizationId"]).to eql(advisor.organization_id)
         expect(data["organization"]["name"]).to eql(advisor.organization.name)
       end
+    end
+
+    it "uses pagination" do
+      10.times { FactoryBot.create(:advisor) }
+      results = schema.execute(find_advisors, variables: { perPage: 5 })
+      data = results["data"]["advisors"]
+      expect(data.length).to be 5
     end
 
     it "creates" do
