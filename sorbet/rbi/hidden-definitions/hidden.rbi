@@ -5483,7 +5483,7 @@ class Array
 end
 
 class Array
-  def self.wrap(object); end
+  def self.try_convert(_); end
 end
 
 BasicObject::BasicObject = BasicObject
@@ -7625,6 +7625,16 @@ class GraphQL::Schema
   extend ::GraphQL::Schema::Member::AcceptsDefinition::ToGraphQLExtension
 end
 
+module GraphQL::SchemaComparator
+  VERSION = ::T.let(nil, ::T.untyped)
+end
+
+class GraphQL::SchemaComparator::Changes::Criticality
+  BREAKING = ::T.let(nil, ::T.untyped)
+  DANGEROUS = ::T.let(nil, ::T.untyped)
+  NON_BREAKING = ::T.let(nil, ::T.untyped)
+end
+
 module GraphQL::StaticValidation
   ALL_RULES = ::T.let(nil, ::T.untyped)
 end
@@ -7793,9 +7803,7 @@ class Hash
 end
 
 class Hash
-  def self.from_trusted_xml(xml); end
-
-  def self.try_convert(_); end
+  def self.from_xml(xml, disallowed_types=T.unsafe(nil)); end
 end
 
 HashWithIndifferentAccess = ActiveSupport::HashWithIndifferentAccess
@@ -9105,7 +9113,6 @@ class Integer
   def to_bn(); end
 
   def to_d(); end
-  GMP_VERSION = ::T.let(nil, ::T.untyped)
 end
 
 class Integer
@@ -9744,7 +9751,13 @@ end
 class Net::HTTPGatewayTimeout
 end
 
-Net::HTTPInformationCode = Net::HTTPInformation
+class Net::HTTPInformation
+end
+
+Net::HTTPInformationCode::EXCEPTION_TYPE = Net::HTTPError
+
+class Net::HTTPInformation
+end
 
 class Net::HTTPLoopDetected
   HAS_BODY = ::T.let(nil, ::T.untyped)
@@ -13629,7 +13642,7 @@ end
 module Readline
   def self.basic_quote_characters(); end
 
-  def self.basic_quote_characters=(basic_quote_characters); end
+  def self.basic_quote_characters=(); end
 
   def self.basic_word_break_characters(); end
 
@@ -13657,7 +13670,7 @@ module Readline
 
   def self.completion_quote_character(); end
 
-  def self.delete_text(*_); end
+  def self.delete_text(); end
 
   def self.emacs_editing_mode(); end
 
@@ -13665,7 +13678,7 @@ module Readline
 
   def self.filename_quote_characters(); end
 
-  def self.filename_quote_characters=(filename_quote_characters); end
+  def self.filename_quote_characters=(); end
 
   def self.get_screen_size(); end
 
@@ -13687,7 +13700,7 @@ module Readline
 
   def self.quoting_detection_proc(); end
 
-  def self.quoting_detection_proc=(quoting_detection_proc); end
+  def self.quoting_detection_proc=(); end
 
   def self.redisplay(); end
 
