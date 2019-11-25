@@ -31,8 +31,8 @@ class Hash
   def reverse_merge!(other_hash); end
   def reverse_merge(other_hash); end
   def reverse_update(other_hash); end
-  def self.[](*arg0); end
-  def self.from_xml(xml, disallowed_types = nil); end
+  def self.from_trusted_xml(xml); end
+  def self.try_convert(arg0); end
   def slice!(*keys); end
   def stringify_keys!; end
   def stringify_keys; end
@@ -284,7 +284,7 @@ class Array
   def blank?; end
   def deep_dup; end
   def extract_options!; end
-  def self.try_convert(arg0); end
+  def self.wrap(object); end
   def to_default_s; end
   def to_formatted_s(format = nil); end
   def to_param; end

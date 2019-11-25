@@ -38,7 +38,6 @@
 # wrong constant name <RESERVED_123>
 # wrong constant name <RESERVED_124>
 # wrong constant name <RESERVED_125>
-# wrong constant name <RESERVED_126>
 # wrong constant name <RESERVED_12>
 # wrong constant name <RESERVED_13>
 # wrong constant name <RESERVED_14>
@@ -3632,7 +3631,7 @@
 # wrong constant name sum<defaultArg>1
 # wrong constant name to_h
 # wrong constant name to_s<defaultArg>1
-# wrong constant name wrap
+# wrong constant name try_convert
 # wrong constant name <Class:BasicObject>
 # uninitialized constant BigDecimal::EXABYTE
 # uninitialized constant BigDecimal::GIGABYTE
@@ -4641,8 +4640,9 @@
 # wrong constant name transform_values
 # wrong constant name transform_values!
 # wrong constant name update
-# wrong constant name from_trusted_xml
-# wrong constant name try_convert
+# undefined singleton method `from_xml<defaultArg>1' for `Hash'
+# wrong constant name from_xml<defaultArg>1
+# wrong constant name from_xml
 # wrong constant name <Class:Gettext>
 # wrong constant name <Class:Locale>
 # wrong constant name <Class:Middleware>
@@ -7904,7 +7904,7 @@
 # wrong constant name <static-init>
 # wrong constant name properties
 # wrong constant name properties=
-# undefined singleton method `property<defaultArg>1' for `#<Module:0x00007ff5e7b52810>'
+# undefined singleton method `property<defaultArg>1' for `#<Module:0x00007fd0ce0db1e0>'
 # wrong constant name <static-init>
 # wrong constant name properties
 # wrong constant name properties=
