@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+
 ActiveRecord::Schema.define do
   enable_extension "uuid-ossp"
+  enable_extension "pgcrypto"
 
   create_table "organizations", force: true, id: :uuid do |t|
     t.string   :name,                  limit: 63, null: false
@@ -26,5 +29,4 @@ ActiveRecord::Schema.define do
     t.boolean     :is_bool
     t.string      :name
   end
-
 end
