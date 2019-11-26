@@ -34,11 +34,6 @@ module HQ
           changes
         end
 
-        def dump_schema_to_file(directory:, filename:, schema:)
-          ::FileUtils.mkdir_p(directory)
-          ::File.open(::File.join(directory, filename), "w") { |file| file.write(schema.to_definition) }
-        end
-
         private
 
         def convert_schema_to_string(schema)

@@ -27,24 +27,6 @@ describe ::HQ::GraphQL::Comparator do
     stub_const("Query", query)
   end
 
-  describe "dumping a schema to a file" do
-    before(:all) do
-      @schema_directory = Rails.root.join("files")
-    end
-
-    after(:all) do
-      ::FileUtils.rm_rf(@schema_directory) if ::File.directory?(@schema_directory)
-    end
-
-    let(:schema_filename) { "temp_schema.graphql" }
-
-    it "should write the schema successfully to the file" do
-      described_class.dump_schema_to_file(directory: @schema_directory, filename: schema_filename, schema: schema)
-      file_contents = ::File.read(::File.join(@schema_directory, schema_filename))
-      expect(file_contents).to eq(schema.to_definition)
-    end
-  end
-
   describe "Comparing two schemas" do
     context "when the criticality is not valid" do
       it "should raise an error" do
