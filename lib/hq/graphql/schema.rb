@@ -4,12 +4,12 @@ module HQ
   module GraphQL
     class Schema < ::GraphQL::Schema
       class << self
-        def dump_directory
-          raise ::NotImplementedError
+        def dump_directory(directory = __dir__)
+          @dump_directory ||= directory
         end
 
-        def dump_filename
-          raise ::NotImplementedError
+        def dump_filename(filename = "#{self.name.underscore}.graphql")
+          @dump_filename ||= filename
         end
 
         def dump
