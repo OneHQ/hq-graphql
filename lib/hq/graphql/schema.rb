@@ -4,7 +4,7 @@ module HQ
   module GraphQL
     class Schema < ::GraphQL::Schema
       class << self
-        def dump_directory(directory = __dir__)
+        def dump_directory(directory = Rails.root.join("app", "graphql"))
           @dump_directory ||= directory
         end
 

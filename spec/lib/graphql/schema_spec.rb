@@ -50,15 +50,15 @@ describe ::HQ::GraphQL::Schema do
     end
 
     after(:all) do
-      file_directory = ::File.dirname(::HQ::GraphQL::Schema.method(:dump_directory).source_location.first)
+      file_directory = Rails.root.join("app", "graphql")
       filepath = "#{file_directory}/temp_schema.graphql"
       ::File.delete(filepath) if ::File.exist?(filepath)
     end
 
-    it "should use the current directory" do
+    it "should default to app/graphql" do
       schema.dump
-      expected_filepath = schema.method(:dump_directory).source_location.first
-      expect(schema.dump_directory).to eq(File.dirname(expected_filepath))
+      expected_filepath = Rails.root.join("app", "graphql")
+      expect(schema.dump_directory).to eq(expected_filepath)
 
       file_contents = ::File.read(::File.join(schema.dump_directory, schema.dump_filename))
       expect(file_contents).to eq(schema.to_definition)
