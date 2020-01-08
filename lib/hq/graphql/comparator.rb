@@ -30,6 +30,7 @@ module HQ
           if level >= CRITICALITY[:non_breaking]
             changes[:non_breaking] = result.non_breaking_changes
           end
+          return nil unless changes.values.flatten.any?
 
           changes
         end
