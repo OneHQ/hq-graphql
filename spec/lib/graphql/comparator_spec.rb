@@ -120,5 +120,39 @@ describe ::HQ::GraphQL::Comparator do
         end
       end
     end
+
+    context "when there are no changes for the criticality given or any higher criticality" do
+      before(:each) do
+        stub_const("NewQuery", new_query)
+      end
+
+      let(:new_query) do
+        Class.new(::HQ::GraphQL::Object) do
+          graphql_name "Query"
+
+          field :field_to_remove, ::GraphQL::Types::Int, null: false
+
+          field :field_with_changing_default_argument, ::GraphQL::Types::Int, null: false do
+            argument :argument, ::GraphQL::Types::Int, required: false, default_value: 0
+          end
+
+          # Non-breaking change: Adding a non-required argument
+          field :field_that_will_add_an_argument, ::GraphQL::Types::Int, null: true do
+            argument :argument, ::GraphQL::Types::Int, required: false
+          end
+        end
+      end
+
+      let(:new_schema) do
+        Class.new(GraphQL::Schema) do
+          query(NewQuery)
+        end
+      end
+
+      it "should return nil" do
+        result = described_class.compare(schema, new_schema, criticality: :dangerous)
+        expect(result).to be_nil
+      end
+    end
   end
 end
