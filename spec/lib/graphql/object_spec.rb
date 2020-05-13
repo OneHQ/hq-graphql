@@ -28,7 +28,7 @@ describe ::HQ::GraphQL::Object do
 
       expect(hq_object.fields.keys).to be_empty
       hq_object.graphql_definition
-      expected = ["createdAt", "id", "name", "organization", "organizationId", "updatedAt"]
+      expected = ["createdAt", "id", "name", "nickname", "organization", "organizationId", "updatedAt"]
       expect(hq_object.fields.keys).to contain_exactly(*expected)
     end
 
@@ -41,7 +41,7 @@ describe ::HQ::GraphQL::Object do
 
         expect(hq_object.fields.keys).to be_empty
         hq_object.graphql_definition
-        expected = ["name", "organization", "updatedAt"]
+        expected = ["name", "nickname", "organization", "updatedAt"]
         expect(hq_object.fields.keys).to contain_exactly(*expected)
       end
 
@@ -72,7 +72,7 @@ describe ::HQ::GraphQL::Object do
 
         expect(hq_object.fields.keys).to be_empty
         hq_object.graphql_definition
-        expected = ["createdAt", "id", "name", "organizationId", "updatedAt"]
+        expected = ["createdAt", "id", "name", "nickname", "organizationId", "updatedAt"]
         expect(hq_object.fields.keys).to contain_exactly(*expected)
       end
 

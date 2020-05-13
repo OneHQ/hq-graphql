@@ -78,6 +78,34 @@ class AdvisorResource
 end
 ```
 
+### Enums
+Auto generate enums from the database using ActiveRecord
+This comes in handy when we have constants that we want represented as enums.
+
+#### Example
+Let's assume we're saving data into a user types table
+```postgresl
+# select * from user_types;
+  id |    name    
+ --- +-------------
+  1  | Admin  
+  2  | Support User
+ (2 rows)
+```
+
+```ruby
+class Enums::UserType < ::HQ::GraphQL::Enum
+  with_model
+end
+```
+This class automatically uses the UserType ActiveRecord model to generate an enum:
+```graphql
+  enum UserType {
+    Admin
+    SupportUser
+  }
+```
+
 ### Root Mutations
 Add mutations to your schema
 
