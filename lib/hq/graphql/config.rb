@@ -2,10 +2,18 @@
 
 module HQ
   module GraphQL
-    class Config < Struct.new(:authorize, :authorize_field, :default_scope, :resource_lookup, keyword_init: true)
+    class Config < Struct.new(
+      :authorize,
+      :authorize_field,
+      :default_scope,
+      :extract_class,
+      :resource_lookup,
+      keyword_init: true
+    )
       def initialize(
         default_scope: ->(scope, _context) { scope },
-        resource_lookup: ->(klass) { "::Resources::#{klass}".safe_constantize },
+        extract_class: ->(klass) { klass.to_s.gsub(/^Resources|Resource$/, "") },
+        resource_lookup: ->(klass) { "::Resources::#{klass}Resource".safe_constantize || "::Resources::#{klass}".safe_constantize },
         **options
       )
         super

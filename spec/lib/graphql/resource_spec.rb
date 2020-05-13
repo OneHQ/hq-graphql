@@ -258,6 +258,29 @@ describe ::HQ::GraphQL::Resource do
     end
   end
 
+  context "model klass resolution" do
+    def build_resource(stubbed_class)
+      Class.new { include ::HQ::GraphQL::Resource }.tap do |c|
+        stub_const(stubbed_class, c)
+      end
+    end
+
+    it "strips /^Resources/ and /Resource$/" do
+      c = build_resource("Resources::OrganizationResource")
+      expect(c.model_klass).to eq Organization
+    end
+
+    it "strips /^Resources/" do
+      c = build_resource("Resources::Organization")
+      expect(c.model_klass).to eq Organization
+    end
+
+    it "strips /Resource$/" do
+      c = build_resource("OrganizationResource")
+      expect(c.model_klass).to eq Organization
+    end
+  end
+
   context "execution" do
     let(:find_advisor) {
       <<-GRAPHQL
