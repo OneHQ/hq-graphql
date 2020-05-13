@@ -28,6 +28,10 @@ module HQ
       config.default_scope.call(scope, context)
     end
 
+    def self.extract_class(klass)
+      config.extract_class.call(klass)
+    end
+
     def self.resource_lookup(klass)
       config.resource_lookup.call(klass)
     end

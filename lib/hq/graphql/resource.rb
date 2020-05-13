@@ -37,7 +37,7 @@ module HQ
         end
 
         def model_name
-          @model_name || name.demodulize
+          @model_name || ::HQ::GraphQL.extract_class(self)
         end
 
         def model_klass
