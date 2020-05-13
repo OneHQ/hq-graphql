@@ -18,6 +18,7 @@ ActiveRecord::Schema.define do
   create_table "advisors", force: true, id: :uuid do |t|
     t.references  :organization,       null: false, index: true, foreign_key: true, type: :uuid
     t.string      :name,               null: false
+    t.string      :nickname,           null: false
     t.timestamps                       null: false
   end
 

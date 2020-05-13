@@ -55,7 +55,7 @@ describe ::HQ::GraphQL::Resource do
     it "creates query fields" do
       query_klass = ::HQ::GraphQL::Types[Advisor]
       query_klass.graphql_definition
-      expected = ["id", "organizationId", "name", "createdAt", "updatedAt"]
+      expected = ["id", "organizationId", "name", "nickname", "createdAt", "updatedAt"]
       aggregate_failures do
         expect(query_klass.fields.keys).to contain_exactly(*expected)
         expect(query_klass.fields.values.map(&:type)).to be_all { |f| f.kind_of? ::GraphQL::Schema::NonNull }
@@ -65,7 +65,7 @@ describe ::HQ::GraphQL::Resource do
     it "creates nil query fields" do
       query_klass = ::HQ::GraphQL::Types[Advisor, true]
       query_klass.graphql_definition
-      expected = ["id", "organizationId", "name", "createdAt", "updatedAt"]
+      expected = ["id", "organizationId", "name", "nickname", "createdAt", "updatedAt"]
       aggregate_failures do
         expect(query_klass.fields.keys).to contain_exactly(*expected)
         expect(query_klass.fields.values.map(&:type)).to be_none { |f| f.kind_of? ::GraphQL::Schema::NonNull }
@@ -79,7 +79,7 @@ describe ::HQ::GraphQL::Resource do
 
     it "creates input arguments" do
       ::HQ::GraphQL::Inputs[Advisor].graphql_definition
-      expected = ["id", "organizationId", "name", "createdAt", "updatedAt", "X"]
+      expected = ["id", "organizationId", "name", "nickname", "createdAt", "updatedAt", "X"]
       expect(::HQ::GraphQL::Inputs[Advisor].arguments.keys).to contain_exactly(*expected)
     end
 
@@ -99,13 +99,13 @@ describe ::HQ::GraphQL::Resource do
 
       it "adds organization type" do
         ::HQ::GraphQL::Types[Advisor].graphql_definition
-        expected = ["id", "organization", "organizationId", "name", "createdAt", "updatedAt"]
+        expected = ["id", "organization", "organizationId", "name", "nickname", "createdAt", "updatedAt"]
         expect(::HQ::GraphQL::Types[Advisor].fields.keys).to contain_exactly(*expected)
       end
 
       it "doesn't add organization type" do
         ::HQ::GraphQL::Inputs[Advisor].graphql_definition
-        expected = ["id", "organizationId", "name", "createdAt", "updatedAt", "X"]
+        expected = ["id", "organizationId", "name", "nickname", "createdAt", "updatedAt", "X"]
         expect(::HQ::GraphQL::Inputs[Advisor].arguments.keys).to contain_exactly(*expected)
       end
     end
@@ -131,7 +131,7 @@ describe ::HQ::GraphQL::Resource do
 
     it "removes name" do
       ::HQ::GraphQL::Types[Advisor].graphql_definition
-      expected = ["id", "organizationId", "createdAt", "updatedAt"]
+      expected = ["id", "nickname", "organizationId", "createdAt", "updatedAt"]
       expect(::HQ::GraphQL::Types[Advisor].fields.keys).to contain_exactly(*expected)
     end
 
@@ -161,7 +161,7 @@ describe ::HQ::GraphQL::Resource do
 
     it "removes name" do
       ::HQ::GraphQL::Inputs[Advisor].graphql_definition
-      expected = ["id", "organizationId", "createdAt", "updatedAt", "X"]
+      expected = ["id", "nickname", "organizationId", "createdAt", "updatedAt", "X"]
       expect(::HQ::GraphQL::Inputs[Advisor].arguments.keys).to contain_exactly(*expected)
     end
 
@@ -202,7 +202,7 @@ describe ::HQ::GraphQL::Resource do
       input_object.graphql_definition
 
       aggregate_failures do
-        expected_arguments = ["id", "organizationId", "organization", "createdAt", "updatedAt", "X"]
+        expected_arguments = ["id", "nickname", "organizationId", "organization", "createdAt", "updatedAt", "X"]
         expect(input_object.arguments.keys).to contain_exactly(*expected_arguments)
 
         expected_arguments = ["id", "attributes"]
@@ -297,6 +297,7 @@ describe ::HQ::GraphQL::Resource do
             resource {
               id
               name
+              nickname
             }
           }
         }
@@ -366,12 +367,14 @@ describe ::HQ::GraphQL::Resource do
     it "creates" do
       organization = FactoryBot.create(:organization)
       name = "Bob"
-      results = schema.execute(create_mutation, variables: { attributes: { name: name, organizationId: organization.id } })
+      nickname = "Bobby"
+      results = schema.execute(create_mutation, variables: { attributes: { name: name, nickname: nickname, organizationId: organization.id } })
 
       data = results["data"]
       aggregate_failures do
         expect(data["errors"]).to be_nil
         expect(data["createAdvisor"]["resource"]["name"]).to eql name
+        expect(data["createAdvisor"]["resource"]["nickname"]).to eql nickname
         expect(Advisor.where(id: data["createAdvisor"]["resource"]["id"]).exists?).to eql true
       end
     end

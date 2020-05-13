@@ -1,4 +1,3 @@
-# typed: true
 # frozen_string_literal: true
 
 module HQ
@@ -8,12 +7,23 @@ module HQ
         MISSING_TYPE_MSG = "The GraphQL type for `%{klass}` is missing."
       end
 
-      def self.[](key, *args)
-        @types ||= Hash.new do |hash, options|
+      def self.registry
+        @registry ||= Hash.new do |hash, options|
           klass, nil_klass = Array(options)
           hash[klass] = nil_klass ? nil_query_klass(klass) : klass_for(klass)
         end
-        @types[[key, *args]]
+      end
+
+      def self.register(k, v)
+        self[k] = v
+      end
+
+      def self.[]=(key, is_nil = false, value)
+        registry[[key, is_nil]] = value
+      end
+
+      def self.[](key, is_nil = false)
+        registry[[key, is_nil]]
       end
 
       def self.type_from_column(column)
@@ -38,7 +48,7 @@ module HQ
 
       # Only being used in testing
       def self.reset!
-        @types = nil
+        @registry = nil
       end
 
       class << self
@@ -54,9 +64,16 @@ module HQ
 
         def find_klass(klass_or_string, method)
           klass = klass_or_string.is_a?(String) ? klass_or_string.constantize : klass_or_string
-          ::HQ::GraphQL.types.detect { |t| t.model_klass == klass }&.send(method) ||
-          ::HQ::GraphQL.types.detect { |t| t.model_klass == klass.base_class }&.send(method) ||
-             raise(Error, Error::MISSING_TYPE_MSG % { klass: klass.name })
+          type = find_type(klass)
+          type ||= find_type(klass.base_class)
+          type ||= find_type(klass.superclass)
+
+          raise(Error, Error::MISSING_TYPE_MSG % { klass: klass.name }) if !type
+          type.send(method)
+        end
+
+        def find_type(klass)
+          ::HQ::GraphQL.resource_lookup(klass) || ::HQ::GraphQL.types.detect { |t| t.model_klass == klass }
         end
       end
     end

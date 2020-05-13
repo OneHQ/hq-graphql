@@ -1,4 +1,3 @@
-# typed: true
 # frozen_string_literal: true
 
 module HQ
@@ -25,8 +24,14 @@ module HQ
 
         def klass_for(klass_or_string)
           klass = klass_or_string.is_a?(String) ? klass_or_string.constantize : klass_or_string
-          ::HQ::GraphQL.types.detect { |t| t.model_klass == klass }&.input_klass ||
-             raise(Error, Error::MISSING_TYPE_MSG % { klass: klass.name })
+          type = find_type(klass)
+
+          raise(Error, Error::MISSING_TYPE_MSG % { klass: klass.name }) if !type
+          type.input_klass
+        end
+
+        def find_type(klass)
+          ::HQ::GraphQL.resource_lookup(klass) || ::HQ::GraphQL.types.detect { |t| t.model_klass == klass }
         end
       end
     end

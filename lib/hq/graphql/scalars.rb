@@ -1,4 +1,3 @@
-# typed: strict
 # frozen_string_literal: true
 
 require "hq/graphql/types/object"

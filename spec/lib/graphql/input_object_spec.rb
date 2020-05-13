@@ -28,7 +28,7 @@ describe ::HQ::GraphQL::InputObject do
 
       expect(hq_input_object.arguments.keys).to be_empty
       hq_input_object.graphql_definition
-      expected = ["createdAt", "id", "name", "organizationId", "updatedAt", "X"]
+      expected = ["createdAt", "id", "name", "nickname", "organizationId", "updatedAt", "X"]
       expect(hq_input_object.arguments.keys).to contain_exactly(*expected)
     end
 
@@ -41,7 +41,7 @@ describe ::HQ::GraphQL::InputObject do
 
         expect(hq_input_object.arguments.keys).to be_empty
         hq_input_object.graphql_definition
-        expected = ["name", "updatedAt", "X"]
+        expected = ["name", "nickname", "updatedAt", "X"]
         expect(hq_input_object.arguments.keys).to contain_exactly(*expected)
       end
 
@@ -72,7 +72,7 @@ describe ::HQ::GraphQL::InputObject do
 
         expect(hq_input_object.arguments.keys).to be_empty
         hq_input_object.graphql_definition
-        expected = ["createdAt", "id", "name", "organizationId", "updatedAt", "X"]
+        expected = ["createdAt", "id", "name", "nickname", "organizationId", "updatedAt", "X"]
         expect(hq_input_object.arguments.keys).to contain_exactly(*expected)
       end
 

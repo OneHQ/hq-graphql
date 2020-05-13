@@ -1,10 +1,8 @@
-# typed: true
 # frozen_string_literal: true
 
 module HQ
   module GraphQL
     class InputObject < ::GraphQL::Schema::InputObject
-      extend T::Sig
       include Scalars
       include ::HQ::GraphQL::ActiveRecordExtensions
 
@@ -30,11 +28,11 @@ module HQ
       end
 
       #### Class Methods ####
-      sig { params(model_name: String, attributes: T::Boolean, associations: T::Boolean).void }
-      def self.with_model(model_name, attributes: true, associations: false)
+      def self.with_model(model_name, attributes: true, associations: false, enums: true)
         self.model_name = model_name
         self.auto_load_attributes = attributes
         self.auto_load_associations = associations
+        self.auto_load_enums = enums
 
         lazy_load do
           model_columns.each do |column|
@@ -62,15 +60,18 @@ module HQ
         private
 
         def argument_from_association(association)
-          input = ::HQ::GraphQL::Inputs[association.klass]
+          is_enum = is_enum?(association)
+          input_or_type = is_enum ? ::HQ::GraphQL::Types[association.klass] : ::HQ::GraphQL::Inputs[association.klass]
           name = association.name
 
           case association.macro
           when :has_many
-            argument name, [input], required: false
+            argument name, [input_or_type], required: false
           else
-            argument name, input, required: false
+            argument name, input_or_type, required: false
           end
+
+          return if is_enum
 
           if !model_klass.nested_attributes_options.key?(name.to_sym)
             model_klass.accepts_nested_attributes_for name, allow_destroy: true
