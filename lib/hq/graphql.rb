@@ -59,12 +59,12 @@ module HQ
 end
 
 require "hq/graphql/active_record_extensions"
+require "hq/graphql/association_loader"
 require "hq/graphql/scalars"
 require "hq/graphql/comparator"
 require "hq/graphql/enum"
 require "hq/graphql/inputs"
 require "hq/graphql/input_object"
-require "hq/graphql/loaders"
 require "hq/graphql/mutation"
 require "hq/graphql/object"
 require "hq/graphql/resource"

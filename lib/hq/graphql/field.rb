@@ -20,7 +20,7 @@ module HQ
 
       def resolve_field(object, args, ctx)
         if klass.present? && !!::GraphQL::Batch::Executor.current && object.object
-          Loaders::Association.for(klass.constantize, original_name).load(object.object).then do
+          AssociationLoader.for(klass.constantize, original_name).load(object.object).then do
             super
           end
         else
