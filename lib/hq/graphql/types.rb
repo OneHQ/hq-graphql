@@ -64,16 +64,10 @@ module HQ
 
         def find_klass(klass_or_string, method)
           klass = klass_or_string.is_a?(String) ? klass_or_string.constantize : klass_or_string
-          type = find_type(klass)
-          type ||= find_type(klass.base_class)
-          type ||= find_type(klass.superclass)
+          resource = ::HQ::GraphQL.lookup_resource(klass)
 
-          raise(Error, Error::MISSING_TYPE_MSG % { klass: klass.name }) if !type
-          type.send(method)
-        end
-
-        def find_type(klass)
-          ::HQ::GraphQL.resource_lookup(klass) || ::HQ::GraphQL.types.detect { |t| t.model_klass == klass }
+          raise(Error, Error::MISSING_TYPE_MSG % { klass: klass.name }) if !resource
+          resource.send(method)
         end
       end
     end

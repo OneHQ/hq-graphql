@@ -11,6 +11,7 @@ ActiveRecord::Schema.define do
 
   create_table "users", force: true, id: :uuid do |t|
     t.belongs_to  :organization,       null: false, index: true, foreign_key: true, type: :uuid
+    t.boolean     :inactive
     t.string      :name,               null: false
     t.timestamps                       null: false
   end

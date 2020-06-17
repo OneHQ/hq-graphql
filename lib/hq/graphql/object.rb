@@ -47,11 +47,22 @@ module HQ
         end
 
         def field_from_association(association, auto_nil:)
-          type = ::HQ::GraphQL::Types[association.klass]
+          # The PaginationAssociationLoader doesn't support through associations yet
+          return if association.through_reflection? && ::HQ::GraphQL.use_experimental_associations?
+
+          association_klass = association.klass
+          type = ::HQ::GraphQL::Types[association_klass]
           name = association.name
           case association.macro
           when :has_many
-            field name, [type], null: false, klass: model_name
+            field name, [type], null: false, klass: model_name do
+              if ::HQ::GraphQL.use_experimental_associations? && (resource = ::HQ::GraphQL.lookup_resource(association_klass))
+                argument :offset, Integer, required: false
+                argument :limit, Integer, required: false
+                argument :sort_by, resource.sort_fields_enum, required: false
+                argument :sort_order, Enum::SortOrder, required: false
+              end
+            end
           else
             field name, type, null: !auto_nil || !association_required?(association), klass: model_name
           end

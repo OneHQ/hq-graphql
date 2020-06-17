@@ -299,8 +299,8 @@ describe ::HQ::GraphQL::Resource do
 
     let(:find_advisors) {
       <<-GRAPHQL
-        query findAdvisors($perPage: Int) {
-          advisors(perPage: $perPage) {
+        query findAdvisors($limit: Int) {
+          advisors(limit: $limit) {
             name
             organizationId
 
@@ -382,7 +382,7 @@ describe ::HQ::GraphQL::Resource do
 
     it "uses pagination" do
       10.times { FactoryBot.create(:advisor) }
-      results = schema.execute(find_advisors, variables: { perPage: 5 })
+      results = schema.execute(find_advisors, variables: { limit: 5 })
       data = results["data"]["advisors"]
       expect(data.length).to be 5
     end
@@ -572,5 +572,4 @@ describe ::HQ::GraphQL::Resource do
       end
     end
   end
-
 end

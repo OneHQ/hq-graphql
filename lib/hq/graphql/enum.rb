@@ -73,3 +73,6 @@ module HQ::GraphQL
     end
   end
 end
+
+require "hq/graphql/enum/sort_by"
+require "hq/graphql/enum/sort_order"

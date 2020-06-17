@@ -1,20 +1,40 @@
 # frozen_string_literal: true
 
-require "hq/graphql/resource/mutation"
+require "hq/graphql/resource/auto_mutation"
 
 module HQ
   module GraphQL
     module Resource
       def self.included(base)
         super
-        ::HQ::GraphQL.types << base
+        ::HQ::GraphQL.resources << base
         base.include Scalars
         base.include ::GraphQL::Types
         base.extend ClassMethods
       end
 
       module ClassMethods
+        include AutoMutation
+
         attr_writer :graphql_name, :model_name
+
+        def sort_fields(*fields)
+          self.sort_fields_enum = fields
+        end
+
+        def sort_fields_enum
+          @sort_fields_enum || ::HQ::GraphQL::Enum::SortBy
+        end
+
+        def sort_fields_enum=(fields)
+          @sort_fields_enum ||= Class.new(::HQ::GraphQL::Enum::SortBy).tap do |c|
+            c.graphql_name "#{graphql_name}Sort"
+          end
+
+          Array(fields).each do |field|
+            @sort_fields_enum.value field.to_s.classify, value: field
+          end
+        end
 
         def scope(context)
           scope = model_klass
@@ -71,144 +91,10 @@ module HQ
         end
 
         def mutations(create: true, copy: true, update: true, destroy: true)
-          scoped_graphql_name = graphql_name
-          scoped_model_name = model_name
-          scoped_self = self
-
-          if create
-            create_mutation = ::HQ::GraphQL::Resource::Mutation.build(model_name, action: :create, graphql_name: "#{scoped_graphql_name}Create") do
-              define_method(:resolve) do |**args|
-                resource = scoped_self.new_record(context)
-                resource.assign_attributes(args[:attributes].format_nested_attributes)
-                if resource.save
-                  {
-                    resource: resource,
-                    errors: {},
-                  }
-                else
-                  {
-                    resource: nil,
-                    errors: errors_from_resource(resource)
-                  }
-                end
-              end
-
-              lazy_load do
-                argument :attributes, ::HQ::GraphQL::Inputs[scoped_model_name], required: true
-              end
-            end
-
-            mutation_klasses["create_#{scoped_graphql_name.underscore}"] = create_mutation
-          end
-
-          if copy
-            copy_mutation = ::HQ::GraphQL::Resource::Mutation.build(
-              model_name,
-              action: :copy,
-              graphql_name: "#{scoped_graphql_name}Copy",
-              require_primary_key: true,
-              nil_klass: true
-            ) do
-              define_method(:resolve) do |**args|
-                resource = scoped_self.find_record(args, context)
-
-                if resource
-                  copy = resource.copy
-                  if copy.save
-                    {
-                      resource: copy,
-                      errors: {},
-                    }
-                  else
-                    {
-                      resource: copy,
-                      errors: errors_from_resource(copy)
-                    }
-                  end
-                else
-                  {
-                    resource: nil,
-                    errors: { resource: "Unable to find #{scoped_graphql_name}" }
-                  }
-                end
-              end
-            end
-
-            mutation_klasses["copy_#{scoped_graphql_name.underscore}"] = copy_mutation
-          end
-
-          if update
-            update_mutation = ::HQ::GraphQL::Resource::Mutation.build(
-              model_name,
-              action: :update,
-              graphql_name: "#{scoped_graphql_name}Update",
-              require_primary_key: true
-            ) do
-              define_method(:resolve) do |**args|
-                resource = scoped_self.find_record(args, context)
-
-                if resource
-                  resource.assign_attributes(args[:attributes].format_nested_attributes)
-                  if resource.save
-                    {
-                      resource: resource,
-                      errors: {},
-                    }
-                  else
-                    {
-                      resource: nil,
-                      errors: errors_from_resource(resource)
-                    }
-                  end
-                else
-                  {
-                    resource: nil,
-                    errors: { resource: "Unable to find #{scoped_graphql_name}" }
-                  }
-                end
-              end
-
-              lazy_load do
-                argument :attributes, ::HQ::GraphQL::Inputs[scoped_model_name], required: true
-              end
-            end
-
-            mutation_klasses["update_#{scoped_graphql_name.underscore}"] = update_mutation
-          end
-
-          if destroy
-            destroy_mutation = ::HQ::GraphQL::Resource::Mutation.build(
-              model_name,
-              action: :destroy,
-              graphql_name: "#{scoped_graphql_name}Destroy",
-              require_primary_key: true
-            ) do
-              define_method(:resolve) do |**attrs|
-                resource = scoped_self.find_record(attrs, context)
-
-                if resource
-                  if resource.destroy
-                    {
-                      resource: resource,
-                      errors: {},
-                    }
-                  else
-                    {
-                      resource: nil,
-                      errors: errors_from_resource(resource)
-                    }
-                  end
-                else
-                  {
-                    resource: nil,
-                    errors: { resource: "Unable to find #{scoped_graphql_name}" }
-                  }
-                end
-              end
-            end
-
-            mutation_klasses["destroy_#{scoped_graphql_name.underscore}"] = destroy_mutation
-          end
+          mutation_klasses["create_#{graphql_name.underscore}"] = build_create if create
+          mutation_klasses["copy_#{graphql_name.underscore}"] = build_copy if copy
+          mutation_klasses["update_#{graphql_name.underscore}"] = build_update if update
+          mutation_klasses["destroy_#{graphql_name.underscore}"] = build_destroy if destroy
         end
 
         def query(**options, &block)
@@ -216,10 +102,10 @@ module HQ
         end
 
         def def_root(field_name, is_array: false, null: true, &block)
-          graphql = self
+          resource = self
           resolver = -> {
             Class.new(::GraphQL::Schema::Resolver) do
-              type = is_array ? [graphql.query_klass] : graphql.query_klass
+              type = is_array ? [resource.query_klass] : resource.query_klass
               type type, null: null
               class_eval(&block) if block
             end
@@ -229,7 +115,7 @@ module HQ
           }
         end
 
-        def root_query(find_one: true, find_all: true, pagination: false, per_page_max: 250)
+        def root_query(find_one: true, find_all: true, pagination: true, limit_max: 250)
           field_name = graphql_name.underscore
           scoped_self = self
 
@@ -248,17 +134,26 @@ module HQ
 
           if find_all
             def_root field_name.pluralize, is_array: true, null: false do
-              argument :page, Integer, required: false
-              argument :per_page, Integer, required: false
+              if pagination
+                argument :offset, Integer, required: false
+                argument :limit, Integer, required: false
+              end
+              argument :sort_by, scoped_self.sort_fields_enum, required: false
+              argument :sort_order, Enum::SortOrder, required: false
 
-              define_method(:resolve) do |page: nil, per_page: nil, **_attrs|
+              define_method(:resolve) do |limit: nil, offset: nil, sort_by: nil, sort_order: nil, **_attrs|
                 scope = scoped_self.scope(context).all
 
-                if pagination || page || per_page
-                  page ||= 0
-                  limit = [per_page_max, *per_page].min
-                  scope = scope.limit(limit).offset(page * limit)
+                if pagination || page || limit
+                  offset = [0, *offset].max
+                  limit = [[limit_max, *limit].min, 0].max
+                  scope = scope.limit(limit).offset(offset)
                 end
+
+                sort_by ||= :updated_at
+                sort_order ||= :desc
+                # There should be no risk for SQL injection since an enum is being used for both sort_by and sort_order
+                scope = scope.reorder(sort_by => sort_order)
 
                 scope
               end
