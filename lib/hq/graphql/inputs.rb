@@ -24,14 +24,10 @@ module HQ
 
         def klass_for(klass_or_string)
           klass = klass_or_string.is_a?(String) ? klass_or_string.constantize : klass_or_string
-          type = find_type(klass)
+          resource = ::HQ::GraphQL.lookup_resource(klass)
 
-          raise(Error, Error::MISSING_TYPE_MSG % { klass: klass.name }) if !type
-          type.input_klass
-        end
-
-        def find_type(klass)
-          ::HQ::GraphQL.resource_lookup(klass) || ::HQ::GraphQL.types.detect { |t| t.model_klass == klass }
+          raise(Error, Error::MISSING_TYPE_MSG % { klass: klass.name }) if !resource
+          resource.input_klass
         end
       end
     end

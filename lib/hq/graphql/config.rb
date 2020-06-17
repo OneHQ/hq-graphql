@@ -8,6 +8,7 @@ module HQ
       :default_scope,
       :extract_class,
       :resource_lookup,
+      :use_experimental_associations,
       keyword_init: true
     )
       def initialize(

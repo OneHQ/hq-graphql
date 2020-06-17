@@ -32,14 +32,20 @@ module HQ
       config.extract_class.call(klass)
     end
 
-    def self.resource_lookup(klass)
-      config.resource_lookup.call(klass)
+    def self.lookup_resource(klass)
+      [klass, klass.base_class, klass.superclass].lazy.map do |k|
+        config.resource_lookup.call(k) || resources.detect { |r| r.model_klass == k }
+      end.reject(&:nil?).first
+    end
+
+    def self.use_experimental_associations?
+      !!config.use_experimental_associations
     end
 
     def self.reset!
       @root_queries = nil
       @enums = nil
-      @types = nil
+      @resources = nil
       ::HQ::GraphQL::Inputs.reset!
       ::HQ::GraphQL::Types.reset!
     end
@@ -52,8 +58,8 @@ module HQ
       @enums ||= Set.new
     end
 
-    def self.types
-      @types ||= Set.new
+    def self.resources
+      @resources ||= Set.new
     end
   end
 end
@@ -67,6 +73,7 @@ require "hq/graphql/inputs"
 require "hq/graphql/input_object"
 require "hq/graphql/mutation"
 require "hq/graphql/object"
+require "hq/graphql/paginated_association_loader"
 require "hq/graphql/resource"
 require "hq/graphql/root_mutation"
 require "hq/graphql/root_query"
