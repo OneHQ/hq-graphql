@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "hq/graphql/types"
+
 module HQ::GraphQL
   class Enum < ::GraphQL::Schema::Enum
     ## Auto generate enums from the database using ActiveRecord
@@ -73,6 +75,3 @@ module HQ::GraphQL
     end
   end
 end
-
-require "hq/graphql/enum/sort_by"
-require "hq/graphql/enum/sort_order"

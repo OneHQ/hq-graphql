@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+require "hq/graphql/active_record_extensions"
+require "hq/graphql/inputs"
+require "hq/graphql/types"
+
 module HQ
   module GraphQL
     class InputObject < ::GraphQL::Schema::InputObject

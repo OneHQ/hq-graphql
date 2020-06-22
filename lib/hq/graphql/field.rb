@@ -9,7 +9,15 @@ module HQ
         super(*args, **options, &block)
         @authorize_action = authorize_action
         @authorize = authorize
-        @class_name = klass
+        @klass_or_string = klass
+      end
+
+      def scope(&block)
+        if block
+          @scope = block
+        else
+          @scope
+        end
       end
 
       def authorized?(object, ctx)
@@ -18,35 +26,8 @@ module HQ
           ::HQ::GraphQL.authorize_field(authorize_action, self, object, ctx)
       end
 
-      def resolve_field(object, args, ctx)
-        if klass.present? && !!::GraphQL::Batch::Executor.current && object.object
-          loader =
-            if ::HQ::GraphQL.use_experimental_associations?
-              limit       = args[:limit]
-              offset      = args[:offset]
-              sort_by     = args[:sortBy]
-              sort_order  = args[:sortOrder]
-
-              PaginatedAssociationLoader.for(
-                klass,
-                original_name,
-                limit: limit,
-                offset: offset,
-                sort_by: sort_by,
-                sort_order: sort_order
-              )
-            else
-              AssociationLoader.for(klass, original_name)
-            end
-
-          loader.load(object.object)
-        else
-          super
-        end
-      end
-
       def klass
-        @klass ||= @class_name&.constantize
+        @klass ||= @klass_or_string.is_a?(String) ? @klass_or_string.constantize : @klass_or_string
       end
     end
   end
