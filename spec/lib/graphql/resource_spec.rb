@@ -38,6 +38,7 @@ describe ::HQ::GraphQL::Resource do
   end
 
   before(:each) do
+    allow(::HQ::GraphQL.config).to receive(:use_experimental_associations) { true }
     advisor_resource
     stub_const("RootQuery", root_query)
     stub_const("RootMutation", root_mutation)

@@ -64,7 +64,6 @@ module HQ
   end
 end
 
-require "hq/graphql/active_record_extensions"
 require "hq/graphql/association_loader"
 require "hq/graphql/scalars"
 require "hq/graphql/comparator"

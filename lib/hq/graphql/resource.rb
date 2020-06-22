@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
+require "hq/graphql/enum/sort_by"
+require "hq/graphql/field_extension/paginated_arguments"
+require "hq/graphql/input_object"
+require "hq/graphql/object"
 require "hq/graphql/resource/auto_mutation"
+require "hq/graphql/scalars"
 
 module HQ
   module GraphQL
@@ -17,24 +22,6 @@ module HQ
         include AutoMutation
 
         attr_writer :graphql_name, :model_name
-
-        def sort_fields(*fields)
-          self.sort_fields_enum = fields
-        end
-
-        def sort_fields_enum
-          @sort_fields_enum || ::HQ::GraphQL::Enum::SortBy
-        end
-
-        def sort_fields_enum=(fields)
-          @sort_fields_enum ||= Class.new(::HQ::GraphQL::Enum::SortBy).tap do |c|
-            c.graphql_name "#{graphql_name}Sort"
-          end
-
-          Array(fields).each do |field|
-            @sort_fields_enum.value field.to_s.classify, value: field
-          end
-        end
 
         def scope(context)
           scope = model_klass
@@ -80,6 +67,10 @@ module HQ
           @query_klass ||= build_graphql_object
         end
 
+        def sort_fields_enum
+          @sort_fields_enum || ::HQ::GraphQL::Enum::SortBy
+        end
+
         protected
 
         def default_scope(&block)
@@ -99,6 +90,10 @@ module HQ
 
         def query(**options, &block)
           @query_klass = build_graphql_object(**options, &block)
+        end
+
+        def sort_fields(*fields)
+          self.sort_fields_enum = fields
         end
 
         def def_root(field_name, is_array: false, null: true, &block)
@@ -134,12 +129,7 @@ module HQ
 
           if find_all
             def_root field_name.pluralize, is_array: true, null: false do
-              if pagination
-                argument :offset, Integer, required: false
-                argument :limit, Integer, required: false
-              end
-              argument :sort_by, scoped_self.sort_fields_enum, required: false
-              argument :sort_order, Enum::SortOrder, required: false
+              extension FieldExtension::PaginatedArguments, klass: scoped_self.model_klass if pagination
 
               define_method(:resolve) do |limit: nil, offset: nil, sort_by: nil, sort_order: nil, **_attrs|
                 scope = scoped_self.scope(context).all
@@ -184,6 +174,16 @@ module HQ
             with_model scoped_model_name, **options
 
             class_eval(&block) if block
+          end
+        end
+
+        def sort_fields_enum=(fields)
+          @sort_fields_enum ||= Class.new(::HQ::GraphQL::Enum::SortBy).tap do |c|
+            c.graphql_name "#{graphql_name}Sort"
+          end
+
+          Array(fields).each do |field|
+            @sort_fields_enum.value field.to_s.classify, value: field
           end
         end
       end

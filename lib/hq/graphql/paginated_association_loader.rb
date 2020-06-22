@@ -1,15 +1,30 @@
 # frozen_string_literal: true
 
+require "hq/graphql/types"
+
 module HQ
   module GraphQL
     class PaginatedAssociationLoader < ::GraphQL::Batch::Loader
-      def initialize(model, association_name, limit: nil, offset: nil, sort_by: nil, sort_order: nil)
-        @model            = model
-        @association_name = association_name
-        @limit            = [0, limit].max if limit
-        @offset           = [0, offset].max if offset
-        @sort_by          = sort_by || :updated_at
-        @sort_order       = normalize_sort_order(sort_order)
+      def self.for(*args, scope: nil, **kwargs)
+        if scope
+          raise TypeError, "scope must be an ActiveRecord::Relation" unless scope.is_a?(::ActiveRecord::Relation)
+          executor = ::GraphQL::Batch::Executor.current
+          loader_key = loader_key_for(*args, **kwargs, scope: scope.to_sql)
+          executor.loader(loader_key) { new(*args, **kwargs, scope: scope) }
+        else
+          super
+        end
+      end
+
+      def initialize(model, association_name, internal_association: false, limit: nil, offset: nil, scope: nil, sort_by: nil, sort_order: nil)
+        @model                = model
+        @association_name     = association_name
+        @internal_association = internal_association
+        @limit                = [0, limit].max if limit
+        @offset               = [0, offset].max if offset
+        @scope                = scope
+        @sort_by              = sort_by || :updated_at
+        @sort_order           = normalize_sort_order(sort_order)
 
         validate!
       end
@@ -95,6 +110,7 @@ module HQ
         scope = association_class
         scope = association.scopes.reduce(scope, &:merge)
         scope = association_class.default_scopes.reduce(scope, &:merge)
+        scope = scope.merge(@scope) if @scope
         scope
       end
 
@@ -107,7 +123,11 @@ module HQ
       end
 
       def association
-        @model.reflect_on_association(@association_name)
+        if @internal_association
+          Types[@model].reflect_on_association(@association_name)
+        else
+          @model.reflect_on_association(@association_name)
+        end
       end
 
       def association_class

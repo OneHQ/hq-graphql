@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+require "hq/graphql/inputs"
+require "hq/graphql/mutation"
+require "hq/graphql/types"
+
 module HQ
   module GraphQL
     module Resource
