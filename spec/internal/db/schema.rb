@@ -30,5 +30,7 @@ ActiveRecord::Schema.define do
     t.decimal     :amount
     t.boolean     :is_bool
     t.string      :name
+    t.datetime    :created_at
+    t.date        :created_date
   end
 end
