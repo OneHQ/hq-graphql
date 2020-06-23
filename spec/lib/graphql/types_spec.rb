@@ -93,6 +93,18 @@ describe ::HQ::GraphQL::Types do
       end
     end
 
+    context "DateTime" do
+      it "matches iso datetime" do
+        expect(type_from_column("created_at")).to eq ::GraphQL::Types::ISO8601DateTime
+      end
+    end
+
+    context "Date" do
+      it "matches iso date" do
+        expect(type_from_column("created_date")).to eq ::GraphQL::Types::ISO8601Date
+      end
+    end
+
     def type_from_column(name)
       described_class.type_from_column(TestType.columns_hash[name])
     end

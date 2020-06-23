@@ -42,6 +42,10 @@ module HQ
             ::GraphQL::Types::Float
           when :boolean
             ::GraphQL::Types::Boolean
+          when :date
+            ::GraphQL::Types::ISO8601Date
+          when :datetime
+            ::GraphQL::Types::ISO8601DateTime
           else
             ::GraphQL::Types::String
           end
