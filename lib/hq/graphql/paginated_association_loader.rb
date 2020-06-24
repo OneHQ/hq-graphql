@@ -39,7 +39,8 @@ module HQ
       end
 
       def perform(records)
-        scope =
+        values = records.map { |r| source_value(r) }
+        scope  =
           if @limit || @offset
             # If a limit or offset is added, then we need to transform the query
             # into a lateral join so that we can limit on groups of data.
@@ -57,53 +58,71 @@ module HQ
             # > ) a_top ON TRUE
             # > WHERE addresses.user_id IN ($1, $2, ..., $N)
             # > ORDER BY a_top.created_at DESC
-            inner_table       = association_class.arel_table
-            association_table = inner_table.alias("outer")
+            inner_table        = association_class.arel_table
+            lateral_join_table = through_reflection? ? through_association.klass.arel_table : inner_table
+            from_table         = lateral_join_table.alias("outer")
 
             inside_scope = default_scope.
               select(inner_table[::Arel.star]).
               from(inner_table).
-              where(inner_table[association_key].eq(association_table[association_key])).
+              where(lateral_join_table[target_join_key].eq(from_table[target_join_key])).
               reorder(arel_order(inner_table)).
               limit(@limit).
               offset(@offset)
 
-            outside_table = ::Arel::Table.new("top")
+            if through_reflection?
+              # expose the through_reflection key
+              inside_scope = inside_scope.select(lateral_join_table[target_join_key])
+            end
+
+            lateral_table = ::Arel::Table.new("top")
             association_class.
-              select(outside_table[::Arel.star]).distinct.
-              from(association_table).
-              joins("INNER JOIN LATERAL (#{inside_scope.to_sql}) #{outside_table.name} ON TRUE").
-              where(association_table[association_key].in(records.map { |r| join_value(r) })).
-              reorder(arel_order(outside_table))
+              select(lateral_table[::Arel.star]).distinct.
+              from(from_table).
+              where(from_table[target_join_key].in(values)).
+              joins("INNER JOIN LATERAL (#{inside_scope.to_sql}) #{lateral_table.name} ON TRUE").
+              reorder(arel_order(lateral_table))
           else
-            default_scope.
-              reorder(arel_order(association_class.arel_table)).
-              where(association_key => records.map { |r| join_value(r) })
+            scope = default_scope.reorder(arel_order(association_class.arel_table))
+
+            if through_reflection?
+              scope.where(through_association.name => { target_join_key => values }).
+                # expose the through_reflection key
+                select(association_class.arel_table[::Arel.star], through_association.klass.arel_table[target_join_key])
+            else
+              scope.where(target_join_key => values)
+            end
           end
 
         results = scope.to_a
         records.each do |record|
-          fulfill(record, association_value(record, results)) unless fulfilled?(record)
+          fulfill(record, target_value(record, results)) unless fulfilled?(record)
         end
       end
 
       private
 
-      def association_key
-        belongs_to? ? association.association_primary_key : association.foreign_key
-      end
-
-      def association_value(record, results)
-        enumerator = has_many? ? :select : :detect
-        results.send(enumerator) { |r| r.send(association_key) == join_value(record) }
-      end
-
-      def join_key
+      def source_join_key
         belongs_to? ? association.foreign_key : association.association_primary_key
       end
 
-      def join_value(record)
-        record.send(join_key)
+      def source_value(record)
+        record.send(source_join_key)
+      end
+
+      def target_join_key
+        if through_reflection?
+          through_association.foreign_key
+        elsif belongs_to?
+          association.association_primary_key
+        else
+          association.foreign_key
+        end
+      end
+
+      def target_value(record, results)
+        enumerator = has_many? ? :select : :detect
+        results.send(enumerator) { |r| r.send(target_join_key) == source_value(record) }
       end
 
       def default_scope
@@ -111,6 +130,14 @@ module HQ
         scope = association.scopes.reduce(scope, &:merge)
         scope = association_class.default_scopes.reduce(scope, &:merge)
         scope = scope.merge(@scope) if @scope
+
+        if through_reflection?
+          source = association_class.arel_table
+          target = through_association.klass.arel_table
+          join   = source.join(target).on(target[association.foreign_key].eq(source[source_join_key]))
+          scope  = scope.joins(join.join_sources)
+        end
+
         scope
       end
 
@@ -120,6 +147,14 @@ module HQ
 
       def has_many?
         association.macro == :has_many
+      end
+
+      def through_association
+        association.through_reflection
+      end
+
+      def through_reflection?
+        association.through_reflection?
       end
 
       def association

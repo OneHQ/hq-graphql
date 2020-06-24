@@ -63,9 +63,6 @@ module HQ
         end
 
         def field_from_association(association, auto_nil:, internal_association: false, &block)
-          # The PaginationAssociationLoader doesn't support through associations yet
-          return if association.through_reflection? && ::HQ::GraphQL.use_experimental_associations?
-
           association_klass = association.klass
           name              = association.name
           klass             = model_klass

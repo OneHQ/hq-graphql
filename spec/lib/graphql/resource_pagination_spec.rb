@@ -1,10 +1,10 @@
 require 'rails_helper'
 
 describe ::HQ::GraphQL::Resource do
-  let!(:organization_resource) do
+  let!(:manager_resource) do
     Class.new do
       include ::HQ::GraphQL::Resource
-      self.model_name = "Organization"
+      self.model_name = "Manager"
 
       root_query
     end
@@ -34,8 +34,8 @@ describe ::HQ::GraphQL::Resource do
 
   let(:pagination_fields) { ["offset", "limit", "sortBy", "sortOrder"] }
   let(:root_fields) { root_query.fields }
-  let(:organizations_field) { root_fields["organizations"] }
-  let(:organizations_arguments) { organizations_field.arguments }
+  let(:managers_field) { root_fields["managers"] }
+  let(:managers_arguments) { managers_field.arguments }
   let(:users_field) { root_fields["users"] }
   let(:users_arguments) { users_field.arguments }
 
@@ -46,14 +46,14 @@ describe ::HQ::GraphQL::Resource do
   end
 
   it "adds pagination to the root query" do
-    expect(root_fields.keys).to contain_exactly("organization", "organizations", "user", "users")
-    expect(organizations_arguments.keys).to contain_exactly(*pagination_fields)
+    expect(root_fields.keys).to contain_exactly("manager", "managers", "user", "users")
+    expect(managers_arguments.keys).to contain_exactly(*pagination_fields)
     expect(users_arguments.keys).to contain_exactly(*pagination_fields)
   end
 
   it "adds enums to sort fields" do
-    expect(organizations_arguments["sortOrder"].type).to eq HQ::GraphQL::Enum::SortOrder
-    expect(organizations_arguments["sortBy"].type).to eq HQ::GraphQL::Enum::SortBy
+    expect(managers_arguments["sortOrder"].type).to eq HQ::GraphQL::Enum::SortOrder
+    expect(managers_arguments["sortBy"].type).to eq HQ::GraphQL::Enum::SortBy
     expect(HQ::GraphQL::Enum::SortBy.values.keys).to contain_exactly("CreatedAt", "UpdatedAt")
 
     expect(users_arguments["sortOrder"].type).to eq HQ::GraphQL::Enum::SortOrder
@@ -63,7 +63,7 @@ describe ::HQ::GraphQL::Resource do
   end
 
   it "adds pagination to association fields" do
-    users_field = organization_resource.query_klass.fields["users"]
+    users_field = manager_resource.query_klass.fields["users"]
     users_arguments = users_field.arguments
     expect(users_field.arguments.keys).to contain_exactly(*pagination_fields)
     expect(users_arguments["sortOrder"].type).to eq HQ::GraphQL::Enum::SortOrder
