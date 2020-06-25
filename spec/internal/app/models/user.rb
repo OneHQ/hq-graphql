@@ -1,3 +1,5 @@
 class User < ::ActiveRecord::Base
-  belongs_to :organization, inverse_of: :users
+  belongs_to :advisor, optional: true
+  belongs_to :manager, optional: true
+  belongs_to :organization
 end
