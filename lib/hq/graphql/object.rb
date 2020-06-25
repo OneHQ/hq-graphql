@@ -64,9 +64,11 @@ module HQ
 
         def field_from_association(association, auto_nil:, internal_association: false, &block)
           association_klass = association.klass
-          name              = association.name
-          klass             = model_klass
-          type              = Types[association_klass]
+          name              = association.name.to_s
+          return if fields[name]
+
+          klass = model_klass
+          type  = Types[association_klass]
           case association.macro
           when :has_many
             field name, [type], null: false, klass: model_name do
@@ -88,7 +90,10 @@ module HQ
         end
 
         def field_from_column(column, auto_nil:)
-          field column.name, Types.type_from_column(column), null: !auto_nil || column.null
+          name = column.name
+          return if fields[name]
+
+          field name, Types.type_from_column(column), null: !auto_nil || column.null
         end
 
         def association_required?(association)

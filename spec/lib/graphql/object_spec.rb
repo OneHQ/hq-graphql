@@ -32,6 +32,20 @@ describe ::HQ::GraphQL::Object do
       expect(hq_object.fields.keys).to contain_exactly(*expected)
     end
 
+    it "doesn't override fields" do
+      hq_object.class_eval do
+        with_model "Advisor"
+        field :name, Float, null: true
+        field :organization, String, null: true
+      end
+
+      hq_object.graphql_definition
+      aggregate_failures do
+        expect(hq_object.fields["name"].type).to eq(::GraphQL::Types::Float)
+        expect(hq_object.fields["organization"].type).to eq(::GraphQL::Types::String)
+      end
+    end
+
     describe ".remove_attributes" do
       it "removes an attribute" do
         hq_object.class_eval do
