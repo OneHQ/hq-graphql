@@ -13,7 +13,7 @@ module HQ
       def self.registry
         @registry ||= Hash.new do |hash, options|
           klass, nil_klass = Array(options)
-          hash[klass] = nil_klass ? nil_query_klass(klass) : klass_for(klass)
+          hash[options] = nil_klass ? nil_query_object(klass) : klass_for(klass)
         end
       end
 
@@ -61,12 +61,12 @@ module HQ
       class << self
         private
 
-        def nil_query_klass(klass_or_string)
-          find_klass(klass_or_string, :nil_query_klass)
+        def nil_query_object(klass_or_string)
+          find_klass(klass_or_string, :nil_query_object)
         end
 
         def klass_for(klass_or_string)
-          find_klass(klass_or_string, :query_klass)
+          find_klass(klass_or_string, :query_object)
         end
 
         def find_klass(klass_or_string, method)

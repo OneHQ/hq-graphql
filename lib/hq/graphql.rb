@@ -8,6 +8,10 @@ require "hq/graphql/config"
 
 module HQ
   module GraphQL
+    class << self
+      delegate :default_object_class, to: :config
+    end
+
     def self.config
       @config ||= ::HQ::GraphQL::Config.new
     end

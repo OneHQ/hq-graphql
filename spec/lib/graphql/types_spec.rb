@@ -15,7 +15,7 @@ describe ::HQ::GraphQL::Types do
       end
     end
 
-    let(:type_object) { graphql_klass.query_klass }
+    let(:type_object) { graphql_klass.query_object }
 
     before(:each) do
       graphql_klass
@@ -44,7 +44,7 @@ describe ::HQ::GraphQL::Types do
         include ::HQ::GraphQL::Resource
         self.model_name = "Agent"
       end
-      expect(sti_resource.query_klass).to eql(described_class["Agent"])
+      expect(sti_resource.query_object).to eql(described_class["Agent"])
     end
 
     it "falls back to the base class" do

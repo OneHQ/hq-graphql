@@ -59,12 +59,20 @@ module HQ
           @input_klass ||= build_input_object
         end
 
-        def nil_query_klass
-          @nil_query_klass ||= build_graphql_object(name: "#{graphql_name}Copy", auto_nil: false)
+        def nil_query_object
+          @nil_query_object ||= build_graphql_object(name: "#{graphql_name}Copy", auto_nil: false)
         end
 
-        def query_klass
-          @query_klass ||= build_graphql_object
+        def query_object
+          @query_object ||= begin
+            if @query_object_options
+              options, block = @query_object_options
+              @query_object_options = nil
+              build_graphql_object(**options, &block)
+            else
+              build_graphql_object
+            end
+          end
         end
 
         def sort_fields_enum
@@ -89,7 +97,11 @@ module HQ
         end
 
         def query(**options, &block)
-          @query_klass = build_graphql_object(**options, &block)
+          @query_object_options = [options, block]
+        end
+
+        def query_class(klass)
+          @query_class = klass
         end
 
         def sort_fields(*fields)
@@ -100,7 +112,7 @@ module HQ
           resource = self
           resolver = -> {
             Class.new(::GraphQL::Schema::Resolver) do
-              type = is_array ? [resource.query_klass] : resource.query_klass
+              type = is_array ? [resource.query_object] : resource.query_object
               type type, null: null
               class_eval(&block) if block
             end
@@ -156,7 +168,8 @@ module HQ
         def build_graphql_object(name: graphql_name, **options, &block)
           scoped_graphql_name = name
           scoped_model_name = model_name
-          Class.new(::HQ::GraphQL::Object) do
+          object_class = @query_class || ::HQ::GraphQL.default_object_class || ::HQ::GraphQL::Object
+          Class.new(object_class) do
             graphql_name scoped_graphql_name
 
             with_model scoped_model_name, **options

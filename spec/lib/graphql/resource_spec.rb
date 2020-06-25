@@ -46,7 +46,7 @@ describe ::HQ::GraphQL::Resource do
 
   context "defaults" do
     it "builds the query klass" do
-      expect(::HQ::GraphQL::Types[Advisor]).to eql(advisor_resource.query_klass)
+      expect(::HQ::GraphQL::Types[Advisor]).to eql(advisor_resource.query_object)
     end
 
     it "builds the input klass" do
@@ -54,22 +54,22 @@ describe ::HQ::GraphQL::Resource do
     end
 
     it "creates query fields" do
-      query_klass = ::HQ::GraphQL::Types[Advisor]
-      query_klass.graphql_definition
+      query_object = ::HQ::GraphQL::Types[Advisor]
+      query_object.graphql_definition
       expected = ["id", "organizationId", "name", "nickname", "createdAt", "updatedAt"]
       aggregate_failures do
-        expect(query_klass.fields.keys).to contain_exactly(*expected)
-        expect(query_klass.fields.values.map(&:type)).to be_all { |f| f.kind_of? ::GraphQL::Schema::NonNull }
+        expect(query_object.fields.keys).to contain_exactly(*expected)
+        expect(query_object.fields.values.map(&:type)).to be_all { |f| f.kind_of? ::GraphQL::Schema::NonNull }
       end
     end
 
     it "creates nil query fields" do
-      query_klass = ::HQ::GraphQL::Types[Advisor, true]
-      query_klass.graphql_definition
+      query_object = ::HQ::GraphQL::Types[Advisor, true]
+      query_object.graphql_definition
       expected = ["id", "organizationId", "name", "nickname", "createdAt", "updatedAt"]
       aggregate_failures do
-        expect(query_klass.fields.keys).to contain_exactly(*expected)
-        expect(query_klass.fields.values.map(&:type)).to be_none { |f| f.kind_of? ::GraphQL::Schema::NonNull }
+        expect(query_object.fields.keys).to contain_exactly(*expected)
+        expect(query_object.fields.values.map(&:type)).to be_none { |f| f.kind_of? ::GraphQL::Schema::NonNull }
       end
     end
 
@@ -139,6 +139,22 @@ describe ::HQ::GraphQL::Resource do
     it "customizes graphql name" do
       ::HQ::GraphQL::Types[Advisor].graphql_definition
       expect(::HQ::GraphQL::Types[Advisor].graphql_name).to eql("CustomAdvisorName")
+    end
+
+    it "overrides the default query class" do
+      new_class = Class.new(::HQ::GraphQL::Object)
+      advisor_resource.class_eval do
+        query_class new_class
+      end
+
+      expect(advisor_resource.query_object.superclass).to be(new_class)
+    end
+
+    it "overrides the global query class" do
+      new_class = Class.new(::HQ::GraphQL::Object)
+      allow(::HQ::GraphQL.config).to receive(:default_object_class) { new_class }
+
+      expect(advisor_resource.query_object.superclass).to be(new_class)
     end
   end
 

@@ -50,7 +50,7 @@ describe ::HQ::GraphQL::ObjectAssociation do
 
   context "meta data" do
     it "adds a custom association field" do
-      expect(organization_resource.query_klass.fields.keys).to include("customAssociation")
+      expect(organization_resource.query_object.fields.keys).to include("customAssociation")
     end
   end
 
