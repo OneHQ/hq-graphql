@@ -5,6 +5,7 @@ module HQ
     class Config < Struct.new(
       :authorize,
       :authorize_field,
+      :default_object_class,
       :default_scope,
       :extract_class,
       :resource_lookup,

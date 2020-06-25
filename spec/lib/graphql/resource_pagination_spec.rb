@@ -63,7 +63,7 @@ describe ::HQ::GraphQL::Resource do
   end
 
   it "adds pagination to association fields" do
-    users_field = manager_resource.query_klass.fields["users"]
+    users_field = manager_resource.query_object.fields["users"]
     users_arguments = users_field.arguments
     expect(users_field.arguments.keys).to contain_exactly(*pagination_fields)
     expect(users_arguments["sortOrder"].type).to eq HQ::GraphQL::Enum::SortOrder

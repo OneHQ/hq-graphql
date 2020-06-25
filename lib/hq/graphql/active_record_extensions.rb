@@ -27,7 +27,7 @@ module HQ
         end
 
         def lazy_load!
-          lazy_load.map(&:call)
+          lazy_load.each(&:call)
           @lazy_load = []
         end
 
