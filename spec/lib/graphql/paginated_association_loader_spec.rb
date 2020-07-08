@@ -31,51 +31,51 @@ describe ::HQ::GraphQL::PaginatedAssociationLoader do
   end
 
   context "sort_by + sort_order" do
-    it "sorts updated_at in descending order by default" do
+    it "sorts created_at in descending order by default" do
       users = load(:users)
-      expect(users).to eq [user2, user1, user3]
-    end
-
-    it "sorts updated_at in ascending order" do
-      users = load(:users, sort_order: :asc)
-      expect(users).to eq [user3, user1, user2]
-    end
-
-    it "sorts a column in descending order" do
-      users = load(:users, sort_by: :created_at, sort_order: :desc)
       expect(users).to eq [user3, user2, user1]
     end
 
-    it "sorts a column in ascending order" do
-      users = load(:users, sort_by: :created_at, sort_order: :asc)
+    it "sorts created_at in ascending order" do
+      users = load(:users, sort_order: :asc)
       expect(users).to eq [user1, user2, user3]
+    end
+
+    it "sorts a column in descending order" do
+      users = load(:users, sort_by: :updated_at, sort_order: :desc)
+      expect(users).to eq [user2, user1, user3]
+    end
+
+    it "sorts a column in ascending order" do
+      users = load(:users, sort_by: :updated_at, sort_order: :asc)
+      expect(users).to eq [user3, user1, user2]
     end
 
     it "sorts with a scope" do
       users = load(:active_users)
-      expect(users).to eq [user1, user3]
+      expect(users).to eq [user3, user1]
     end
   end
 
   context "limit + offset" do
     it "offsets by 1" do
       users = load(:users, offset: 1)
-      expect(users).to eq [user1, user3]
+      expect(users).to eq [user2, user1]
     end
 
     it "limits by 2" do
       users = load(:users, limit: 2, sort_order: :asc)
-      expect(users).to eq [user3, user1]
+      expect(users).to eq [user1, user2]
     end
 
     it "returns active users" do
-      users = load(:active_users, sort_by: :created_at, limit: 3, offset: 0, sort_order: :asc)
-      expect(users).to eq [user1, user3]
+      users = load(:active_users, sort_by: :updated_at, limit: 3, offset: 0, sort_order: :asc)
+      expect(users).to eq [user3, user1]
     end
 
     it "returns the second active user" do
-      users = load(:active_users, sort_by: :created_at, offset: 1, limit: 1, sort_order: :asc)
-      expect(users).to eq [user3]
+      users = load(:active_users, sort_by: :updated_at, offset: 1, limit: 1, sort_order: :asc)
+      expect(users).to eq [user1]
     end
   end
 
@@ -98,51 +98,51 @@ describe ::HQ::GraphQL::PaginatedAssociationLoader do
     end
 
     context "sort_by + sort_order" do
-      it "sorts updated_at in descending order by default" do
+      it "sorts created_at in descending order by default" do
         advisors = load(:advisors)
-        expect(advisors).to eq [advisor3, advisor2, advisor1]
+        expect(advisors).to eq [advisor1, advisor2, advisor3]
       end
 
-      it "sorts updated_at in ascending order" do
+      it "sorts created_at in ascending order" do
         advisors = load(:advisors, sort_order: :asc)
-        expect(advisors).to eq [advisor1, advisor2, advisor3]
+        expect(advisors).to eq [advisor3, advisor2, advisor1]
       end
 
       it "sorts a column in descending order" do
-        advisors = load(:advisors, sort_by: :created_at, sort_order: :desc)
-        expect(advisors).to eq [advisor1, advisor2, advisor3]
+        advisors = load(:advisors, sort_by: :updated_at, sort_order: :desc)
+        expect(advisors).to eq [advisor3, advisor2, advisor1]
       end
 
       it "sorts a column in ascending order" do
-        advisors = load(:advisors, sort_by: :created_at, sort_order: :asc)
-        expect(advisors).to eq [advisor3, advisor2, advisor1]
+        advisors = load(:advisors, sort_by: :updated_at, sort_order: :asc)
+        expect(advisors).to eq [advisor1, advisor2, advisor3]
       end
 
       it "sorts with a scope" do
         advisors = load(:not_joe)
-        expect(advisors).to eq [advisor3, advisor1]
+        expect(advisors).to eq [advisor1, advisor3]
       end
     end
 
     context "limit + offset" do
       it "offsets by 1" do
         advisors = load(:advisors, offset: 1)
-        expect(advisors).to eq [advisor2, advisor1]
+        expect(advisors).to eq [advisor2, advisor3]
       end
 
       it "limits by 2" do
         advisors = load(:advisors, limit: 2, sort_order: :asc)
-        expect(advisors).to eq [advisor1, advisor2]
+        expect(advisors).to eq [advisor3, advisor2]
       end
 
       it "returns active advisors" do
-        advisors = load(:not_joe, sort_by: :created_at, limit: 3, offset: 0, sort_order: :desc)
-        expect(advisors).to eq [advisor1, advisor3]
+        advisors = load(:not_joe, sort_by: :updated_at, limit: 3, offset: 0, sort_order: :desc)
+        expect(advisors).to eq [advisor3, advisor1]
       end
 
       it "returns the second active user" do
-        advisors = load(:not_joe, sort_by: :created_at, offset: 1, limit: 1, sort_order: :desc)
-        expect(advisors).to eq [advisor3]
+        advisors = load(:not_joe, sort_by: :updated_at, offset: 1, limit: 1, sort_order: :desc)
+        expect(advisors).to eq [advisor1]
       end
     end
   end

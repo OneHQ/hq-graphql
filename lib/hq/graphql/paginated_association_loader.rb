@@ -23,7 +23,7 @@ module HQ
         @limit                = [0, limit].max if limit
         @offset               = [0, offset].max if offset
         @scope                = scope
-        @sort_by              = sort_by || :updated_at
+        @sort_by              = sort_by || :created_at
         @sort_order           = normalize_sort_order(sort_order)
 
         validate!
