@@ -64,7 +64,6 @@ module HQ
 
             inside_scope = default_scope.
               select(inner_table[::Arel.star]).
-              from(inner_table).
               where(lateral_join_table[target_join_key].eq(from_table[target_join_key])).
               reorder(arel_order(inner_table)).
               limit(@limit).
