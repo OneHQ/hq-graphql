@@ -49,7 +49,7 @@ module HQ::GraphQL
       lazy_load do
         records = scope ? klass.instance_exec(&scope) : klass.all
         records.each do |record|
-          value "#{prefix}#{record.send(value_method).sub(/^((::)?\w+)::/, "").delete(" ")}", value: record
+          value "#{prefix}#{record.send(value_method).delete(": ")}", value: record
         end
       end
     end
