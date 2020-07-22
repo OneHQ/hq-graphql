@@ -34,6 +34,7 @@ module HQ::GraphQL
       prefix: nil,
       register: true,
       scope: nil,
+      strip: /(^[^_a-zA-Z])|([^_a-zA-Z0-9]*)/,
       value_method: :name
     )
       raise ArgumentError.new(<<~ERROR) if !klass
@@ -49,7 +50,7 @@ module HQ::GraphQL
       lazy_load do
         records = scope ? klass.instance_exec(&scope) : klass.all
         records.each do |record|
-          value "#{prefix}#{record.send(value_method).delete(": ")}", value: record
+          value "#{prefix}#{record.send(value_method).gsub(strip, "")}", value: record
         end
       end
     end
