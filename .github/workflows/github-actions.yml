@@ -1,4 +1,4 @@
-name: Rails Unit Tests
+name: Test and Lint
 
 on: [push, pull_request]
 

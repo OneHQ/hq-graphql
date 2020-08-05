@@ -2,7 +2,7 @@
 
 OneHQ GraphQL interface to [Ruby Graphql](https://github.com/rmosolgo/graphql-ruby).
 
-[![CircleCI](https://img.shields.io/circleci/project/github/OneHQ/hq-graphql.svg)](https://circleci.com/gh/OneHQ/hq-graphql/tree/master)
+![Test and Lint](https://github.com/OneHQ/hq-graphql/workflows/Test%20and%20Lint/badge.svg)
 [![GitHub tag](https://img.shields.io/github/tag/OneHQ/hq-graphql.svg)](https://github.com/OneHQ/hq-graphql)
 
 ## Configuration
