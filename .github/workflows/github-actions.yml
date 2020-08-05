@@ -1,4 +1,4 @@
-name: Rails unit tests
+name: Rails Unit Tests
 
 on: [push, pull_request]
 
