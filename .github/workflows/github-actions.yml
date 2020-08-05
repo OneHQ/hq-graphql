@@ -1,0 +1,68 @@
+name: Rails Unit Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: postgres:11
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        env:
+          POSTGRES_PASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-v1-${{ hashFiles('hq-graphql.gemspec') }}
+      - name: Set up Ruby 2.6
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: 2.6
+      - name: Set up environment
+        run: |
+          sudo apt-get update && sudo apt-get install -y apt-transport-https apt-utils
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install postgresql-client-11
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 3
+      - name: Set up database
+        run: |
+          cp spec/internal/config/database.circleci.yml spec/internal/config/database.yml
+      - name: Run tests
+        run: |
+          bundle exec rspec
+        env:
+          DBPASSWORD: postgres
+
+  lint:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Ruby 2.6
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: 2.6
+      - uses: actions/cache@v2
+          with:
+            path: vendor/bundle
+            key: ${{ runner.os }}-gems-v1-${{ hashFiles('hq-graphql.gemspec') }}
+      - name: Install dependencies
+          run: |
+            bundle config path vendor/bundle
+            bundle install --jobs 4 --retry 3
+      - name: Run rubocop
+        run: |
+          bundle exec rubocop
