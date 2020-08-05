@@ -16,6 +16,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        env:
+          POSTGRES_PASSWORD: postgres
     steps:
       - uses: actions/checkout@v2
       - name: Set up Ruby 2.6.3
@@ -35,3 +37,5 @@ jobs:
       - name: Run tests
         run: |
           bundle exec rspec spec/**/*_spec.rb
+        env:
+          DBPASSWORD: postgres
