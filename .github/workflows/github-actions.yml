@@ -20,14 +20,17 @@ jobs:
           POSTGRES_PASSWORD: postgres
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gems-v1-${{ hashFiles('hq-graphql.gemspec') }}
       - name: Set up Ruby 2.6
         uses: actions/setup-ruby@v1
         with:
           ruby-version: 2.6
+      - name: Create cache directory
+        run: |
+          mkdir -p vendor/bundle
+      - uses: actions/cache@v2
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('hq-graphql.gemspec') }}
       - name: Set up environment
         run: |
           sudo apt-get update && sudo apt-get install -y apt-transport-https apt-utils
@@ -55,10 +58,13 @@ jobs:
         uses: actions/setup-ruby@v1
         with:
           ruby-version: 2.6
+      - name: Create cache directory
+        run: |
+          mkdir -p vendor/bundle
       - uses: actions/cache@v2
         with:
           path: vendor/bundle
-          key: ${{ runner.os }}-gems-v1-${{ hashFiles('hq-graphql.gemspec') }}
+          key: ${{ runner.os }}-gems-${{ hashFiles('hq-graphql.gemspec') }}
       - name: Install dependencies
         run: |
           bundle config path vendor/bundle
