@@ -33,7 +33,6 @@ jobs:
       - name: Set up database
           run: |
             cp spec/internal/config/database.circleci.yml spec/internal/config/database.yml
-      - run:
-          name: Run tests
-          command: |
+      - name: Run tests
+          run: |
              bundle exec rspec spec/**/*_spec.rb
