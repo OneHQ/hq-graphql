@@ -1,4 +1,4 @@
-name: test-lint
+name: Rails unit tests
 
 on: [push, pull_request]
 
