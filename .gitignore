@@ -30,3 +30,4 @@ spec/internal/config/database.yml
 sphinx/**/*
 tmp
 tmp/**/*
+*.iml
