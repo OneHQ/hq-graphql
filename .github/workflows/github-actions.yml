@@ -1,0 +1,39 @@
+name: Rails Unit Tests
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: postgres:11
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Ruby 2.6.3
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: 2.6.3
+      - name: Set up environment
+          run: |
+            sudo apt-get update && sudo apt-get install -y apt-transport-https apt-utils
+      - name: Install dependencies
+          run: |
+            sudo apt-get update && sudo apt-get install postgresql-client-11
+            bundle install
+      - name: Set up database
+          run: |
+            cp spec/internal/config/database.circleci.yml spec/internal/config/database.yml
+      - run:
+          name: Run tests
+          command: |
+             bundle exec rspec spec/**/*_spec.rb
