@@ -36,6 +36,6 @@ jobs:
           cp spec/internal/config/database.circleci.yml spec/internal/config/database.yml
       - name: Run tests
         run: |
-          bundle exec rspec spec/**/*_spec.rb
+          bundle exec rspec
         env:
           DBPASSWORD: postgres
