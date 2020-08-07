@@ -1,4 +1,3 @@
-# rubocop:disable Gemspec/RequiredRubyVersion
 # frozen_string_literal: true
 
 $:.push File.expand_path("../lib", __FILE__)
