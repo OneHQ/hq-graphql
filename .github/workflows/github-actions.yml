@@ -20,10 +20,15 @@ jobs:
           POSTGRES_PASSWORD: postgres
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Ruby 2.6
-        uses: actions/setup-ruby@v1
-        with:
-          ruby-version: 2.6
+      - name: install ruby
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl gnupg build-essential
+          sudo gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+          curl -sSL https://get.rvm.io | sudo bash -s stable
+          sudo usermod -a -G rvm `whoami`
+          rvm install ruby-2.6.3
+          rvm --default use ruby-2.6.3
       - name: Create cache directory
         run: |
           mkdir -p vendor/bundle
@@ -54,10 +59,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Ruby 2.6
-        uses: actions/setup-ruby@v1
-        with:
-          ruby-version: 2.6
+      - name: install ruby
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl gnupg build-essential
+          sudo gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+          curl -sSL https://get.rvm.io | sudo bash -s stable
+          sudo usermod -a -G rvm `whoami`
+          rvm install ruby-2.6.3
+          rvm --default use ruby-2.6.3
       - name: Create cache directory
         run: |
           mkdir -p vendor/bundle
