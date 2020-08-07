@@ -80,6 +80,10 @@ module HQ
               end
               instance_eval(&block) if block
             end
+          when :has_one
+            field name, type, null: null_from_field?(name) || !auto_nil || !association_required?(association), klass: model_name do
+              extension FieldExtension::AssociationLoaderExtension, klass: klass
+            end
           else
             field name, type, null: !auto_nil || !association_required?(association), klass: model_name do
               extension FieldExtension::AssociationLoaderExtension, klass: klass
@@ -100,6 +104,15 @@ module HQ
           !association.options[:optional] || model_klass.validators.any? do |validation|
             next unless validation.class == ActiveRecord::Validations::PresenceValidator
             validation.attributes.any? { |a| a.to_s == association.name.to_s }
+          end
+        end
+
+        def null_from_field?(name)
+          field = get_field(name.camelize(:lower))
+          if field
+            field.instance_variable_get("@return_type_null")
+          else
+            false
           end
         end
       end
