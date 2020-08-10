@@ -81,7 +81,7 @@ module HQ
               instance_eval(&block) if block
             end
           when :has_one
-            field name, type, null: null_from_field?(name) || !auto_nil || !association_required?(association), klass: model_name do
+            field name, type, null: !auto_nil || !association_required?(association) || null_from_field?(name), klass: model_name do
               extension FieldExtension::AssociationLoaderExtension, klass: klass
             end
           else
