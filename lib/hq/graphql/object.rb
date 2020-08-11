@@ -80,6 +80,10 @@ module HQ
               end
               instance_eval(&block) if block
             end
+          when :has_one
+            field name, type, null: !auto_nil || !has_presence_validation?(association), klass: model_name do
+              extension FieldExtension::AssociationLoaderExtension, klass: klass
+            end
           else
             field name, type, null: !auto_nil || !association_required?(association), klass: model_name do
               extension FieldExtension::AssociationLoaderExtension, klass: klass
@@ -97,7 +101,11 @@ module HQ
         end
 
         def association_required?(association)
-          !association.options[:optional] || model_klass.validators.any? do |validation|
+          !association.options[:optional] || has_presence_validation?(association)
+        end
+
+        def has_presence_validation?(association)
+          model_klass.validators.any? do |validation|
             next unless validation.class == ActiveRecord::Validations::PresenceValidator
             validation.attributes.any? { |a| a.to_s == association.name.to_s }
           end
