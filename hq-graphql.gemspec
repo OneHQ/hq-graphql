@@ -1,4 +1,3 @@
-# rubocop:disable Gemspec/RequiredRubyVersion
 # frozen_string_literal: true
 
 $:.push File.expand_path("../lib", __FILE__)
@@ -37,4 +36,3 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rubocop-performance",                     "~> 1.4"
   s.add_development_dependency "rubocop-rails",                           "~> 2.3"
 end
-# rubocop:enable Gemspec/RequiredRubyVersion

@@ -17,7 +17,6 @@ module HQ
       end
 
       def initialize(model, association_name, internal_association: false, limit: nil, offset: nil, scope: nil, sort_by: nil, sort_order: nil)
-        super()
         @model                = model
         @association_name     = association_name
         @internal_association = internal_association

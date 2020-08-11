@@ -4,7 +4,6 @@ module HQ
   module GraphQL
     class AssociationLoader < ::GraphQL::Batch::Loader
       def initialize(model, association_name)
-        super()
         @model = model
         @association_name = association_name
         validate
