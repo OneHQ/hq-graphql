@@ -15,6 +15,11 @@ module HQ
         add_reflection(name, scope, options, :belongs_to, block)
       end
 
+      def has_one(name, scope = nil, through: nil, **options, &block)
+        raise TypeError, "has_one through is unsupported" if through
+        add_reflection(name, scope, options, :has_one, block)
+      end
+
       def has_many(name, scope = nil, through: nil, **options, &block)
         raise TypeError, "has_many through is unsupported" if through
         add_reflection(name, scope, options, :has_many, block)

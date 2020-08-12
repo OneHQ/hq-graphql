@@ -14,6 +14,7 @@ Gem::Specification.new do |s|
   s.summary     = "OneHQ GraphQL Library"
   s.description = "OneHQ GraphQL Library"
   s.license     = "MIT"
+  s.required_ruby_version = "~> 2.6"
 
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
 
