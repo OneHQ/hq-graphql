@@ -67,6 +67,7 @@ module HQ
           is_enum = is_enum?(association)
           input_or_type = is_enum ? ::HQ::GraphQL::Types[association.klass] : ::HQ::GraphQL::Inputs[association.klass]
           name = association.name
+          return if argument_exists?(name)
 
           case association.macro
           when :has_many
@@ -87,7 +88,13 @@ module HQ
         end
 
         def argument_from_column(column)
-          argument column.name, ::HQ::GraphQL::Types.type_from_column(column), required: false
+          name = column.name
+          return if argument_exists?(name)
+          argument name, ::HQ::GraphQL::Types.type_from_column(column), required: false
+        end
+
+        def argument_exists?(name)
+          !!arguments[camelize(name)]
         end
       end
     end

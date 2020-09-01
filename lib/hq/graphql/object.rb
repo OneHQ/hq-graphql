@@ -65,7 +65,7 @@ module HQ
         def field_from_association(association, auto_nil:, internal_association: false, &block)
           association_klass = association.klass
           name              = association.name.to_s
-          return if fields[name]
+          return if field_exists?(name)
 
           klass = model_klass
           type  = Types[association_klass]
@@ -95,9 +95,13 @@ module HQ
 
         def field_from_column(column, auto_nil:)
           name = column.name
-          return if fields[name]
+          return if field_exists?(name)
 
           field name, Types.type_from_column(column), null: !auto_nil || column.null
+        end
+
+        def field_exists?(name)
+          !!fields[camelize(name)]
         end
 
         def association_required?(association)
