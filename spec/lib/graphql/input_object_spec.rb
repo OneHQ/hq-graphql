@@ -32,6 +32,20 @@ describe ::HQ::GraphQL::InputObject do
       expect(hq_input_object.arguments.keys).to contain_exactly(*expected)
     end
 
+    it "doesn't override arguments" do
+      hq_input_object.class_eval do
+        with_model "Advisor"
+        argument :created_at, String, required: false
+        argument :organization, String, required: false
+      end
+
+      hq_input_object.graphql_definition
+      aggregate_failures do
+        expect(hq_input_object.arguments["createdAt"].type).to eq(::GraphQL::Types::String)
+        expect(hq_input_object.arguments["organization"].type).to eq(::GraphQL::Types::String)
+      end
+    end
+
     describe ".remove_attributes" do
       it "removes an attribute" do
         hq_input_object.class_eval do
