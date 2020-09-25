@@ -60,6 +60,12 @@ module HQ
         super
       end
 
+      def self.extends(input_object)
+        input_object.arguments.each do |arg, properties|
+          argument arg.to_sym, properties.graphql_definition.type, required: properties.type.non_null?
+        end
+      end
+
       class << self
         private
 
