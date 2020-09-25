@@ -61,8 +61,8 @@ module HQ
       end
 
       def self.extends(input_object)
-        input_object.arguments.each do |arg, properties|
-          argument arg.to_sym, properties.graphql_definition.type, required: properties.type.non_null?
+        input_object.arguments.each do |_arg, properties|
+          add_argument(properties)
         end
       end
 

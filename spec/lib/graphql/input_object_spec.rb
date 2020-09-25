@@ -108,6 +108,28 @@ describe ::HQ::GraphQL::InputObject do
       end
     end
 
+    describe ".extends" do
+      it "keeps all arguments and adds arguments from extended class" do
+        class LinkedUserInput < GraphQL::Schema::InputObject
+          argument :form_linked_user_id, ID, required: false
+          argument :is_linked_user_form_update, String, required: false
+        end
+
+        hq_input_object.class_eval do
+          extends LinkedUserInput
+          with_model "Advisor"
+        end
+
+        hq_input_object.graphql_definition
+        expected = %w[formLinkedUserId isLinkedUserFormUpdate createdAt id name nickname organizationId updatedAt X]
+        expect(hq_input_object.arguments.keys).to contain_exactly(*expected)
+
+        LinkedUserInput.arguments.each do |arg, properties|
+          expect(hq_input_object.arguments[arg]).to be(properties)
+        end
+      end
+    end
+
     context "with attributes and associations turned off" do
       it "doesn't have any arguments by default" do
         hq_input_object.graphql_definition
