@@ -80,7 +80,7 @@ module HQ
         end
 
         def excluded_input_fields
-          @excluded_input_fields ||= ::HQ::GraphQL.excluded_inputs || []
+          @excluded_input_fields ||= ::HQ::GraphQL.excluded_inputs
         end
 
         protected
