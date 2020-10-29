@@ -80,7 +80,7 @@ module HQ
         end
 
         def excluded_input_fields
-          @excluded_input_fields = ::HQ::GraphQL.excluded_inputs
+          @excluded_input_fields ||= ::HQ::GraphQL.excluded_inputs || []
         end
 
         protected
@@ -211,9 +211,9 @@ module HQ
         end
 
         def excluded_input_fields=(fields)
-          excluded_input_fields = ::HQ::GraphQL.excluded_inputs || []
+          @excluded_input_fields = ::HQ::GraphQL.excluded_inputs.dup || []
           Array(fields).each do |field|
-            excluded_input_fields << field
+            @excluded_input_fields << field
           end
         end
       end
