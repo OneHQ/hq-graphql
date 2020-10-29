@@ -189,12 +189,12 @@ module HQ
         def build_input_object(**options, &block)
           scoped_graphql_name = graphql_name
           scoped_model_name = model_name
-          excluded_fields = excluded_input_fields
+          scoped_excluded_inputs = excluded_input_fields
 
           Class.new(::HQ::GraphQL::InputObject) do
             graphql_name "#{scoped_graphql_name}Input"
 
-            with_model scoped_model_name, excluded_fields, **options
+            with_model scoped_model_name, scoped_excluded_inputs, **options
 
             class_eval(&block) if block
           end
@@ -211,7 +211,7 @@ module HQ
         end
 
         def excluded_input_fields=(fields)
-          @excluded_input_fields = ::HQ::GraphQL.excluded_inputs.dup || []
+          @excluded_input_fields = excluded_input_fields.dup
           Array(fields).each do |field|
             @excluded_input_fields << field
           end

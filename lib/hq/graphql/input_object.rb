@@ -32,7 +32,7 @@ module HQ
       end
 
       #### Class Methods ####
-      def self.with_model(model_name, excluded_fields, attributes: true, associations: false, enums: true)
+      def self.with_model(model_name, excluded_inputs = [], attributes: true, associations: false, enums: true)
         self.model_name = model_name
         self.auto_load_attributes = attributes
         self.auto_load_associations = associations
@@ -40,11 +40,11 @@ module HQ
 
         lazy_load do
           model_columns.each do |column|
-            argument_from_column(column) if !excluded_fields.include?(column.name.to_sym)
+            argument_from_column(column) unless excluded_inputs.include?(column.name.to_sym)
           end
 
           model_associations.each do |association|
-            argument_from_association(association) if !excluded_fields.include?(association.name.to_sym)
+            argument_from_association(association) unless excluded_inputs.include?(association.name.to_sym)
           end
 
           argument :X, String, required: false
