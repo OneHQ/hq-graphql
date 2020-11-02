@@ -21,7 +21,7 @@ module HQ
       module ClassMethods
         include AutoMutation
 
-        attr_writer :graphql_name, :model_name
+        attr_writer :graphql_name, :model_name, :excluded_inputs
 
         def scope(context)
           scope = model_klass
@@ -79,10 +79,6 @@ module HQ
           @sort_fields_enum || ::HQ::GraphQL::Enum::SortBy
         end
 
-        def excluded_input_fields
-          @excluded_input_fields ||= ::HQ::GraphQL.excluded_inputs
-        end
-
         protected
 
         def default_scope(&block)
@@ -113,7 +109,7 @@ module HQ
         end
 
         def excluded_inputs(*fields)
-          self.excluded_input_fields = fields
+          @excluded_inputs = fields
         end
 
         def def_root(field_name, is_array: false, null: true, &block)
@@ -189,12 +185,12 @@ module HQ
         def build_input_object(**options, &block)
           scoped_graphql_name = graphql_name
           scoped_model_name = model_name
-          scoped_excluded_inputs = excluded_input_fields
+          scoped_excluded_inputs = @excluded_inputs || []
 
           Class.new(::HQ::GraphQL::InputObject) do
             graphql_name "#{scoped_graphql_name}Input"
 
-            with_model scoped_model_name, scoped_excluded_inputs, **options
+            with_model scoped_model_name, { excluded_inputs: scoped_excluded_inputs, **options }
 
             class_eval(&block) if block
           end
@@ -207,13 +203,6 @@ module HQ
 
           Array(fields).each do |field|
             @sort_fields_enum.value field.to_s.classify, value: field
-          end
-        end
-
-        def excluded_input_fields=(fields)
-          @excluded_input_fields = excluded_input_fields.dup
-          Array(fields).each do |field|
-            @excluded_input_fields << field
           end
         end
       end
