@@ -21,7 +21,7 @@ module HQ
       module ClassMethods
         include AutoMutation
 
-        attr_writer :graphql_name, :model_name, :excluded_inputs
+        attr_writer :graphql_name, :model_name
 
         def scope(context)
           scope = model_klass
