@@ -190,7 +190,7 @@ module HQ
           Class.new(::HQ::GraphQL::InputObject) do
             graphql_name "#{scoped_graphql_name}Input"
 
-            with_model scoped_model_name, { excluded_inputs: scoped_excluded_inputs, **options }
+            with_model scoped_model_name, excluded_inputs: scoped_excluded_inputs, **options
 
             class_eval(&block) if block
           end
