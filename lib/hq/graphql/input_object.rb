@@ -32,19 +32,21 @@ module HQ
       end
 
       #### Class Methods ####
-      def self.with_model(model_name, attributes: true, associations: false, enums: true)
+      def self.with_model(model_name, attributes: true, associations: false, enums: true, excluded_inputs: [])
         self.model_name = model_name
         self.auto_load_attributes = attributes
         self.auto_load_associations = associations
         self.auto_load_enums = enums
 
         lazy_load do
+          excluded_inputs += ::HQ::GraphQL.excluded_inputs
+
           model_columns.each do |column|
-            argument_from_column(column)
+            argument_from_column(column) unless excluded_inputs.include?(column.name.to_sym)
           end
 
           model_associations.each do |association|
-            argument_from_association association
+            argument_from_association(association) unless excluded_inputs.include?(association.name.to_sym)
           end
 
           argument :X, String, required: false

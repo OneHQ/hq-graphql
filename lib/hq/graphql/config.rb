@@ -10,6 +10,7 @@ module HQ
       :extract_class,
       :resource_lookup,
       :use_experimental_associations,
+      :excluded_inputs,
       keyword_init: true
     )
       def initialize(

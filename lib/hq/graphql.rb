@@ -36,6 +36,10 @@ module HQ
       config.extract_class.call(klass)
     end
 
+    def self.excluded_inputs
+      config.excluded_inputs || []
+    end
+
     def self.lookup_resource(klass)
       [klass, klass.base_class, klass.superclass].lazy.map do |k|
         config.resource_lookup.call(k) || resources.detect { |r| r.model_klass == k }
