@@ -124,6 +124,10 @@ module HQ
           @removed_associations ||= []
         end
 
+        def camelize(name)
+          name.to_s.camelize(:lower)
+        end
+
         def is_enum?(association)
           ::HQ::GraphQL.enums.include?(association.klass)
         end

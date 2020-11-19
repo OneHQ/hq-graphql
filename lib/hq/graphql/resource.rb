@@ -108,6 +108,10 @@ module HQ
           self.sort_fields_enum = fields
         end
 
+        def excluded_inputs(*fields)
+          @excluded_inputs = fields
+        end
+
         def def_root(field_name, is_array: false, null: true, &block)
           resource = self
           resolver = -> {
@@ -181,10 +185,12 @@ module HQ
         def build_input_object(**options, &block)
           scoped_graphql_name = graphql_name
           scoped_model_name = model_name
+          scoped_excluded_inputs = @excluded_inputs || []
+
           Class.new(::HQ::GraphQL::InputObject) do
             graphql_name "#{scoped_graphql_name}Input"
 
-            with_model scoped_model_name, **options
+            with_model scoped_model_name, excluded_inputs: scoped_excluded_inputs, **options
 
             class_eval(&block) if block
           end

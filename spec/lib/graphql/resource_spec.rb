@@ -275,6 +275,27 @@ describe ::HQ::GraphQL::Resource do
     end
   end
 
+  describe ".excluded_inputs" do
+    let(:advisor_resource) do
+      Class.new do
+        include ::HQ::GraphQL::Resource
+        self.model_name = "Advisor"
+        excluded_inputs :id, :created_at, :updated_at
+      end
+    end
+
+    before(:each) do
+      organization_type
+      advisor_resource
+    end
+
+    it "removes id, createdAt and updatedAt" do
+      ::HQ::GraphQL::Inputs[Advisor].graphql_definition
+      expected = ["name", "nickname", "organizationId", "X"]
+      expect(::HQ::GraphQL::Inputs[Advisor].arguments.keys).to contain_exactly(*expected)
+    end
+  end
+
   context "model klass resolution" do
     def build_resource(stubbed_class)
       Class.new { include ::HQ::GraphQL::Resource }.tap do |c|
