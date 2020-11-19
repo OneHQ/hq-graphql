@@ -110,7 +110,7 @@ module HQ
 
         def has_presence_validation?(association)
           model_klass.validators.any? do |validation|
-            next unless validation.class == ActiveRecord::Validations::PresenceValidator
+            next unless validation.class == ActiveRecord::Validations::PresenceValidator && !(validation.options.include?(:if) || validation.options.include?(:unless))
             validation.attributes.any? { |a| a.to_s == association.name.to_s }
           end
         end
