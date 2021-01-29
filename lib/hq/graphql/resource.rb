@@ -91,19 +91,9 @@ module HQ
             nil_query_object
           when :Input
             input_klass
-          # when
           else
             super
           end
-          # if constant_name == :ALL && !self.abstract_constant_class  # Special case for :ALL
-          #   const_set(:ALL, __regular_constant_definitions__.map { |definition| __fetch_const_from_definition__(definition) })
-          # elsif constant_name == :ALL_GROUPS && !self.abstract_constant_class  # Special case for :ALL_GROUPS
-          #   const_set(:ALL_GROUPS, __parent_constants__.map { |definition| __fetch_const_from_definition__(definition) })
-          # elsif __constants__.has_key?(constant_name)
-          #   const_set(constant_name, __constants__[constant_name].load(self))
-          # else
-          #   super
-          # end
         end
 
         protected

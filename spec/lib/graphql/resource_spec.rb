@@ -1,41 +1,5 @@
 require 'rails_helper'
 
-module GraphQL
-  class Schema
-    class Warden
-
-      def initialize(filter, context:, schema:)
-        @schema = schema.interpreter? ? schema : schema.graphql_definition
-        # Cache these to avoid repeated hits to the inheritance chain when one isn't present
-        @query = @schema.query
-        @mutation = @schema.mutation
-        @subscription = @schema.subscription
-        @context = context
-        @visibility_cache = read_through { |m| filter.call(m, context) }
-      end
-
-      # def types
-      #   super.tap do |f|
-      #     byebug
-      #   end
-      # end
-    end
-  end
-end
-
-module GraphQL
-  class Schema
-    # Visit the members of this schema and build up artifacts for runtime.
-    # @api private
-    # class Traversal
-    #   def initialize(*)
-    #     byebug
-    #     super
-    #   end
-    # end
-  end
-end
-
 describe ::HQ::GraphQL::Resource do
   let(:organization_type) do
     Class.new do
@@ -78,8 +42,6 @@ describe ::HQ::GraphQL::Resource do
     advisor_resource
     stub_const("RootQuery", root_query)
     stub_const("RootMutation", root_mutation)
-
-    # schema.lazy_load!
   end
 
   context "defaults" do
@@ -301,7 +263,6 @@ describe ::HQ::GraphQL::Resource do
       FactoryBot.create(:advisor)
       onehq = FactoryBot.create(:advisor, name: "OneHQ")
       results = schema.execute(find_onehq)
-      # byebug
       data = results["data"]["advisorsNamedOneHq"]
       expect(data.size).to eq 1
       advisor = data[0]
