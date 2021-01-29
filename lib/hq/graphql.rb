@@ -59,7 +59,7 @@ module HQ
       ::HQ::GraphQL::Types.reset!
     end
 
-    def self.lazy_load!
+    def self.load_types!
       lazy_load_classes.pop.lazy_load! while lazy_load_classes.length > 0
     end
 

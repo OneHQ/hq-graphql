@@ -15,8 +15,8 @@ module HQ
 
       class << self
         def compare(old_schema, new_schema, criticality: :breaking)
-          old_schema.lazy_load! if old_schema < ::GraphQL::Schema
-          new_schema.lazy_load! if old_schema < ::GraphQL::Schema
+          old_schema.load_types! if old_schema < ::GraphQL::Schema
+          new_schema.load_types! if old_schema < ::GraphQL::Schema
           level = CRITICALITY[criticality]
           raise ::ArgumentError, "Invalid criticality. Possible values are #{CRITICALITY.keys.join(", ")}" unless level
 

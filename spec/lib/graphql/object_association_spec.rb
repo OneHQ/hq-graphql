@@ -45,7 +45,7 @@ describe ::HQ::GraphQL::ObjectAssociation do
   before(:each) do
     allow(::HQ::GraphQL.config).to receive(:use_experimental_associations) { true }
     stub_const("RootQuery", root_query)
-    schema.lazy_load!
+    schema.load_types!
   end
 
   context "meta data" do

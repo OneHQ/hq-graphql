@@ -10,7 +10,7 @@ module HQ
         end
 
         def execute(*args, **options)
-          lazy_load!
+          load_types!
           super
         end
 
@@ -23,13 +23,13 @@ module HQ
         end
 
         def dump
-          lazy_load!
+          load_types!
           ::FileUtils.mkdir_p(dump_directory)
           ::File.open(::File.join(dump_directory, dump_filename), "w") { |file| file.write(self.to_definition) }
         end
 
-        def lazy_load!
-          ::HQ::GraphQL.lazy_load!
+        def load_types!
+          ::HQ::GraphQL.load_types!
           return if @add_type_with_lazyload.blank?
           while (args, options = @add_type_with_lazyload.shift)
             add_type_without_lazyload(*args, **options)
