@@ -1,9 +1,9 @@
 require 'rails_helper'
 
-describe ::HQ::GraphQL::ActiveRecordExtensions do
+describe ::HQ::GraphQL::Ext::ActiveRecordExtensions do
   let(:extended_klass) do
     Class.new do
-      include ::HQ::GraphQL::ActiveRecordExtensions
+      include ::HQ::GraphQL::Ext::ActiveRecordExtensions
 
       @counter = 0
 
@@ -59,5 +59,4 @@ describe ::HQ::GraphQL::ActiveRecordExtensions do
       expect { extended_klass.lazy_load! }.to change  { extended_klass.counter }.by(0)
     end
   end
-
 end

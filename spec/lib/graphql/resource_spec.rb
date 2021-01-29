@@ -1,5 +1,41 @@
 require 'rails_helper'
 
+module GraphQL
+  class Schema
+    class Warden
+
+      def initialize(filter, context:, schema:)
+        @schema = schema.interpreter? ? schema : schema.graphql_definition
+        # Cache these to avoid repeated hits to the inheritance chain when one isn't present
+        @query = @schema.query
+        @mutation = @schema.mutation
+        @subscription = @schema.subscription
+        @context = context
+        @visibility_cache = read_through { |m| filter.call(m, context) }
+      end
+
+      # def types
+      #   super.tap do |f|
+      #     byebug
+      #   end
+      # end
+    end
+  end
+end
+
+module GraphQL
+  class Schema
+    # Visit the members of this schema and build up artifacts for runtime.
+    # @api private
+    # class Traversal
+    #   def initialize(*)
+    #     byebug
+    #     super
+    #   end
+    # end
+  end
+end
+
 describe ::HQ::GraphQL::Resource do
   let(:organization_type) do
     Class.new do
@@ -30,9 +66,9 @@ describe ::HQ::GraphQL::Resource do
   end
 
   let(:schema) do
-    Class.new(GraphQL::Schema) do
-      query(RootQuery)
-      mutation(RootMutation)
+    Class.new(::GraphQL::Schema) do
+      query(::RootQuery)
+      mutation(::RootMutation)
       use(::GraphQL::Batch)
     end
   end
@@ -42,6 +78,8 @@ describe ::HQ::GraphQL::Resource do
     advisor_resource
     stub_const("RootQuery", root_query)
     stub_const("RootMutation", root_mutation)
+
+    # schema.lazy_load!
   end
 
   context "defaults" do
@@ -55,7 +93,7 @@ describe ::HQ::GraphQL::Resource do
 
     it "creates query fields" do
       query_object = ::HQ::GraphQL::Types[Advisor]
-      query_object.graphql_definition
+      query_object.lazy_load!
       expected = ["id", "organizationId", "name", "nickname", "createdAt", "updatedAt"]
       aggregate_failures do
         expect(query_object.fields.keys).to contain_exactly(*expected)
@@ -65,7 +103,7 @@ describe ::HQ::GraphQL::Resource do
 
     it "creates nil query fields" do
       query_object = ::HQ::GraphQL::Types[Advisor, true]
-      query_object.graphql_definition
+      query_object.lazy_load!
       expected = ["id", "organizationId", "name", "nickname", "createdAt", "updatedAt"]
       aggregate_failures do
         expect(query_object.fields.keys).to contain_exactly(*expected)
@@ -74,18 +112,18 @@ describe ::HQ::GraphQL::Resource do
     end
 
     it "creates query graphql name" do
-      ::HQ::GraphQL::Types[Advisor].graphql_definition
+      ::HQ::GraphQL::Types[Advisor].lazy_load!
       expect(::HQ::GraphQL::Types[Advisor].graphql_name).to eql("Advisor")
     end
 
     it "creates input arguments" do
-      ::HQ::GraphQL::Inputs[Advisor].graphql_definition
+      ::HQ::GraphQL::Inputs[Advisor].lazy_load!
       expected = ["id", "organizationId", "name", "nickname", "createdAt", "updatedAt", "X"]
       expect(::HQ::GraphQL::Inputs[Advisor].arguments.keys).to contain_exactly(*expected)
     end
 
     it "creates input graphql name" do
-      ::HQ::GraphQL::Inputs[Advisor].graphql_definition
+      ::HQ::GraphQL::Inputs[Advisor].lazy_load!
       expect(::HQ::GraphQL::Inputs[Advisor].graphql_name).to eql("AdvisorInput")
     end
 
@@ -99,13 +137,13 @@ describe ::HQ::GraphQL::Resource do
       end
 
       it "adds organization type" do
-        ::HQ::GraphQL::Types[Advisor].graphql_definition
+        ::HQ::GraphQL::Types[Advisor].lazy_load!
         expected = ["id", "organization", "organizationId", "name", "nickname", "createdAt", "updatedAt"]
         expect(::HQ::GraphQL::Types[Advisor].fields.keys).to contain_exactly(*expected)
       end
 
       it "doesn't add organization type" do
-        ::HQ::GraphQL::Inputs[Advisor].graphql_definition
+        ::HQ::GraphQL::Inputs[Advisor].lazy_load!
         expected = ["id", "organizationId", "name", "nickname", "createdAt", "updatedAt", "X"]
         expect(::HQ::GraphQL::Inputs[Advisor].arguments.keys).to contain_exactly(*expected)
       end
@@ -131,18 +169,18 @@ describe ::HQ::GraphQL::Resource do
     end
 
     it "removes name" do
-      ::HQ::GraphQL::Types[Advisor].graphql_definition
+      ::HQ::GraphQL::Types[Advisor].lazy_load!
       expected = ["id", "nickname", "organizationId", "createdAt", "updatedAt"]
       expect(::HQ::GraphQL::Types[Advisor].fields.keys).to contain_exactly(*expected)
     end
 
     it "customizes graphql name" do
-      ::HQ::GraphQL::Types[Advisor].graphql_definition
+      ::HQ::GraphQL::Types[Advisor].lazy_load!
       expect(::HQ::GraphQL::Types[Advisor].graphql_name).to eql("CustomAdvisorName")
     end
 
     it "overrides the default query class" do
-      new_class = Class.new(::HQ::GraphQL::Object)
+      new_class = Class.new(::GraphQL::Schema::Object)
       advisor_resource.class_eval do
         query_class new_class
       end
@@ -151,7 +189,7 @@ describe ::HQ::GraphQL::Resource do
     end
 
     it "overrides the global query class" do
-      new_class = Class.new(::HQ::GraphQL::Object)
+      new_class = Class.new(::GraphQL::Schema::Object)
       allow(::HQ::GraphQL.config).to receive(:default_object_class) { new_class }
 
       expect(advisor_resource.query_object.superclass).to be(new_class)
@@ -177,13 +215,13 @@ describe ::HQ::GraphQL::Resource do
     end
 
     it "removes name" do
-      ::HQ::GraphQL::Inputs[Advisor].graphql_definition
+      ::HQ::GraphQL::Inputs[Advisor].lazy_load!
       expected = ["id", "nickname", "organizationId", "createdAt", "updatedAt", "X"]
       expect(::HQ::GraphQL::Inputs[Advisor].arguments.keys).to contain_exactly(*expected)
     end
 
     it "customizes graphql name" do
-      ::HQ::GraphQL::Inputs[Advisor].graphql_definition
+      ::HQ::GraphQL::Inputs[Advisor].lazy_load!
       expect(::HQ::GraphQL::Inputs[Advisor].graphql_name).to eql("CustomAdvisorInput")
     end
   end
@@ -213,10 +251,10 @@ describe ::HQ::GraphQL::Resource do
 
     it "removes name on update" do
       update_mutation = advisor_resource.mutation_klasses[:update_advisor]
-      update_mutation.payload_type
+      update_mutation.lazy_load!
 
       input_object = advisor_resource.input_klass
-      input_object.graphql_definition
+      input_object.lazy_load!
 
       aggregate_failures do
         expected_arguments = ["id", "nickname", "organizationId", "organization", "createdAt", "updatedAt", "X"]
@@ -263,6 +301,7 @@ describe ::HQ::GraphQL::Resource do
       FactoryBot.create(:advisor)
       onehq = FactoryBot.create(:advisor, name: "OneHQ")
       results = schema.execute(find_onehq)
+      # byebug
       data = results["data"]["advisorsNamedOneHq"]
       expect(data.size).to eq 1
       advisor = data[0]
@@ -290,7 +329,7 @@ describe ::HQ::GraphQL::Resource do
     end
 
     it "removes id, createdAt and updatedAt" do
-      ::HQ::GraphQL::Inputs[Advisor].graphql_definition
+      ::HQ::GraphQL::Inputs[Advisor].lazy_load!
       expected = ["name", "nickname", "organizationId", "X"]
       expect(::HQ::GraphQL::Inputs[Advisor].arguments.keys).to contain_exactly(*expected)
     end
@@ -430,7 +469,6 @@ describe ::HQ::GraphQL::Resource do
       name = "Bob"
       nickname = "Bobby"
       results = schema.execute(create_mutation, variables: { attributes: { name: name, nickname: nickname, organizationId: organization.id } })
-
       data = results["data"]
       aggregate_failures do
         expect(data["errors"]).to be_nil

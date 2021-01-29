@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
+require "hq/graphql/ext/mutation_extensions"
 require "hq/graphql/inputs"
-require "hq/graphql/mutation"
 require "hq/graphql/types"
 
 module HQ
@@ -130,15 +130,16 @@ module HQ
         def build_mutation(action:, require_primary_key: false, nil_klass: false, &block)
           gql_name = "#{graphql_name}#{action.to_s.titleize}"
           scoped_model_name = model_name
-          Class.new(::HQ::GraphQL::Mutation) do
+
+          klass = Class.new(::GraphQL::Schema::Mutation) do
             graphql_name gql_name
 
-            define_method(:ready?) do |*args|
-              super(*args) && ::HQ::GraphQL.authorized?(action, scoped_model_name, context)
+            define_method(:ready?) do |**args|
+              super(**args) && ::HQ::GraphQL.authorized?(action, scoped_model_name, context)
             end
 
             lazy_load do
-              field :errors, ::HQ::GraphQL::Types::Object, null: false
+              field :errors, ::GraphQL::Types::JSON, null: false
               field :resource, ::HQ::GraphQL::Types[scoped_model_name, nil_klass], null: true
             end
 
@@ -156,6 +157,8 @@ module HQ
               resource.errors.to_h.deep_transform_keys { |k| k.to_s.camelize(:lower) }
             end
           end
+
+          const_set(gql_name, klass)
         end
       end
     end

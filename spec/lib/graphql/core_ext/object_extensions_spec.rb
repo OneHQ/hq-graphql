@@ -1,10 +1,10 @@
 require 'rails_helper'
 
-describe ::HQ::GraphQL::Object do
+describe ::HQ::GraphQL::Ext::ObjectExtensions do
 
   describe ".with_model" do
     let(:hq_object) do
-      Class.new(described_class) do
+      Class.new(::GraphQL::Schema::Object) do
         graphql_name "TestQuery"
       end
     end
@@ -27,7 +27,7 @@ describe ::HQ::GraphQL::Object do
       end
 
       expect(hq_object.fields.keys).to be_empty
-      hq_object.graphql_definition
+      hq_object.lazy_load!
       expected = ["createdAt", "id", "name", "nickname", "organization", "organizationId", "updatedAt"]
       expect(hq_object.fields.keys).to contain_exactly(*expected)
     end
@@ -39,7 +39,7 @@ describe ::HQ::GraphQL::Object do
         field :organization, String, null: true
       end
 
-      hq_object.graphql_definition
+      hq_object.lazy_load!
       aggregate_failures do
         expect(hq_object.fields["name"].type).to eq(::GraphQL::Types::Float)
         expect(hq_object.fields["organization"].type).to eq(::GraphQL::Types::String)
@@ -54,7 +54,7 @@ describe ::HQ::GraphQL::Object do
         end
 
         expect(hq_object.fields.keys).to be_empty
-        hq_object.graphql_definition
+        hq_object.lazy_load!
         expected = ["name", "nickname", "organization", "updatedAt"]
         expect(hq_object.fields.keys).to contain_exactly(*expected)
       end
@@ -65,7 +65,7 @@ describe ::HQ::GraphQL::Object do
           with_model "Advisor"
         end
 
-        expect { hq_object.graphql_definition }.to raise_error(described_class::Error)
+        expect { hq_object.lazy_load! }.to raise_error(::GraphQL::Schema::Object::ActiveRecordError)
       end
 
       it "raises an error when not connected to a model" do
@@ -73,7 +73,7 @@ describe ::HQ::GraphQL::Object do
           remove_attributes :created_at
         end
 
-        expect { hq_object.graphql_definition }.to raise_error(described_class::Error)
+        expect { hq_object.lazy_load! }.to raise_error(::GraphQL::Schema::Object::ActiveRecordError)
       end
     end
 
@@ -85,7 +85,7 @@ describe ::HQ::GraphQL::Object do
         end
 
         expect(hq_object.fields.keys).to be_empty
-        hq_object.graphql_definition
+        hq_object.lazy_load!
         expected = ["createdAt", "id", "name", "nickname", "organizationId", "updatedAt"]
         expect(hq_object.fields.keys).to contain_exactly(*expected)
       end
@@ -96,7 +96,7 @@ describe ::HQ::GraphQL::Object do
           with_model "Advisor"
         end
 
-        expect { hq_object.graphql_definition }.to raise_error(described_class::Error)
+        expect { hq_object.lazy_load! }.to raise_error(::GraphQL::Schema::Object::ActiveRecordError)
       end
 
       it "raises an error when not connected to a model" do
@@ -104,13 +104,13 @@ describe ::HQ::GraphQL::Object do
           remove_associations :organization
         end
 
-        expect { hq_object.graphql_definition }.to raise_error(described_class::Error)
+        expect { hq_object.lazy_load! }.to raise_error(::GraphQL::Schema::Object::ActiveRecordError)
       end
     end
 
     context "with attributes and associations turned off" do
       it "doesn't have any fields by default" do
-        hq_object.graphql_definition
+        hq_object.lazy_load!
         expect(hq_object.fields.keys).to be_empty
       end
 
@@ -118,7 +118,7 @@ describe ::HQ::GraphQL::Object do
         hq_object.class_eval do
           with_model "Advisor", attributes: false, associations: false
         end
-        hq_object.graphql_definition
+        hq_object.lazy_load!
         expect(hq_object.fields.keys).to be_empty
       end
 
@@ -130,7 +130,7 @@ describe ::HQ::GraphQL::Object do
           end
 
           expect(hq_object.fields.keys).to be_empty
-          hq_object.graphql_definition
+          hq_object.lazy_load!
           expect(hq_object.fields.keys).to contain_exactly("name")
         end
 
@@ -140,7 +140,7 @@ describe ::HQ::GraphQL::Object do
             with_model "Advisor", attributes: false, associations: false
           end
 
-          expect { hq_object.graphql_definition }.to raise_error(described_class::Error)
+          expect { hq_object.lazy_load! }.to raise_error(::GraphQL::Schema::Object::ActiveRecordError)
         end
 
         it "raises an error when not connected to a model" do
@@ -148,7 +148,7 @@ describe ::HQ::GraphQL::Object do
             add_attributes :name
           end
 
-          expect { hq_object.graphql_definition }.to raise_error(described_class::Error)
+          expect { hq_object.lazy_load! }.to raise_error(::GraphQL::Schema::Object::ActiveRecordError)
         end
       end
 
@@ -160,7 +160,7 @@ describe ::HQ::GraphQL::Object do
           end
 
           expect(hq_object.fields.keys).to be_empty
-          hq_object.graphql_definition
+          hq_object.lazy_load!
           expect(hq_object.fields.keys).to contain_exactly("organization")
         end
 
@@ -170,7 +170,7 @@ describe ::HQ::GraphQL::Object do
             with_model "Advisor", attributes: false, associations: false
           end
 
-          expect { hq_object.graphql_definition }.to raise_error(described_class::Error)
+          expect { hq_object.lazy_load! }.to raise_error(::GraphQL::Schema::Object::ActiveRecordError)
         end
 
         it "raises an error when not connected to a model" do
@@ -178,7 +178,7 @@ describe ::HQ::GraphQL::Object do
             add_associations :organization
           end
 
-          expect { hq_object.graphql_definition }.to raise_error(described_class::Error)
+          expect { hq_object.lazy_load! }.to raise_error(::GraphQL::Schema::Object::ActiveRecordError)
         end
       end
     end

@@ -1,20 +1,20 @@
 require "rails_helper"
 
-describe ::HQ::GraphQL::Enum do
+describe ::HQ::GraphQL::Ext::EnumExtensions do
   let(:advisor1) { FactoryBot.create(:advisor, :simple_name) }
   let(:advisor2) { FactoryBot.create(:advisor, :simple_name) }
 
-  def build_enum(*args)
-    Class.new(described_class).tap do |klass|
-      klass.class_exec(*args) do |*a|
+  def build_enum(**args)
+    Class.new(::GraphQL::Schema::Enum).tap do |klass|
+      klass.class_exec(**args) do |**a|
         graphql_name "Advisor"
-        with_model Advisor, *a
+        with_model Advisor, **a
       end
     end
   end
 
   it "raises an error if the ActiveRecord class can't be inferred from the class name" do
-    expect { Class.new(described_class) { with_model } }.to raise_error ArgumentError
+    expect { Class.new(::GraphQL::Schema::Enum) { with_model } }.to raise_error ArgumentError
   end
 
   it "generates an enum with default values" do
@@ -22,7 +22,7 @@ describe ::HQ::GraphQL::Enum do
 
     enum = build_enum
     expect(enum.values).to be_empty
-    enum.graphql_definition
+    enum.lazy_load!
     expect(enum.values.keys).to contain_exactly(*expected_keys)
     expect(enum.values.values.map(&:value)).to contain_exactly(advisor1, advisor2)
   end
@@ -45,7 +45,7 @@ describe ::HQ::GraphQL::Enum do
     organization_id = advisor1.organization_id
     enum = build_enum(scope: -> { where(organization_id: organization_id) })
 
-    enum.graphql_definition
+    enum.lazy_load!
     expect(enum.values.keys).to contain_exactly(*expected_keys)
     expect(enum.values.values.map(&:value)).to contain_exactly(advisor1)
   end
@@ -54,7 +54,7 @@ describe ::HQ::GraphQL::Enum do
     expected_keys = ["OneHQ#{advisor1.name.delete(" ")}"]
 
     enum = build_enum(prefix: "OneHQ")
-    enum.graphql_definition
+    enum.lazy_load!
     expect(enum.values.keys).to contain_exactly(*expected_keys)
     expect(enum.values.values.map(&:value)).to contain_exactly(advisor1)
   end
@@ -63,7 +63,7 @@ describe ::HQ::GraphQL::Enum do
     advisor1.update(nickname: "Ricky Bobby")
 
     enum = build_enum(value_method: :nickname)
-    enum.graphql_definition
+    enum.lazy_load!
     expect(enum.values.keys).to contain_exactly(advisor1.nickname.delete(" "))
     expect(enum.values.values.map(&:value)).to contain_exactly(advisor1)
   end

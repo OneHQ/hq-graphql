@@ -2,7 +2,7 @@ require 'rails_helper'
 
 describe ::HQ::GraphQL::Types::UUID do
   let(:hql_object_klass) do
-    Class.new(::HQ::GraphQL::Object) do
+    Class.new(::GraphQL::Schema::Object) do
       graphql_name "TestQuery"
 
       field :name, ::HQ::GraphQL::Types::UUID, null: false
@@ -10,7 +10,7 @@ describe ::HQ::GraphQL::Types::UUID do
   end
 
   let(:query) do
-    Class.new(::HQ::GraphQL::Object) do
+    Class.new(::GraphQL::Schema::Object) do
       graphql_name "Query"
 
       field :advisor, AdvisorType, null: false do
@@ -58,7 +58,7 @@ describe ::HQ::GraphQL::Types::UUID do
       result = schema.execute(query_str, variables: { id: "1" })
       aggregate_failures do
         expect(result["errors"].length).to eql(1)
-        expect(result["errors"][0]["message"]).to eql("Variable id of type UUID! was provided invalid value")
+        expect(result["errors"][0]["message"]).to eql("Variable $id of type UUID! was provided invalid value")
       end
     end
   end

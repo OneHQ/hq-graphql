@@ -3,7 +3,7 @@ require:
   - rubocop-rails
 
 AllCops:
-  TargetRubyVersion: 2.6
+  TargetRubyVersion: 3.0
   DisabledByDefault: true
   NewCops: disable
   Exclude:
@@ -154,7 +154,7 @@ Rails/ApplicationController:
 
 Rails/ApplicationMailer:
   Enabled: false
-  
+
 Rails/ApplicationRecord:
   Enabled: false
 
@@ -166,13 +166,13 @@ Rails/LexicallyScopedActionFilter:
 
 Rails/Output:
   Enabled: false
-  
+
 Rails/RakeEnvironment:
   Enabled: false
 
 Rails/SkipsModelValidations:
   Enabled: true
-  Whitelist: [update_all]
+  AllowedMethods: [update_all]
 
 # Prefer &&/|| over and/or.
 Style/AndOr:

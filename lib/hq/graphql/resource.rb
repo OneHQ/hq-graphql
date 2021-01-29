@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
+require "hq/graphql/ext/input_object_extensions"
+require "hq/graphql/ext/object_extensions"
 require "hq/graphql/enum/sort_by"
 require "hq/graphql/field_extension/paginated_arguments"
-require "hq/graphql/input_object"
-require "hq/graphql/object"
 require "hq/graphql/resource/auto_mutation"
 require "hq/graphql/scalars"
 
@@ -60,23 +60,50 @@ module HQ
         end
 
         def nil_query_object
-          @nil_query_object ||= build_graphql_object(name: "#{graphql_name}Copy", auto_nil: false)
+          @nil_query_object ||= const_set(:NilQuery, build_graphql_object(name: "#{graphql_name}Copy", auto_nil: false))
         end
 
         def query_object
           @query_object ||= begin
-            if @query_object_options
-              options, block = @query_object_options
-              @query_object_options = nil
-              build_graphql_object(**options, &block)
-            else
-              build_graphql_object
-            end
+            qo =
+              if @query_object_options
+                options, block = @query_object_options
+                @query_object_options = nil
+                build_graphql_object(**options, &block)
+              else
+                build_graphql_object
+              end
+            remove_const(:Query) if const_defined?(:Query, false)
+            const_set(:Query, qo)
           end
         end
 
         def sort_fields_enum
           @sort_fields_enum || ::HQ::GraphQL::Enum::SortBy
+        end
+
+        def const_missing(constant_name)
+          constant_name = constant_name.to_sym
+          case constant_name
+          when :Query
+            query_object
+          when :NilQuery
+            nil_query_object
+          when :Input
+            input_klass
+          # when
+          else
+            super
+          end
+          # if constant_name == :ALL && !self.abstract_constant_class  # Special case for :ALL
+          #   const_set(:ALL, __regular_constant_definitions__.map { |definition| __fetch_const_from_definition__(definition) })
+          # elsif constant_name == :ALL_GROUPS && !self.abstract_constant_class  # Special case for :ALL_GROUPS
+          #   const_set(:ALL_GROUPS, __parent_constants__.map { |definition| __fetch_const_from_definition__(definition) })
+          # elsif __constants__.has_key?(constant_name)
+          #   const_set(constant_name, __constants__[constant_name].load(self))
+          # else
+          #   super
+          # end
         end
 
         protected
@@ -115,11 +142,15 @@ module HQ
         def def_root(field_name, is_array: false, null: true, &block)
           resource = self
           resolver = -> {
-            Class.new(::GraphQL::Schema::Resolver) do
+            klass = Class.new(::GraphQL::Schema::Resolver) do
               type = is_array ? [resource.query_object] : resource.query_object
               type type, null: null
               class_eval(&block) if block
             end
+
+            constant_name = "#{field_name.to_s.classify}Resolver"
+            resource.send(:remove_const, constant_name) if resource.const_defined?(constant_name, false)
+            resource.const_set(constant_name, klass)
           }
           ::HQ::GraphQL.root_queries << {
             field_name: field_name, resolver: resolver, model_name: model_name
@@ -172,7 +203,7 @@ module HQ
         def build_graphql_object(name: graphql_name, **options, &block)
           scoped_graphql_name = name
           scoped_model_name = model_name
-          object_class = @query_class || ::HQ::GraphQL.default_object_class || ::HQ::GraphQL::Object
+          object_class = @query_class || ::HQ::GraphQL.default_object_class || ::GraphQL::Schema::Object
           Class.new(object_class) do
             graphql_name scoped_graphql_name
 
@@ -187,18 +218,22 @@ module HQ
           scoped_model_name = model_name
           scoped_excluded_inputs = @excluded_inputs || []
 
-          Class.new(::HQ::GraphQL::InputObject) do
+          input_klass = Class.new(::GraphQL::Schema::InputObject) do
             graphql_name "#{scoped_graphql_name}Input"
 
             with_model scoped_model_name, excluded_inputs: scoped_excluded_inputs, **options
 
             class_eval(&block) if block
           end
+
+          remove_const(:Input) if const_defined?(:Input, false)
+          const_set(:Input, input_klass)
         end
 
         def sort_fields_enum=(fields)
           @sort_fields_enum ||= Class.new(::HQ::GraphQL::Enum::SortBy).tap do |c|
             c.graphql_name "#{graphql_name}Sort"
+            const_set(:Sort, c)
           end
 
           Array(fields).each do |field|

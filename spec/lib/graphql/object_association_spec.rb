@@ -36,7 +36,7 @@ describe ::HQ::GraphQL::ObjectAssociation do
 
 
   let(:schema) do
-    Class.new(GraphQL::Schema) do
+    Class.new(::GraphQL::Schema) do
       query(RootQuery)
       use(::GraphQL::Batch)
     end
@@ -45,7 +45,7 @@ describe ::HQ::GraphQL::ObjectAssociation do
   before(:each) do
     allow(::HQ::GraphQL.config).to receive(:use_experimental_associations) { true }
     stub_const("RootQuery", root_query)
-    schema.to_graphql
+    schema.lazy_load!
   end
 
   context "meta data" do

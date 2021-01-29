@@ -18,12 +18,15 @@ jobs:
           --health-retries 5
         env:
           POSTGRES_PASSWORD: postgres
+    strategy:
+      matrix:
+        ruby: [ 2.6, 2.7, 3.0, head ]
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Ruby 2.6
+      - name: Set up Ruby ${{ matrix.ruby }}
         uses: actions/setup-ruby@v1
         with:
-          ruby-version: 2.6
+          ruby-version: ${{ matrix.ruby }}
       - name: Create cache directory
         run: |
           mkdir -p vendor/bundle
@@ -54,10 +57,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Ruby 2.6
+      - name: Set up Ruby ${{ matrix.ruby }}
         uses: actions/setup-ruby@v1
         with:
-          ruby-version: 2.6
+          ruby-version: ${{ matrix.ruby }}
       - name: Create cache directory
         run: |
           mkdir -p vendor/bundle

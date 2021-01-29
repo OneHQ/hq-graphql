@@ -51,6 +51,7 @@ module HQ
     end
 
     def self.reset!
+      @lazy_load_classes = nil
       @root_queries = nil
       @enums = nil
       @resources = nil
@@ -58,16 +59,28 @@ module HQ
       ::HQ::GraphQL::Types.reset!
     end
 
+    def self.lazy_load!
+      lazy_load_classes.pop.lazy_load! while lazy_load_classes.length > 0
+    end
+
+    def self.lazy_load(klass)
+      lazy_load_classes << klass unless lazy_load_classes.include?(klass)
+    end
+
+    def self.lazy_load_classes
+      @lazy_load_classes ||= []
+    end
+
     def self.root_queries
-      @root_queries ||= Set.new
+      @root_queries ||= []
     end
 
     def self.enums
-      @enums ||= Set.new
+      @enums ||= []
     end
 
     def self.resources
-      @resources ||= Set.new
+      @resources ||= []
     end
   end
 end
@@ -75,16 +88,12 @@ end
 require "hq/graphql/association_loader"
 require "hq/graphql/scalars"
 require "hq/graphql/comparator"
-require "hq/graphql/enum"
+require "hq/graphql/ext"
 require "hq/graphql/inputs"
-require "hq/graphql/input_object"
-require "hq/graphql/mutation"
-require "hq/graphql/object"
 require "hq/graphql/paginated_association_loader"
 require "hq/graphql/record_loader"
 require "hq/graphql/resource"
 require "hq/graphql/root_mutation"
 require "hq/graphql/root_query"
-require "hq/graphql/schema"
 require "hq/graphql/types"
 require "hq/graphql/engine"
