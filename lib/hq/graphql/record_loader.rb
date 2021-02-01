@@ -4,6 +4,7 @@ module HQ
   module GraphQL
     class RecordLoader < ::GraphQL::Batch::Loader
       def initialize(model, column: model.primary_key, where: nil)
+        super()
         @model = model
         @column = column.to_s
         @column_type = model.type_for_attribute(@column)

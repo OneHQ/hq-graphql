@@ -23,10 +23,10 @@ describe ::HQ::GraphQL::Types do
 
     it "finds the type" do
       aggregate_failures do
-        expect(type_object.superclass).to eql(::HQ::GraphQL::Object)
+        expect(type_object.superclass).to eql(::GraphQL::Schema::Object)
         expect(type_object).to eql(described_class[Advisor])
         expect(type_object.fields.keys).to contain_exactly("customField")
-        type_object.to_graphql
+        type_object.lazy_load!
         expect(type_object.fields.keys).to contain_exactly("customField")
       end
     end
@@ -61,11 +61,11 @@ describe ::HQ::GraphQL::Types do
 
     context "Object" do
       it "matches json" do
-        expect(type_from_column("data_json")).to eq ::HQ::GraphQL::Types::Object
+        expect(type_from_column("data_json")).to eq ::GraphQL::Types::JSON
       end
 
       it "matches jsonb" do
-        expect(type_from_column("data_jsonb")).to eq ::HQ::GraphQL::Types::Object
+        expect(type_from_column("data_jsonb")).to eq ::GraphQL::Types::JSON
       end
     end
 

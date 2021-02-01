@@ -4,7 +4,7 @@ require "rails_helper"
 
 describe ::HQ::GraphQL::Comparator do
   let(:query) do
-    Class.new(::HQ::GraphQL::Object) do
+    Class.new(::GraphQL::Schema::Object) do
       graphql_name "Query"
 
       field :field_to_remove, ::GraphQL::Types::Int, null: false
@@ -18,7 +18,7 @@ describe ::HQ::GraphQL::Comparator do
   end
 
   let(:schema) do
-    Class.new(GraphQL::Schema) do
+    Class.new(::GraphQL::Schema) do
       query(Query)
     end
   end
@@ -47,7 +47,7 @@ describe ::HQ::GraphQL::Comparator do
       end
 
       let(:new_query) do
-        Class.new(::HQ::GraphQL::Object) do
+        Class.new(::GraphQL::Schema::Object) do
           graphql_name "Query"
 
           # Breaking change: FieldRemoved (field_to_remove was removed)
@@ -65,7 +65,7 @@ describe ::HQ::GraphQL::Comparator do
       end
 
       let(:new_schema) do
-        Class.new(GraphQL::Schema) do
+        Class.new(::GraphQL::Schema) do
           query(NewQuery)
         end
       end
@@ -127,7 +127,7 @@ describe ::HQ::GraphQL::Comparator do
       end
 
       let(:new_query) do
-        Class.new(::HQ::GraphQL::Object) do
+        Class.new(::GraphQL::Schema::Object) do
           graphql_name "Query"
 
           field :field_to_remove, ::GraphQL::Types::Int, null: false

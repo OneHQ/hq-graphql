@@ -20,7 +20,7 @@ module HQ
         end
       end
 
-      def authorized?(object, ctx)
+      def authorized?(object, _args, ctx)
         super &&
           (!authorize || authorize.call(object, ctx)) &&
           ::HQ::GraphQL.authorize_field(authorize_action, self, object, ctx)

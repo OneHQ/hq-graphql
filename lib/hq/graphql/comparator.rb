@@ -15,12 +15,13 @@ module HQ
 
       class << self
         def compare(old_schema, new_schema, criticality: :breaking)
+          old_schema.load_types! if old_schema < ::GraphQL::Schema
+          new_schema.load_types! if old_schema < ::GraphQL::Schema
           level = CRITICALITY[criticality]
           raise ::ArgumentError, "Invalid criticality. Possible values are #{CRITICALITY.keys.join(", ")}" unless level
 
-          result = ::GraphQL::SchemaComparator.compare(convert_schema_to_string(old_schema), convert_schema_to_string(new_schema))
+          result = ::GraphQL::SchemaComparator.compare(old_schema, new_schema)
           return nil if result.identical?
-
           changes = {}
           changes[:breaking] = result.breaking_changes
           if level >= CRITICALITY[:dangerous]
@@ -32,12 +33,6 @@ module HQ
           return nil unless changes.values.flatten.any?
 
           changes
-        end
-
-        private
-
-        def convert_schema_to_string(schema)
-          schema.is_a?(::String) ? schema : schema.to_definition
         end
       end
     end

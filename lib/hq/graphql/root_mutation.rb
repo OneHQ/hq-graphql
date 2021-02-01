@@ -2,7 +2,7 @@
 
 module HQ
   module GraphQL
-    class RootMutation < ::HQ::GraphQL::Object
+    class RootMutation < ::GraphQL::Schema::Object
       def self.inherited(base)
         super
         base.class_eval do

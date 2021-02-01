@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "hq/graphql/types/object"
 require "hq/graphql/types/uuid"
 
 module HQ
@@ -35,7 +34,7 @@ module HQ
           when :uuid
             ::HQ::GraphQL::Types::UUID
           when :json, :jsonb
-            ::HQ::GraphQL::Types::Object
+            ::GraphQL::Types::JSON
           when :integer
             ::GraphQL::Types::Int
           when :decimal

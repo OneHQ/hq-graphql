@@ -19,10 +19,10 @@ describe ::HQ::GraphQL::Inputs do
       input_object = graphql_klass.input_klass
 
       aggregate_failures do
-        expect(input_object.superclass).to eql(::HQ::GraphQL::InputObject)
+        expect(input_object.superclass).to eql(::GraphQL::Schema::InputObject)
         expect(input_object).to eql(described_class[Advisor])
         expect(input_object.arguments.keys).to contain_exactly("customField")
-        input_object.to_graphql
+        input_object.lazy_load!
         expect(input_object.arguments.keys).to contain_exactly("customField", "X")
       end
     end

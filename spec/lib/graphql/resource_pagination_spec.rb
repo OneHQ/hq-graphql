@@ -26,7 +26,7 @@ describe ::HQ::GraphQL::Resource do
   end
 
   let(:schema) do
-    Class.new(GraphQL::Schema) do
+    Class.new(::GraphQL::Schema) do
       query(RootQuery)
       use(::GraphQL::Batch)
     end
@@ -42,7 +42,7 @@ describe ::HQ::GraphQL::Resource do
   before(:each) do
     allow(::HQ::GraphQL.config).to receive(:use_experimental_associations) { true }
     stub_const("RootQuery", root_query)
-    schema.to_graphql
+    schema.load_types!
   end
 
   it "adds pagination to the root query" do

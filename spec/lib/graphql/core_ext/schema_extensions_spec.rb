@@ -2,9 +2,9 @@
 
 require "rails_helper"
 
-describe ::HQ::GraphQL::Schema do
+describe ::HQ::GraphQL::Ext::SchemaExtensions do
   let(:query) do
-    Class.new(::HQ::GraphQL::Object) do
+    Class.new(::GraphQL::Schema::Object) do
       graphql_name "Query"
 
       field :field, ::GraphQL::Types::Int, null: false
@@ -23,7 +23,7 @@ describe ::HQ::GraphQL::Schema do
     let(:class_name) { "TestSchema" }
 
     let(:schema) do
-      Object.const_set(class_name, Class.new(::HQ::GraphQL::Schema) do
+      Object.const_set(class_name, Class.new(::GraphQL::Schema) do
         dump_directory Rails.root.join("files")
         dump_filename "temp_schema.graphql"
         query(Query)
@@ -43,7 +43,7 @@ describe ::HQ::GraphQL::Schema do
     let(:class_name) { "NoDirSchema" }
 
     let(:schema) do
-      Object.const_set(class_name, Class.new(::HQ::GraphQL::Schema) do
+      Object.const_set(class_name, Class.new(::GraphQL::Schema) do
         dump_filename "temp_schema.graphql"
         query(Query)
       end)
@@ -69,7 +69,7 @@ describe ::HQ::GraphQL::Schema do
     let(:class_name) { "NoFilenameSchema" }
 
     let(:schema) do
-      Object.const_set(class_name, Class.new(::HQ::GraphQL::Schema) do
+      Object.const_set(class_name, Class.new(::GraphQL::Schema) do
         dump_directory Rails.root.join("files")
         query(Query)
       end)

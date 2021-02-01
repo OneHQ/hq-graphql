@@ -1,2 +1,6 @@
 inherit_from:
-  - https://onehq.com/rubocop.yml
+  - https://onehq.com/rubocop3.yml
+
+AllCops:
+  SuggestExtensions: false
+  TargetRubyVersion: 2.6
