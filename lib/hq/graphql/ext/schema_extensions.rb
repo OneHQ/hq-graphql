@@ -5,8 +5,8 @@ module HQ
     module Ext
       module SchemaExtensions
         def self.prepended(klass)
-          klass.alias_method :add_type_without_lazyload, :add_type
-          klass.alias_method :add_type, :add_type_with_lazyload
+          klass.alias_method :add_type_and_traverse_without_types, :add_type_and_traverse
+          klass.alias_method :add_type_and_traverse, :add_type_and_traverse_with_types
         end
 
         def execute(*args, **options)
@@ -30,17 +30,17 @@ module HQ
 
         def load_types!
           ::HQ::GraphQL.load_types!
-          return if @add_type_with_lazyload.blank?
-          while (args, options = @add_type_with_lazyload.shift)
-            add_type_without_lazyload(*args, **options)
+          return if @add_type_and_traverse_with_types.blank?
+          while (args, options = @add_type_and_traverse_with_types.shift)
+            add_type_and_traverse_without_types(*args, **options)
           end
         end
 
         # Defer adding types until first schema execution
-        # https://github.com/rmosolgo/graphql-ruby/blob/792f276444e1dd6004fcafe3820d65fdbbe285f0/lib/graphql/schema.rb#L1888-L1980
-        def add_type_with_lazyload(*args, **options)
-          @add_type_with_lazyload ||= []
-          @add_type_with_lazyload.push([args, options])
+        # https://github.com/rmosolgo/graphql-ruby/blob/345ebb2e3833909963067d81e0e8378717b5bdbf/lib/graphql/schema.rb#L1792
+        def add_type_and_traverse_with_types(*args, **options)
+          @add_type_and_traverse_with_types ||= []
+          @add_type_and_traverse_with_types.push([args, options])
         end
       end
     end

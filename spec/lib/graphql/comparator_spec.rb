@@ -38,6 +38,10 @@ describe ::HQ::GraphQL::Comparator do
       it "should return nil" do
         result = described_class.compare(schema, schema, criticality: :non_breaking)
         expect(result).to be_nil
+
+        definition = schema.to_definition
+        result = described_class.compare(definition, definition, criticality: :non_breaking)
+        expect(result).to be_nil
       end
     end
 
@@ -72,21 +76,25 @@ describe ::HQ::GraphQL::Comparator do
 
       context "when the criticality is set to non-breaking" do
         it "should list all changes" do
-          result = described_class.compare(schema, new_schema, criticality: :non_breaking)
-          aggregate_failures do
-            expect(result[:breaking]).not_to be_nil
-            expect(result[:dangerous]).not_to be_nil
-            expect(result[:non_breaking]).not_to be_nil
+          result1 = described_class.compare(schema, new_schema, criticality: :non_breaking)
+          result2 = described_class.compare(schema.to_definition, new_schema.to_definition, criticality: :non_breaking)
+
+          [result1, result2].each do |result|
+            aggregate_failures do
+              expect(result[:breaking]).not_to be_nil
+              expect(result[:dangerous]).not_to be_nil
+              expect(result[:non_breaking]).not_to be_nil
+            end
+
+            expect(result[:breaking].count).to eq(1)
+            expect(result[:breaking].first.criticality.reason).to match(/Removing a field/i)
+
+            expect(result[:dangerous].count).to eq(1)
+            expect(result[:dangerous].first.criticality.reason).to match(/Changing the default value for an argument/i)
+
+            expect(result[:non_breaking].count).to eq(1)
+            expect(result[:non_breaking].first.field.name).to eq("fieldThatWillAddAnArgument")
           end
-
-          expect(result[:breaking].count).to eq(1)
-          expect(result[:breaking].first.criticality.reason).to match(/Removing a field/i)
-
-          expect(result[:dangerous].count).to eq(1)
-          expect(result[:dangerous].first.criticality.reason).to match(/Changing the default value for an argument/i)
-
-          expect(result[:non_breaking].count).to eq(1)
-          expect(result[:non_breaking].first.field.name).to eq("fieldThatWillAddAnArgument")
         end
       end
 
