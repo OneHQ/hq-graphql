@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+# 2.2.1 (04 February 2021)
+
+### Bug fixes
+
+- Fixed a problem with `::HQ::GraphQL::Comparator` not working correctly when comparing schema definitions
+
 # 2.2.0 (27 January 2021)
 
 ### Breaking changes
