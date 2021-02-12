@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+# 2.2.2 (12 February 2021)
+
+### Bug fixes
+
+- UUID scalar supports nil input. This is related to a change introduced in graphql-ruby v1.10 in which `.coerce_input` is called on nil values.
+
 # 2.2.1 (04 February 2021)
 
 ### Bug fixes

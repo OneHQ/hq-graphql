@@ -26,7 +26,7 @@ module HQ
           end
 
           def validate_uuid(value)
-            !!value.to_s.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+            !value || !!value.to_s.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
           end
         end
       end
