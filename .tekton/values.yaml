@@ -1,0 +1,20 @@
+rubyVersion: 3.0.0
+publish: false
+
+gem: &gem hq-graphql
+
+git:
+  provider: github.com
+  organization: OneHQ
+  repository: *gem
+  # ref:
+  # sha:
+
+global:
+  taskAnnotations: 
+    vault.security.banzaicloud.io/vault-addr: "https://vault.internal.onehq.com"
+    vault.security.banzaicloud.io/vault-path: "jwt"
+    vault.security.banzaicloud.io/vault-auth-method: "jwt"
+    vault.security.banzaicloud.io/vault-tls-secret: "custom-trusted-ca"  
+  rubyVersion: 3.0.0
+  gem: *gem

@@ -1,0 +1,7 @@
+publish: false
+gem-delivery:
+  rbac:
+  - role: edit
+    subjects:
+    - kind: Group
+      name: hq-product
