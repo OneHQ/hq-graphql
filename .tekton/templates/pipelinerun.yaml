@@ -24,7 +24,7 @@ spec:
   workspaces:
 
   pipelineRef:
-    name: gem-delivery
+    name: gem-delivery-hq-graphql
   timeout: 1h30m0s
   podTemplate:
     volumes:

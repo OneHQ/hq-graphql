@@ -1,0 +1,107 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gem-delivery-hq-graphql
+spec:
+  params:
+  - name: ci-image-name
+    description: CI image name
+  - name: gem-name
+    description: Gem name
+  - name: publish
+    default: 'false'
+  - name: git-url
+    description: URL of git repository
+  - name: git-sha
+  - name: git-ref
+  - name: spec-path
+    description: Path for ruby specs (e.g. "spec/{abilities,apis,commands}")
+    default: "spec"
+
+  workspaces:
+  - name: git-source
+  tasks:
+  
+  - name: set-initial-status
+    taskRef:
+      kind: Task
+      name: github-set-status
+    params:
+    - name: gitRepoName
+      value: $(params.gem-name)
+    - name: gitOrganization
+      value: OneHQ
+     
+# This job gets the source from git 
+  - name: fetch-from-git
+    taskRef:
+      name: git-clone
+      kind: ClusterTask
+    params:
+    - name: url
+      value: $(params.git-url)
+    - name: refspec
+      value: "$(params.git-ref):refs/heads/workingcopy"
+    - name: revision
+      value: workingcopy
+    workspaces:
+    - name: output
+      workspace: git-source
+
+# This job gets the source from git 
+  - name: build-ci-image
+    taskRef:
+      name: buildkit
+    workspaces:
+    - name: source
+      workspace: git-source
+    params:
+    - name: TAG
+      value: $(params.git-sha)
+    - name: IMAGE
+      value: $(params.ci-image-name)
+    runAfter:
+      - fetch-from-git
+# This job gets the source from git 
+  - name: run-specs
+    taskRef:
+      name: ruby-run-specs
+    params:
+    - name: image
+      value: $(params.ci-image-name):$(params.git-sha)
+    - name: prepare-database
+      value: "true"
+    - name: spec-path
+      value: $(params.spec-path)
+    - name: app
+      value: $(params.gem-name)
+
+    runAfter:
+      - build-ci-image
+
+  
+  - name: publish-gem
+    params:
+    - name: gem-name
+      value: $(params.gem-name)
+    - name: image
+      value: $(params.ci-image-name):$(params.git-sha)
+    when:
+      - input: "$(params.publish)"
+        operator: in
+        values: ["true"]
+    taskRef:
+      name: publish-to-gemfury
+    runAfter:
+      - run-specs
+
+  finally:
+  - name: set-final-status
+    taskRef:
+      kind: Task
+      name: github-set-status
+    params:
+    - name: gitRepoName
+      value: $(params.gem-name)
+    - name: gitOrganization
+      value: OneHQ
