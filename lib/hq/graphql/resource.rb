@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
+require "hq/graphql/ext/enum_extensions"
 require "hq/graphql/ext/input_object_extensions"
 require "hq/graphql/ext/object_extensions"
+require "hq/graphql/enum/filter_operation"
 require "hq/graphql/enum/sort_by"
 require "hq/graphql/field_extension/paginated_arguments"
+require "hq/graphql/filters"
 require "hq/graphql/resource/auto_mutation"
 require "hq/graphql/scalars"
 
@@ -91,8 +94,47 @@ module HQ
             nil_query_object
           when :Input
             input_klass
+          when :FilterInput
+            filter_input
+          when :FilterFields
+            filter_fields_enum
           else
             super
+          end
+        end
+
+        def filter_input
+          @filter_input ||= begin
+            scoped_self = self
+
+            input_class = Class.new(::GraphQL::Schema::InputObject) do
+              graphql_name "#{scoped_self.graphql_name}FilterInput"
+
+              argument :field, scoped_self.filter_fields_enum, required: true
+              argument :operation, Enum::FilterOperation, required: true
+              argument :value, String, required: true
+            end
+
+            const_set(:FilterInput, input_class)
+          end
+        end
+
+        def filter_fields_enum
+          @filter_fields_enum ||= begin
+            scoped_self = self
+
+            enum_class = Class.new(::GraphQL::Schema::Enum) do
+              graphql_name "#{scoped_self.graphql_name}FilterFields"
+
+              lazy_load do
+                scoped_self.model_klass.columns.sort_by(&:name).each do |column|
+                  next unless HQ::GraphQL::Filters.supported?(column)
+                  value column.name.camelize(:lower), value: column
+                end
+              end
+            end
+
+            const_set(:FilterFields, enum_class)
           end
         end
 
@@ -167,9 +209,13 @@ module HQ
           if find_all
             def_root field_name.pluralize, is_array: true, null: false do
               extension FieldExtension::PaginatedArguments, klass: scoped_self.model_klass if pagination
+              argument :filters, [scoped_self.filter_input], required: false
 
-              define_method(:resolve) do |limit: nil, offset: nil, sort_by: nil, sort_order: nil, **_attrs|
-                scope = scoped_self.scope(context).all
+              define_method(:resolve) do |filters: nil, limit: nil, offset: nil, sort_by: nil, sort_order: nil, **_attrs|
+                filters_scope = ::HQ::GraphQL::Filters.new(filters, scoped_self.model_klass)
+                filters_scope.validate!
+
+                scope = scoped_self.scope(context).all.merge(filters_scope.to_scope)
 
                 if pagination || page || limit
                   offset = [0, *offset].max

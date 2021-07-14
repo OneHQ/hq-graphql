@@ -4,13 +4,12 @@ on: [push, pull_request]
 
 jobs:
   test:
-
     runs-on: ubuntu-latest
 
     services:
       db:
         image: postgres:11
-        ports: ['5432:5432']
+        ports: ["5432:5432"]
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -20,7 +19,7 @@ jobs:
           POSTGRES_PASSWORD: postgres
     strategy:
       matrix:
-        ruby: [ 2.6, 2.7, 3.0 ]
+        ruby: [2.6, 2.7, 3.0]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Ruby ${{ matrix.ruby }}
@@ -34,12 +33,8 @@ jobs:
         with:
           path: vendor/bundle
           key: ${{ runner.os }}-gems-${{ hashFiles('hq-graphql.gemspec') }}
-      - name: Set up environment
-        run: |
-          sudo apt-get update && sudo apt-get install -y apt-transport-https apt-utils
       - name: Install dependencies
         run: |
-          sudo apt-get update && sudo apt-get install postgresql-client-11
           bundle config path vendor/bundle
           bundle install --jobs 4 --retry 3
       - name: Set up database
@@ -52,7 +47,6 @@ jobs:
           DBPASSWORD: postgres
 
   lint:
-
     runs-on: ubuntu-latest
 
     steps:
