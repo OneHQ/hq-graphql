@@ -32,7 +32,8 @@ describe ::HQ::GraphQL::Resource do
     end
   end
 
-  let(:pagination_fields) { ["offset", "limit", "sortBy", "sortOrder"] }
+  let(:association_fields) { ["offset", "limit", "sortBy", "sortOrder"] }
+  let(:query_fields) { association_fields + ["filters"] }
   let(:root_fields) { root_query.fields }
   let(:managers_field) { root_fields["managers"] }
   let(:managers_arguments) { managers_field.arguments }
@@ -47,8 +48,8 @@ describe ::HQ::GraphQL::Resource do
 
   it "adds pagination to the root query" do
     expect(root_fields.keys).to contain_exactly("manager", "managers", "user", "users")
-    expect(managers_arguments.keys).to contain_exactly(*pagination_fields)
-    expect(users_arguments.keys).to contain_exactly(*pagination_fields)
+    expect(managers_arguments.keys).to contain_exactly(*query_fields)
+    expect(users_arguments.keys).to contain_exactly(*query_fields)
   end
 
   it "adds enums to sort fields" do
@@ -65,7 +66,7 @@ describe ::HQ::GraphQL::Resource do
   it "adds pagination to association fields" do
     users_field = manager_resource.query_object.fields["users"]
     users_arguments = users_field.arguments
-    expect(users_field.arguments.keys).to contain_exactly(*pagination_fields)
+    expect(users_field.arguments.keys).to contain_exactly(*association_fields)
     expect(users_arguments["sortOrder"].type).to eq HQ::GraphQL::Enum::SortOrder
     expect(users_arguments["sortBy"].type).not_to eq HQ::GraphQL::Enum::SortBy
     expect(users_arguments["sortBy"].type).to eq user_resource.sort_fields_enum

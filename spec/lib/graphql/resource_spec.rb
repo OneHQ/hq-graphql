@@ -232,8 +232,7 @@ describe ::HQ::GraphQL::Resource do
   end
 
   describe ".def_root" do
-    let(:find_onehq) {
-      <<-GRAPHQL
+    let(:find_onehq) { <<-GRAPHQL
         query advisorsNamedOneHq {
           advisorsNamedOneHq {
             name
@@ -320,13 +319,11 @@ describe ::HQ::GraphQL::Resource do
   end
 
   context "execution" do
-    let(:find_advisor) {
-      <<-GRAPHQL
+    let(:find_advisor) { <<-GRAPHQL
         query findAdvisor($id: ID!) {
           advisor(id: $id) {
             name
             organizationId
-
             organization {
               name
             }
@@ -335,13 +332,11 @@ describe ::HQ::GraphQL::Resource do
       GRAPHQL
     }
 
-    let(:find_advisors) {
-      <<-GRAPHQL
+    let(:find_advisors) { <<-GRAPHQL
         query findAdvisors($limit: Int) {
           advisors(limit: $limit) {
             name
             organizationId
-
             organization {
               name
             }
@@ -350,8 +345,7 @@ describe ::HQ::GraphQL::Resource do
       GRAPHQL
     }
 
-    let(:create_mutation) {
-      <<-GRAPHQL
+    let(:create_mutation) { <<-GRAPHQL
         mutation createAdvisor($attributes: AdvisorInput!) {
           createAdvisor(attributes: $attributes) {
             errors
@@ -365,8 +359,7 @@ describe ::HQ::GraphQL::Resource do
       GRAPHQL
     }
 
-    let(:update_mutation) {
-      <<-GRAPHQL
+    let(:update_mutation) { <<-GRAPHQL
         mutation updateAdvisor($id: ID!, $attributes: AdvisorInput!) {
           updateAdvisor(id: $id, attributes: $attributes) {
             errors
@@ -381,8 +374,7 @@ describe ::HQ::GraphQL::Resource do
       GRAPHQL
     }
 
-    let(:destroy_mutation) {
-      <<-GRAPHQL
+    let(:destroy_mutation) { <<-GRAPHQL
         mutation destroyAdvisor($id: ID!) {
           destroyAdvisor(id: $id) {
             errors
