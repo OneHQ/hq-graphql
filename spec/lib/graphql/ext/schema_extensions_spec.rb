@@ -19,6 +19,31 @@ describe ::HQ::GraphQL::Ext::SchemaExtensions do
     ::FileUtils.rm_rf(Rails.root.join("files")) if ::File.directory?(Rails.root.join("files"))
   end
 
+  context ".load_types!" do
+    let(:schema) do
+      Class.new(::GraphQL::Schema) do
+        query(Query)
+      end
+    end
+
+    let(:query_str) { <<~GRAPHQL
+        query {
+          field
+        }
+      GRAPHQL
+    }
+
+    it "loads types when executing a query" do
+      expect(schema).to receive(:load_types!)
+      schema.execute(query_str)
+    end
+
+    it "loads types when executing multiple queries" do
+      expect(schema).to receive(:load_types!)
+      schema.multiplex([ query: query_str ])
+    end
+  end
+
   context "when the dump directory and filename are given" do
     let(:class_name) { "TestSchema" }
 
