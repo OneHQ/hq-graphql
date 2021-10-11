@@ -9,7 +9,7 @@ module HQ
           klass.alias_method :add_type_and_traverse, :add_type_and_traverse_with_types
         end
 
-        def execute(*args, **options)
+        def multiplex(*args, **options)
           load_types!
           super
         end

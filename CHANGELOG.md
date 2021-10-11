@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+# 2.2.4 (8 October 2021)
+
+### Bug fixes
+
+- Multiplex queries correctly load dynamic types
+
 # 2.2.3 (21 July 2021)
 
 ### New features
