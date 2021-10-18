@@ -101,7 +101,7 @@ describe ::HQ::GraphQL::Types do
 
     context "Date" do
       it "matches iso date" do
-        expect(type_from_column("created_date")).to eq ::GraphQL::Types::ISO8601Date
+        expect(type_from_column("created_date")).to eq ::Types::DateType
       end
     end
 
