@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "hq/graphql/types/uuid"
+require "hq/graphql/types/date_type"
 
 module HQ
   module GraphQL
@@ -42,7 +43,7 @@ module HQ
           when :boolean
             ::GraphQL::Types::Boolean
           when :date
-            ::GraphQL::Types::ISO8601Date
+            ::Types::DateType
           when :datetime
             ::GraphQL::Types::ISO8601DateTime
           else
