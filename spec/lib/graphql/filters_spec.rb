@@ -24,7 +24,7 @@ describe ::HQ::GraphQL::Filters do
   let!(:test_types) { 10.times.map { |i| TestType.create(created_at: 1.year.ago, count: i) } }
 
   let(:query) { <<-GRAPHQL
-      query findTestTypes($filters: [TestTypeFilterInput!]) {
+      query findTestTypes($filters: [TestTypeQueryFilterInput!]) {
         testTypes(filters: $filters) {
           id
         }
