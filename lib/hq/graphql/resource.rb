@@ -108,7 +108,7 @@ module HQ
             scoped_self = self
 
             input_class = Class.new(::GraphQL::Schema::InputObject) do
-              graphql_name "#{scoped_self.graphql_name}FilterInput"
+              graphql_name "#{scoped_self.graphql_name}QueryFilterInput"
 
               argument :field, scoped_self.filter_fields_enum, required: true
               argument :operation, Enum::FilterOperation, required: true
@@ -124,7 +124,7 @@ module HQ
             scoped_self = self
 
             enum_class = Class.new(::GraphQL::Schema::Enum) do
-              graphql_name "#{scoped_self.graphql_name}FilterFields"
+              graphql_name "#{scoped_self.graphql_name}QueryFilterFields"
 
               lazy_load do
                 scoped_self.model_klass.columns.sort_by(&:name).each do |column|
