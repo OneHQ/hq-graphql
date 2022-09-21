@@ -201,7 +201,7 @@ module HQ
               resource.const_set(constant_name, klass)
             }
             ::HQ::GraphQL.root_queries << {
-              field_name: "#{field_name.singularize}Pagination", resolver: connectionResolver, model_name: model_name
+              field_name: "#{field_name}Pagination", resolver: connectionResolver, model_name: model_name
             }
           end
         end
@@ -263,7 +263,7 @@ module HQ
             with_model scoped_model_name, **options
 
             connection_type_class PaginationConnectionType
-            
+
             class_eval(&block) if block
           end
         end
