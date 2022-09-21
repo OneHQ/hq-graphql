@@ -9,6 +9,7 @@ require "hq/graphql/field_extension/paginated_arguments"
 require "hq/graphql/filters"
 require "hq/graphql/resource/auto_mutation"
 require "hq/graphql/scalars"
+require "hq/graphql/pagination_connection_type"
 
 module HQ
   module GraphQL
@@ -171,7 +172,7 @@ module HQ
           @excluded_inputs = fields
         end
 
-        def def_root(field_name, is_array: false, null: true, &block)
+        def def_root(field_name, is_array: false, null: true, pagination: false, &block)
           resource = self
           resolver = -> {
             klass = Class.new(::GraphQL::Schema::Resolver) do
@@ -187,6 +188,22 @@ module HQ
           ::HQ::GraphQL.root_queries << {
             field_name: field_name, resolver: resolver, model_name: model_name
           }
+          if (is_array && pagination)
+            connectionResolver = -> {
+              klass = Class.new(::GraphQL::Schema::Resolver) do
+                type = resource.query_object.connection_type
+                type type, null: null
+                class_eval(&block) if block
+              end
+
+              constant_name = "#{field_name.to_s.classify}ResolverPagination"
+              resource.send(:remove_const, constant_name) if resource.const_defined?(constant_name, false)
+              resource.const_set(constant_name, klass)
+            }
+            ::HQ::GraphQL.root_queries << {
+              field_name: "#{field_name.singularize}Pagination", resolver: connectionResolver, model_name: model_name
+            }
+          end
         end
 
         def root_query(find_one: true, find_all: true, pagination: true, limit_max: 250)
@@ -207,7 +224,7 @@ module HQ
           end
 
           if find_all
-            def_root field_name.pluralize, is_array: true, null: false do
+            def_root field_name.pluralize, is_array: true, null: false, pagination: pagination do
               extension FieldExtension::PaginatedArguments, klass: scoped_self.model_klass if pagination
               argument :filters, [scoped_self.filter_input], required: false
 
@@ -245,6 +262,8 @@ module HQ
 
             with_model scoped_model_name, **options
 
+            connection_type_class PaginationConnectionType
+            
             class_eval(&block) if block
           end
         end
