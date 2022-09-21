@@ -188,8 +188,8 @@ module HQ
           ::HQ::GraphQL.root_queries << {
             field_name: field_name, resolver: resolver, model_name: model_name
           }
-          if (is_array && pagination)
-            connectionResolver = -> {
+          if is_array && pagination
+            connection_resolver = -> {
               klass = Class.new(::GraphQL::Schema::Resolver) do
                 type = resource.query_object.connection_type
                 type type, null: null
@@ -201,7 +201,7 @@ module HQ
               resource.const_set(constant_name, klass)
             }
             ::HQ::GraphQL.root_queries << {
-              field_name: "#{field_name}Pagination", resolver: connectionResolver, model_name: model_name
+              field_name: "#{field_name}Pagination", resolver: connection_resolver, model_name: model_name
             }
           end
         end
