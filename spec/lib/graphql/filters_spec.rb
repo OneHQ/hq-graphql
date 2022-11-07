@@ -26,7 +26,9 @@ describe ::HQ::GraphQL::Filters do
   let(:query) { <<-GRAPHQL
       query findTestTypes($filters: [TestTypeQueryFilterInput!]) {
         testTypes(filters: $filters) {
-          id
+          testTypes {
+            id
+          }
         }
       }
     GRAPHQL
@@ -47,14 +49,14 @@ describe ::HQ::GraphQL::Filters do
 
     it "filters test_types using WITH" do
       results = schema.execute(query, variables: { filters: [{ field: "isBool", operation: "WITH", value: "t" }] })
-      data = results["data"]["testTypes"]
+      data = results["data"]["testTypes"]["testTypes"]
       expect(data.length).to be 1
       expect(data[0]["id"]).to eql(target.id)
     end
 
     it "filters test_types using WITH(out)" do
       results = schema.execute(query, variables: { filters: [{ field: "isBool", operation: "WITH", value: "f" }] })
-      data = results["data"]["testTypes"]
+      data = results["data"]["testTypes"]["testTypes"]
       expect(data.length).to be 10
       expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.map(&:id))
     end
@@ -81,14 +83,14 @@ describe ::HQ::GraphQL::Filters do
 
     it "filters test_types using GREATER_THAN" do
       results = schema.execute(query, variables: { filters: [{ field: "createdAt", operation: "GREATER_THAN", value: target.created_at.iso8601 }] })
-      data = results["data"]["testTypes"]
+      data = results["data"]["testTypes"]["testTypes"]
       expect(data.length).to be 1
       expect(data[0]["id"]).to eql(target.id)
     end
 
     it "filters test_types using LESS_THAN" do
       results = schema.execute(query, variables: { filters: [{ field: "createdAt", operation: "LESS_THAN", value: target.created_at.iso8601 }] })
-      data = results["data"]["testTypes"]
+      data = results["data"]["testTypes"]["testTypes"]
       expect(data.length).to be 10
       expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.map(&:id))
     end
@@ -116,14 +118,14 @@ describe ::HQ::GraphQL::Filters do
 
     it "filters test_types using GREATER_THAN" do
       results = schema.execute(query, variables: { filters: [{ field: "count", operation: "GREATER_THAN", value: "10" }] })
-      data = results["data"]["testTypes"]
+      data = results["data"]["testTypes"]["testTypes"]
       expect(data.length).to be 1
       expect(data[0]["id"]).to eql(target.id)
     end
 
     it "filters test_types using LESS_THAN" do
       results = schema.execute(query, variables: { filters: [{ field: "count", operation: "LESS_THAN", value: "10" }] })
-      data = results["data"]["testTypes"]
+      data = results["data"]["testTypes"]["testTypes"]
       expect(data.length).to be 10
       expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.map(&:id))
     end
@@ -131,14 +133,14 @@ describe ::HQ::GraphQL::Filters do
     it "filters test_types using EQUAL" do
       target = test_types.sample
       results = schema.execute(query, variables: { filters: [{ field: "count", operation: "EQUAL", value: target.count.to_s }] })
-      data = results["data"]["testTypes"]
+      data = results["data"]["testTypes"]["testTypes"]
       expect(data.length).to be 1
       expect(data[0]["id"]).to eql(target.id)
     end
 
     it "filters test_types using NOT_EQUAL" do
       results = schema.execute(query, variables: { filters: [{ field: "count", operation: "NOT_EQUAL", value: target.count.to_s }] })
-      data = results["data"]["testTypes"]
+      data = results["data"]["testTypes"]["testTypes"]
       expect(data.length).to be 10
       expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.map(&:id))
     end
@@ -165,28 +167,28 @@ describe ::HQ::GraphQL::Filters do
 
     it "filters test_types using EQUAL" do
       results = schema.execute(query, variables: { filters: [{ field: "name", operation: "EQUAL", value: target.name }] })
-      data = results["data"]["testTypes"]
+      data = results["data"]["testTypes"]["testTypes"]
       expect(data.length).to be 1
       expect(data[0]["id"]).to eql(target.id)
     end
 
     it "filters test_types using NOT_EQUAL" do
       results = schema.execute(query, variables: { filters: [{ field: "name", operation: "NOT_EQUAL", value: target.name }] })
-      data = results["data"]["testTypes"]
+      data = results["data"]["testTypes"]["testTypes"]
       expect(data.length).to be 10
       expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.map(&:id))
     end
 
     it "filters test_types using LIKE" do
       results = schema.execute(query, variables: { filters: [{ field: "name", operation: "LIKE", value: "unique" }] })
-      data = results["data"]["testTypes"]
+      data = results["data"]["testTypes"]["testTypes"]
       expect(data.length).to be 1
       expect(data[0]["id"]).to eql(target.id)
     end
 
     it "filters test_types using NOT_LIKE" do
       results = schema.execute(query, variables: { filters: [{ field: "name", operation: "NOT_LIKE", value: "unique" }] })
-      data = results["data"]["testTypes"]
+      data = results["data"]["testTypes"]["testTypes"]
       expect(data.length).to be 10
       expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.map(&:id))
     end
@@ -206,14 +208,14 @@ describe ::HQ::GraphQL::Filters do
 
     it "filters test_types using EQUAL" do
       results = schema.execute(query, variables: { filters: [{ field: "id", operation: "EQUAL", value: target.id }] })
-      data = results["data"]["testTypes"]
+      data = results["data"]["testTypes"]["testTypes"]
       expect(data.length).to be 1
       expect(data[0]["id"]).to eql(target.id)
     end
 
     it "filters test_types using NOT_EQUAL" do
       results = schema.execute(query, variables: { filters: [{ field: "id", operation: "NOT_EQUAL", value: target.id }] })
-      data = results["data"]["testTypes"]
+      data = results["data"]["testTypes"]["testTypes"]
       expect(data.length).to be 10
       expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.map(&:id))
     end

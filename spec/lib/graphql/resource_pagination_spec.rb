@@ -33,16 +33,13 @@ describe ::HQ::GraphQL::Resource do
   end
 
   let(:association_fields) { ["offset", "limit", "sortBy", "sortOrder"] }
-  let(:query_fields) { association_fields + ["filters"] }
+  let(:connection_fields) { ["before", "after", "first", "last"] }
+  let(:query_fields) { association_fields + connection_fields + ["filters"] }
   let(:root_fields) { root_query.fields }
   let(:managers_field) { root_fields["managers"] }
   let(:managers_arguments) { managers_field.arguments }
-  let(:managers_pagination_field) { root_fields["managersPagination"] }
-  let(:managers_pagination_arguments) { managers_pagination_field.arguments }
   let(:users_field) { root_fields["users"] }
   let(:users_arguments) { users_field.arguments }
-  let(:users_pagination_field) { root_fields["usersPagination"] }
-  let(:users_pagination_arguments) { users_pagination_field.arguments }
 
   before(:each) do
     allow(::HQ::GraphQL.config).to receive(:use_experimental_associations) { true }
@@ -51,7 +48,7 @@ describe ::HQ::GraphQL::Resource do
   end
 
   it "adds pagination to the root query and pagination queries" do
-    expect(root_fields.keys).to contain_exactly("manager", "managers", "managersPagination", "user", "users", "usersPagination")
+    expect(root_fields.keys).to contain_exactly("manager", "managers", "user", "users")
     expect(managers_arguments.keys).to contain_exactly(*query_fields)
     expect(users_arguments.keys).to contain_exactly(*query_fields)
   end
@@ -59,16 +56,11 @@ describe ::HQ::GraphQL::Resource do
   it "adds enums to sort fields" do
     expect(managers_arguments["sortOrder"].type).to eq HQ::GraphQL::Enum::SortOrder
     expect(managers_arguments["sortBy"].type).to eq HQ::GraphQL::Enum::SortBy
-    expect(managers_pagination_arguments["sortOrder"].type).to eq HQ::GraphQL::Enum::SortOrder
-    expect(managers_pagination_arguments["sortBy"].type).to eq HQ::GraphQL::Enum::SortBy
     expect(HQ::GraphQL::Enum::SortBy.values.keys).to contain_exactly("CreatedAt", "UpdatedAt")
 
     expect(users_arguments["sortOrder"].type).to eq HQ::GraphQL::Enum::SortOrder
     expect(users_arguments["sortBy"].type).not_to eq HQ::GraphQL::Enum::SortBy
     expect(users_arguments["sortBy"].type).to eq user_resource.sort_fields_enum
-    expect(users_pagination_arguments["sortOrder"].type).to eq HQ::GraphQL::Enum::SortOrder
-    expect(users_pagination_arguments["sortBy"].type).not_to eq HQ::GraphQL::Enum::SortBy
-    expect(users_pagination_arguments["sortBy"].type).to eq user_resource.sort_fields_enum
     expect(user_resource.sort_fields_enum.values.keys).to contain_exactly("CreatedAt", "UpdatedAt", "Name")
   end
 
@@ -79,9 +71,6 @@ describe ::HQ::GraphQL::Resource do
     expect(users_arguments["sortOrder"].type).to eq HQ::GraphQL::Enum::SortOrder
     expect(users_arguments["sortBy"].type).not_to eq HQ::GraphQL::Enum::SortBy
     expect(users_arguments["sortBy"].type).to eq user_resource.sort_fields_enum
-    expect(users_pagination_arguments["sortOrder"].type).to eq HQ::GraphQL::Enum::SortOrder
-    expect(users_pagination_arguments["sortBy"].type).not_to eq HQ::GraphQL::Enum::SortBy
-    expect(users_pagination_arguments["sortBy"].type).to eq user_resource.sort_fields_enum
     expect(user_resource.sort_fields_enum.values.keys).to contain_exactly("CreatedAt", "UpdatedAt", "Name")
   end
 end
