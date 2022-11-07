@@ -13,7 +13,7 @@ module HQ
           Base64.urlsafe_encode64(item.to_s).delete("=")
         end
      end
-     
+
       def total_count
         object.items.size
       end

@@ -172,7 +172,7 @@ module HQ
           @excluded_inputs = fields
         end
 
-        def def_root(field_name, is_array: false, null: true, pagination: false, &block)
+        def def_root(field_name, is_array: false, null: true, &block)
           resource = self
           suffix = is_array ? "List" : ""
           resolver = -> {
@@ -231,7 +231,7 @@ module HQ
           end
 
           if find_all
-            def_root field_name.pluralize, is_array: true, null: false, pagination: pagination do
+            def_root field_name.pluralize, is_array: true, null: false do
               extension FieldExtension::PaginatedArguments, klass: scoped_self.model_klass if pagination
               argument :filters, [scoped_self.filter_input], required: false
 
