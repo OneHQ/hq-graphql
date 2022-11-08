@@ -172,8 +172,9 @@ module HQ
           @excluded_inputs = fields
         end
 
-        def def_root(field_name, is_array: false, null: true, pagination: false, &block)
+        def def_root(field_name, is_array: false, null: true, &block)
           resource = self
+          suffix = is_array ? "List" : ""
           resolver = -> {
             klass = Class.new(::GraphQL::Schema::Resolver) do
               type = is_array ? [resource.query_object] : resource.query_object
@@ -181,27 +182,33 @@ module HQ
               class_eval(&block) if block
             end
 
-            constant_name = "#{field_name.to_s.classify}Resolver"
+            constant_name = "#{field_name.to_s.classify}Resolver#{suffix}"
             resource.send(:remove_const, constant_name) if resource.const_defined?(constant_name, false)
             resource.const_set(constant_name, klass)
           }
-          ::HQ::GraphQL.root_queries << {
-            field_name: field_name, resolver: resolver, model_name: model_name
-          }
-          if is_array && pagination
+          if is_array
             connection_resolver = -> {
               klass = Class.new(::GraphQL::Schema::Resolver) do
                 type = resource.query_object.connection_type
+                type.field field_name, [resource.query_object], null: true
+                type.define_method(field_name) do
+                  object.items
+                end
+
                 type type, null: null
                 class_eval(&block) if block
               end
 
-              constant_name = "#{field_name.to_s.classify}ResolverPagination"
+              constant_name = "#{field_name.to_s.classify}Resolver"
               resource.send(:remove_const, constant_name) if resource.const_defined?(constant_name, false)
               resource.const_set(constant_name, klass)
             }
             ::HQ::GraphQL.root_queries << {
-              field_name: "#{field_name}Pagination", resolver: connection_resolver, model_name: model_name
+              field_name: field_name, resolver: connection_resolver, model_name: model_name
+            }
+          else
+            ::HQ::GraphQL.root_queries << {
+              field_name: field_name, resolver: resolver, model_name: model_name
             }
           end
         end
@@ -224,7 +231,7 @@ module HQ
           end
 
           if find_all
-            def_root field_name.pluralize, is_array: true, null: false, pagination: pagination do
+            def_root field_name.pluralize, is_array: true, null: false do
               extension FieldExtension::PaginatedArguments, klass: scoped_self.model_klass if pagination
               argument :filters, [scoped_self.filter_input], required: false
 
