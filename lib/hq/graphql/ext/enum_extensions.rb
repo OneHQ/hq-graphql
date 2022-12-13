@@ -73,6 +73,10 @@ module HQ::GraphQL
       def default_model_name
         to_s.sub(/^((::)?\w+)::/, "")
       end
+
+      def default_graphql_name
+        default_model_name
+      end
     end
   end
 end
