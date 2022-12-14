@@ -75,7 +75,7 @@ module HQ::GraphQL
       end
 
       def default_graphql_name
-        default_model_name
+        to_s.split("::").last
       end
     end
   end
