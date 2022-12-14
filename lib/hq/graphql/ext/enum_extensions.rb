@@ -74,8 +74,10 @@ module HQ::GraphQL
         to_s.sub(/^((::)?\w+)::/, "")
       end
 
+      # This override method allow us to keep the suffix `-Type`
+      # if we don't specify the `graphql_name`.
       def default_graphql_name
-        to_s.split("::").last
+        to_s.split("::").last.sub(/\Z/, "")
       end
     end
   end
