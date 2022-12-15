@@ -1,7 +1,8 @@
 publish: false
-gem-delivery:
+delivery:
   rbac:
-  - role: edit
-    subjects:
-    - kind: Group
-      name: hq-product
+    rolebindings:
+    - role: edit
+      subjects:
+      - kind: Group
+        name: hq-product

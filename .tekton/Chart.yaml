@@ -22,10 +22,10 @@ version: 0.1.0
 # follow Semantic Versioning. They should reflect the version the application is using.
 
 dependencies:
-- name: gem-delivery
+- name: ruby-pipelines
   alias: delivery
-  version: "0.1.0-dev.7"
-  repository: "oci://us-docker.pkg.dev/onehq-production/onehq-public/"
+  version: "0.2.0-dev.2"
+  repository: "oci://public.ecr.aws/c7o8r4o5"
 # - name: gem-delivery
 #   alias: delivery
 #   version: "0.1.0"

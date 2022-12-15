@@ -1,13 +1,14 @@
 publish: true
 
-gem-delivery:
+delivery:
   rbac:
-  - role: edit
-    subjects:
-    - kind: Group
-      name: hq-platform
+    rolebindings:
+    - role: edit
+      subjects:
+      - kind: Group
+        name: hq-platform
 
-  - role: view
-    subjects:
-    - kind: Group
-      name: hq-product
+    - role: view
+      subjects:
+      - kind: Group
+        name: hq-product

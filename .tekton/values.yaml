@@ -16,5 +16,5 @@ global:
     vault.security.banzaicloud.io/vault-path: "jwt"
     vault.security.banzaicloud.io/vault-auth-method: "jwt"
     vault.security.banzaicloud.io/vault-tls-secret: "custom-trusted-ca"  
-  rubyVersion: 3.0.0
+  rubyVersion: 3.0.4
   gem: *gem
