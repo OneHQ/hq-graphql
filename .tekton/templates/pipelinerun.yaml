@@ -8,7 +8,7 @@ spec:
   serviceAccountName: build-bot
   params:
   - name: ci-image-name
-    value: us-docker.pkg.dev/onehq-production/onehq/{{ .Values.gem }}-ci
+    value: 565865620223.dkr.ecr.us-east-2.amazonaws.com/{{ .Values.gem }}-ci
   - name: gem-name
     value: "{{ .Values.gem }}"
   - name: publish
@@ -21,7 +21,8 @@ spec:
     value: "{{ required "Required .Values.git.ref" .Values.git.ref }}"
   - name: rubyVersion
     value: "{{ .Values.rubyVersion }}"
-  workspaces:
+  - name: prepare-database
+    value: "false"
 
   pipelineRef:
     name: gem-delivery-hq-graphql
@@ -45,4 +46,3 @@ spec:
           resources:
             requests:
               storage: 1Gi
-              
