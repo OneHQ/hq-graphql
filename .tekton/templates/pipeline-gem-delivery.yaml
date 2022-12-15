@@ -70,7 +70,7 @@ spec:
     - name: image
       value: $(params.ci-image-name):$(params.git-sha)
     - name: prepare-database
-      value: "true"
+      value: "$(params.prepare-database)"
     - name: spec-path
       value: $(params.spec-path)
     - name: app
