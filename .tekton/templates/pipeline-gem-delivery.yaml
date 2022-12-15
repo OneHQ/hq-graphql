@@ -17,7 +17,9 @@ spec:
   - name: spec-path
     description: Path for ruby specs (e.g. "spec/{abilities,apis,commands}")
     default: "spec"
-
+  - name: prepare-database
+    type: string
+    default: "false"
   workspaces:
   - name: git-source
   tasks:
