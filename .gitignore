@@ -31,3 +31,5 @@ sphinx/**/*
 tmp
 tmp/**/*
 *.iml
+.tekton/charts*
+.tekton/Chart.lock

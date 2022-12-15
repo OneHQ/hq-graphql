@@ -35,4 +35,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rubocop",                                 "~> 1.8"
   s.add_development_dependency "rubocop-performance",                     "~> 1.4"
   s.add_development_dependency "rubocop-rails",                           "~> 2.3"
+  s.add_development_dependency "rspec_junit_formatter",                   "~> 0.4.1"
 end
