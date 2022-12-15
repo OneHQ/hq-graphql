@@ -1,11 +1,15 @@
 # frozen_string_literal: true
 
+require "hq/graphql/ext/enum_extensions"
 require "hq/graphql/ext/input_object_extensions"
 require "hq/graphql/ext/object_extensions"
+require "hq/graphql/enum/filter_operation"
 require "hq/graphql/enum/sort_by"
 require "hq/graphql/field_extension/paginated_arguments"
+require "hq/graphql/filters"
 require "hq/graphql/resource/auto_mutation"
 require "hq/graphql/scalars"
+require "hq/graphql/pagination_connection_type"
 
 module HQ
   module GraphQL
@@ -91,8 +95,47 @@ module HQ
             nil_query_object
           when :Input
             input_klass
+          when :FilterInput
+            filter_input
+          when :FilterFields
+            filter_fields_enum
           else
             super
+          end
+        end
+
+        def filter_input
+          @filter_input ||= begin
+            scoped_self = self
+
+            input_class = Class.new(::GraphQL::Schema::InputObject) do
+              graphql_name "#{scoped_self.graphql_name}QueryFilterInput"
+
+              argument :field, scoped_self.filter_fields_enum, required: true
+              argument :operation, Enum::FilterOperation, required: true
+              argument :value, String, required: true
+            end
+
+            const_set(:FilterInput, input_class)
+          end
+        end
+
+        def filter_fields_enum
+          @filter_fields_enum ||= begin
+            scoped_self = self
+
+            enum_class = Class.new(::GraphQL::Schema::Enum) do
+              graphql_name "#{scoped_self.graphql_name}QueryFilterFields"
+
+              lazy_load do
+                scoped_self.model_klass.columns.sort_by(&:name).each do |column|
+                  next unless HQ::GraphQL::Filters.supported?(column)
+                  value column.name.camelize(:lower), value: column
+                end
+              end
+            end
+
+            const_set(:FilterFields, enum_class)
           end
         end
 
@@ -131,6 +174,7 @@ module HQ
 
         def def_root(field_name, is_array: false, null: true, &block)
           resource = self
+          suffix = is_array ? "List" : ""
           resolver = -> {
             klass = Class.new(::GraphQL::Schema::Resolver) do
               type = is_array ? [resource.query_object] : resource.query_object
@@ -138,13 +182,35 @@ module HQ
               class_eval(&block) if block
             end
 
-            constant_name = "#{field_name.to_s.classify}Resolver"
+            constant_name = "#{field_name.to_s.classify}Resolver#{suffix}"
             resource.send(:remove_const, constant_name) if resource.const_defined?(constant_name, false)
             resource.const_set(constant_name, klass)
           }
-          ::HQ::GraphQL.root_queries << {
-            field_name: field_name, resolver: resolver, model_name: model_name
-          }
+          if is_array
+            connection_resolver = -> {
+              klass = Class.new(::GraphQL::Schema::Resolver) do
+                type = resource.query_object.connection_type
+                type.field field_name, [resource.query_object], null: true
+                type.define_method(field_name) do
+                  object.items
+                end
+
+                type type, null: null
+                class_eval(&block) if block
+              end
+
+              constant_name = "#{field_name.to_s.classify}Resolver"
+              resource.send(:remove_const, constant_name) if resource.const_defined?(constant_name, false)
+              resource.const_set(constant_name, klass)
+            }
+            ::HQ::GraphQL.root_queries << {
+              field_name: field_name, resolver: connection_resolver, model_name: model_name
+            }
+          else
+            ::HQ::GraphQL.root_queries << {
+              field_name: field_name, resolver: resolver, model_name: model_name
+            }
+          end
         end
 
         def root_query(find_one: true, find_all: true, pagination: true, limit_max: 250)
@@ -167,9 +233,13 @@ module HQ
           if find_all
             def_root field_name.pluralize, is_array: true, null: false do
               extension FieldExtension::PaginatedArguments, klass: scoped_self.model_klass if pagination
+              argument :filters, [scoped_self.filter_input], required: false
 
-              define_method(:resolve) do |limit: nil, offset: nil, sort_by: nil, sort_order: nil, **_attrs|
-                scope = scoped_self.scope(context).all
+              define_method(:resolve) do |filters: nil, limit: nil, offset: nil, sort_by: nil, sort_order: nil, **_attrs|
+                filters_scope = ::HQ::GraphQL::Filters.new(filters, scoped_self.model_klass)
+                filters_scope.validate!
+
+                scope = scoped_self.scope(context).all.merge(filters_scope.to_scope)
 
                 if pagination || page || limit
                   offset = [0, *offset].max
@@ -198,6 +268,8 @@ module HQ
             graphql_name scoped_graphql_name
 
             with_model scoped_model_name, **options
+
+            connection_type_class PaginationConnectionType
 
             class_eval(&block) if block
           end

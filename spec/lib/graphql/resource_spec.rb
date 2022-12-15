@@ -232,15 +232,16 @@ describe ::HQ::GraphQL::Resource do
   end
 
   describe ".def_root" do
-    let(:find_onehq) {
-      <<-GRAPHQL
+    let(:find_onehq) { <<-GRAPHQL
         query advisorsNamedOneHq {
           advisorsNamedOneHq {
-            name
-            organizationId
-
-            organization {
+            advisorsNamedOneHq {
               name
+              organizationId
+
+              organization {
+                name
+              }
             }
           }
         }
@@ -263,7 +264,7 @@ describe ::HQ::GraphQL::Resource do
       FactoryBot.create(:advisor)
       onehq = FactoryBot.create(:advisor, name: "OneHQ")
       results = schema.execute(find_onehq)
-      data = results["data"]["advisorsNamedOneHq"]
+      data = results["data"]["advisorsNamedOneHq"]["advisorsNamedOneHq"]
       expect(data.size).to eq 1
       advisor = data[0]
 
@@ -320,13 +321,11 @@ describe ::HQ::GraphQL::Resource do
   end
 
   context "execution" do
-    let(:find_advisor) {
-      <<-GRAPHQL
+    let(:find_advisor) { <<-GRAPHQL
         query findAdvisor($id: ID!) {
           advisor(id: $id) {
             name
             organizationId
-
             organization {
               name
             }
@@ -335,23 +334,22 @@ describe ::HQ::GraphQL::Resource do
       GRAPHQL
     }
 
-    let(:find_advisors) {
-      <<-GRAPHQL
+    let(:find_advisors) { <<-GRAPHQL
         query findAdvisors($limit: Int) {
           advisors(limit: $limit) {
-            name
-            organizationId
-
-            organization {
+            advisors {
               name
+              organizationId
+              organization {
+                name
+              }
             }
           }
         }
       GRAPHQL
     }
 
-    let(:create_mutation) {
-      <<-GRAPHQL
+    let(:create_mutation) { <<-GRAPHQL
         mutation createAdvisor($attributes: AdvisorInput!) {
           createAdvisor(attributes: $attributes) {
             errors
@@ -365,8 +363,7 @@ describe ::HQ::GraphQL::Resource do
       GRAPHQL
     }
 
-    let(:update_mutation) {
-      <<-GRAPHQL
+    let(:update_mutation) { <<-GRAPHQL
         mutation updateAdvisor($id: ID!, $attributes: AdvisorInput!) {
           updateAdvisor(id: $id, attributes: $attributes) {
             errors
@@ -381,8 +378,7 @@ describe ::HQ::GraphQL::Resource do
       GRAPHQL
     }
 
-    let(:destroy_mutation) {
-      <<-GRAPHQL
+    let(:destroy_mutation) { <<-GRAPHQL
         mutation destroyAdvisor($id: ID!) {
           destroyAdvisor(id: $id) {
             errors
@@ -421,7 +417,7 @@ describe ::HQ::GraphQL::Resource do
     it "uses pagination" do
       10.times { FactoryBot.create(:advisor) }
       results = schema.execute(find_advisors, variables: { limit: 5 })
-      data = results["data"]["advisors"]
+      data = results["data"]["advisors"]["advisors"]
       expect(data.length).to be 5
     end
 

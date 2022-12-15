@@ -8,6 +8,27 @@
 
 ### Bug fixes
 
+# 2.2.4 (8 October 2021)
+
+### Bug fixes
+
+- Multiplex queries correctly load dynamic types
+
+# 2.2.3 (21 July 2021)
+
+### New features
+
+- Root queries support field filters
+
+```graphql
+query {
+  users(filters: [{ field: username, operation: LIKE, value: "gmail.com" }]) {
+    id
+    username
+  }
+}
+```
+
 # 2.2.2 (12 February 2021)
 
 ### Bug fixes

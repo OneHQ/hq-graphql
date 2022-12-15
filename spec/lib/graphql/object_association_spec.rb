@@ -60,8 +60,7 @@ describe ::HQ::GraphQL::ObjectAssociation do
     let!(:user2) { ::FactoryBot.create(:user, organization: organization, inactive: true) }
     let!(:user3) { ::FactoryBot.create(:user, organization: organization) }
 
-    let(:find_organization) do
-      <<~GRAPHQL
+    let(:find_organization) { <<~GRAPHQL
         query FindOrganization($id: ID!, $userName: String) {
           organization(id: $id) {
             id
@@ -72,7 +71,7 @@ describe ::HQ::GraphQL::ObjectAssociation do
           }
         }
       GRAPHQL
-    end
+    }
 
     it "finds active users" do
       results = schema.execute(find_organization, variables: { id: organization.id })

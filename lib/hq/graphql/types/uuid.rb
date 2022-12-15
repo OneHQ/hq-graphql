@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "hq/graphql/util"
+
 module HQ
   module GraphQL
     module Types
@@ -18,15 +20,11 @@ module HQ
           private
 
           def validate_and_return_uuid(value)
-            if validate_uuid(value)
+            if ::HQ::GraphQL::Util.validate_uuid(value)
               value
             else
               raise ::GraphQL::CoercionError, "#{value.inspect} is not a valid UUID"
             end
-          end
-
-          def validate_uuid(value)
-            !value || !!value.to_s.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
           end
         end
       end
