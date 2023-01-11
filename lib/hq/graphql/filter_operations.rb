@@ -26,7 +26,7 @@ module HQ
             return arel.call(table: table, column_name: column_name, value: sanitized_value)
           end
 
-          if sanitized_value.nil?
+          if column_value.present?
             return table[column_name].send(arel, table[column_value.name])
           end
 
