@@ -32,7 +32,7 @@ module HQ
 
       def to_scope
         filters.reduce(model.all) do |s, filter|
-          s.where(filter.to_arel)
+          filter.is_or ? s.or(model.all.where(filter.to_arel)) : s.where(filter.to_arel)
         end
       end
 
@@ -68,34 +68,56 @@ module HQ
         end
 
         def self.validate_value(**options)
-          validates :value, **options, unless: ->(filter) { filter.operation == WITH }
+          validates :value, **options, unless: ->(filter) { filter.operation == WITH || filter.operation == IN || column_value.present? }
         end
 
         validate :validate_boolean_values, if: ->(filter) { filter.operation == WITH }
 
-        attr_reader :table, :column, :operation, :value
+        validate :value_presence, if: ->(filter) { filter.operation != IN && filter.operation != EQUAL && filter.operation != NOT_EQUAL }
+        validate :array_values_presence, if: ->(filter) { filter.operation == IN }
+        validate :column_value_presence, if: ->(filter) { filter.operation == EQUAL || filter.operation == NOT_EQUAL }
+
+        attr_reader :table, :column, :operation, :is_or, :value, :array_values, :column_value
 
         def initialize(filter, table:)
           @table = table
           @column = filter.field
           @operation = filter.operation
+          @is_or = filter.is_or
           @value = filter.value
+          @array_values = filter.array_values
+          @column_value = filter.column_value
         end
 
         def display_error_message
           return unless errors.any?
           messages = errors.messages.values.join(", ")
-          "#{column.name.camelize(:lower)} (type: #{column.type}, operation: #{operation.name}, value: \"#{value}\"): #{messages}"
+          "#{column.name.camelize(:lower)} (type: #{column.type}, operation: #{operation.name}, value: \"#{value || array_values || column_value}\"): #{messages}"
         end
 
         def to_arel
-          operation.to_arel(table: table, column_name: column.name, value: value)
+          operation.to_arel(table: table, column_name: column.name, value: value, array_values: array_values, column_value: column_value)
         end
 
         def validate_boolean_values
           is_valid = BOOLEAN_VALUES.any? { |v| value.casecmp(v) == 0 }
           return if is_valid
           errors.add(:value, "WITH operation only supports boolean values (#{BOOLEAN_VALUES.join(", ")})")
+        end
+
+        def value_presence
+          return unless value.nil?
+          errors.add(:value, "value can't be null")
+        end
+
+        def array_values_presence
+          return unless array_values.nil?
+          errors.add(:array_values, "array values can't be null")
+        end
+
+        def column_value_presence
+          return unless value.nil? && column_value.nil?
+          errors.add(:array_values, "value or column value must be provided")
         end
       end
 
@@ -133,16 +155,16 @@ module HQ
       end
 
       class NumericFilter < Filter
-        validate_operations GREATER_THAN, LESS_THAN, EQUAL, NOT_EQUAL
+        validate_operations GREATER_THAN, LESS_THAN, EQUAL, NOT_EQUAL, IN
         validate_value numericality: { message: "only supports numerical values" }
       end
 
       class StringFilter < Filter
-        validate_operations EQUAL, NOT_EQUAL, LIKE, NOT_LIKE
+        validate_operations EQUAL, NOT_EQUAL, LIKE, NOT_LIKE, IN
       end
 
       class UuidFilter < Filter
-        validate_operations EQUAL, NOT_EQUAL
+        validate_operations EQUAL, NOT_EQUAL, IN
         validate_value format: { with: HQ::GraphQL::Util::UUID_FORMAT, message: "only supports UUID values (e.g. 00000000-0000-0000-0000-000000000000)" }
       end
     end

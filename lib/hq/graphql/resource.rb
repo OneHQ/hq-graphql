@@ -113,7 +113,10 @@ module HQ
 
               argument :field, scoped_self.filter_fields_enum, required: true
               argument :operation, Enum::FilterOperation, required: true
-              argument :value, String, required: true
+              argument :is_or, ::GraphQL::Schema::Scalar::Boolean, required: false
+              argument :value, String, required: false
+              argument :array_values, [String], required: false
+              argument :column_value, scoped_self.filter_fields_enum, required: false
             end
 
             const_set(:FilterInput, input_class)

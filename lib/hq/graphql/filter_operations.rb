@@ -19,11 +19,15 @@ module HQ
           sanitize ? sanitize.call(value) : value
         end
 
-        def to_arel(table:, column_name:, value:)
-          sanitized_value = sanitize_value(value)
+        def to_arel(table:, column_name:, value:, array_values:, column_value:)
+          sanitized_value = sanitize_value(arel == :in ? array_values : value)
 
           if arel.is_a?(Proc)
             return arel.call(table: table, column_name: column_name, value: sanitized_value)
+          end
+
+          if column_value.present?
+            return table[column_name].send(arel, table[column_value.name])
           end
 
           expression = table[column_name].send(arel, sanitized_value)
@@ -38,6 +42,7 @@ module HQ
 
       OPERATIONS = [
         EQUAL = Operation.new(name: "EQUAL", arel: :eq),
+        IN = Operation.new(name: "IN", arel: :in),
         NOT_EQUAL = Operation.new(name: "NOT_EQUAL", arel: :not_eq, check_for_null: true),
         LIKE = Operation.new(name: "LIKE", arel: :matches, sanitize: ->(value) { "%#{ActiveRecord::Base.sanitize_sql_like(value)}%" }),
         NOT_LIKE = Operation.new(name: "NOT_LIKE", arel: :does_not_match, check_for_null: true, sanitize: ->(value) { "%#{ActiveRecord::Base.sanitize_sql_like(value)}%" }),

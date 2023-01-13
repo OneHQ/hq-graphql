@@ -61,6 +61,13 @@ describe ::HQ::GraphQL::Filters do
       expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.map(&:id))
     end
 
+    it "filters test_types using OR statement" do
+      results = schema.execute(query, variables: { filters: [{ field: "isBool", operation: "WITH", value: "t" }, { field: "isBool", operation: "WITH", value: "f", isOr: true }] })
+      data = results["data"]["testTypes"]["testTypes"]
+      expect(data.length).to be 11
+      expect(data.map { |d| d["id"] }).to contain_exactly(*(test_types + [target]).map(&:id))
+    end
+
     it "only supports boolean values" do
       results = schema.execute(query, variables: { filters: [{ field: "isBool", operation: "WITH", value: "str" }] })
       errors = results["errors"]
@@ -70,7 +77,7 @@ describe ::HQ::GraphQL::Filters do
 
     (described_class::Filter::OPERATIONS - [described_class::Filter::WITH]).each do |operation|
       it "errors when using an unsupported operation: #{operation.name}" do
-        results = schema.execute(query, variables: { filters: [{ field: "isBool", operation: operation.name, value: "t" }] })
+        results = schema.execute(query, variables: { filters: [{ field: "isBool", operation: operation.name, value: "t", arrayValues: ["t"] }] })
         errors = results["errors"]
         expect(errors.length).to be 1
         expect(errors[0]["message"]).to eq "isBool (type: boolean, operation: #{operation.name}, value: \"t\"): only supports the following operations: WITH"
@@ -95,6 +102,13 @@ describe ::HQ::GraphQL::Filters do
       expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.map(&:id))
     end
 
+    it "filters test_types using OR statement" do
+      results = schema.execute(query, variables: { filters: [{ field: "createdAt", operation: "GREATER_THAN", value: target.created_at.iso8601 }, { field: "createdAt", operation: "LESS_THAN", value: target.created_at.iso8601, isOr: true }] })
+      data = results["data"]["testTypes"]["testTypes"]
+      expect(data.length).to be 11
+      expect(data.map { |d| d["id"] }).to contain_exactly(*(test_types + [target]).map(&:id))
+    end
+
     it "only supports iso8601 values" do
       results = schema.execute(query, variables: { filters: [{ field: "createdAt", operation: "GREATER_THAN", value: target.created_at.to_s }] })
       errors = results["errors"]
@@ -105,7 +119,7 @@ describe ::HQ::GraphQL::Filters do
 
     (described_class::Filter::OPERATIONS - [described_class::Filter::GREATER_THAN, described_class::Filter::LESS_THAN, described_class::Filter::WITH]).each do |operation|
       it "errors when using an unsupported operation: #{operation.name}" do
-        results = schema.execute(query, variables: { filters: [{ field: "createdAt", operation: operation.name, value: target.created_at.iso8601 }] })
+        results = schema.execute(query, variables: { filters: [{ field: "createdAt", operation: operation.name, value: target.created_at.iso8601, arrayValues: [] }] })
         errors = results["errors"]
         expect(errors.length).to be 1
         expect(errors[0]["message"]).to eq "createdAt (type: datetime, operation: #{operation.name}, value: \"#{target.created_at.iso8601}\"): only supports the following operations: GREATER_THAN, LESS_THAN, WITH"
@@ -145,6 +159,26 @@ describe ::HQ::GraphQL::Filters do
       expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.map(&:id))
     end
 
+    it "filters test_types comparing columns" do
+      results = schema.execute(query, variables: { filters: [{ field: "count", operation: "EQUAL", columnValue: "count" }] })
+      data = results["data"]["testTypes"]["testTypes"]
+      expect(data.length).to be 11
+    end
+
+    it "filters test_types using OR statement" do
+      target_two = TestType.create(count: 12)
+      results = schema.execute(query, variables: { filters: [
+        { field: "count", operation: "EQUAL", value: target.count.to_s },
+        { field: "count", operation: "EQUAL", value: target_two.count.to_s, isOr: true},
+        { field: "count", operation: "IN", arrayValues: [target.count.to_s, target_two.count.to_s], isOr: true }
+        ]})
+      data = results["data"]["testTypes"]["testTypes"]
+      expect(data.length).to be 2
+      expect(data[0]["id"]).to eql(target_two.id)
+      expect(data[1]["id"]).to eql(target.id)
+    end
+
+
     it "only supports numerical values" do
       results = schema.execute(query, variables: { filters: [{ field: "count", operation: "GREATER_THAN", value: "Fizz" }] })
       errors = results["errors"]
@@ -152,12 +186,12 @@ describe ::HQ::GraphQL::Filters do
       expect(errors[0]["message"]).to eq "count (type: integer, operation: GREATER_THAN, value: \"Fizz\"): only supports numerical values"
     end
 
-    (described_class::Filter::OPERATIONS - [described_class::Filter::GREATER_THAN, described_class::Filter::LESS_THAN, described_class::Filter::EQUAL, described_class::Filter::NOT_EQUAL, described_class::Filter::WITH]).each do |operation|
+    (described_class::Filter::OPERATIONS - [described_class::Filter::GREATER_THAN, described_class::Filter::LESS_THAN, described_class::Filter::EQUAL, described_class::Filter::NOT_EQUAL, described_class::Filter::IN, described_class::Filter::WITH]).each do |operation|
       it "errors when using an unsupported operation: #{operation.name}" do
         results = schema.execute(query, variables: { filters: [{ field: "count", operation: operation.name, value: "0" }] })
         errors = results["errors"]
         expect(errors.length).to be 1
-        expect(errors[0]["message"]).to eq "count (type: integer, operation: #{operation.name}, value: \"0\"): only supports the following operations: GREATER_THAN, LESS_THAN, EQUAL, NOT_EQUAL, WITH"
+        expect(errors[0]["message"]).to eq "count (type: integer, operation: #{operation.name}, value: \"0\"): only supports the following operations: GREATER_THAN, LESS_THAN, EQUAL, NOT_EQUAL, IN, WITH"
       end
     end
   end
@@ -179,6 +213,15 @@ describe ::HQ::GraphQL::Filters do
       expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.map(&:id))
     end
 
+    it "filters test_types using IN" do
+      target_two = TestType.create(name: "Unique Name Two")
+      results = schema.execute(query, variables: { filters: [{ field: "name", operation: "IN", arrayValues: [target.name, target_two.name] }] })
+      data = results["data"]["testTypes"]["testTypes"]
+      expect(data.length).to be 2
+      expect(data[0]["id"]).to eql(target_two.id)
+      expect(data[1]["id"]).to eql(target.id)
+    end
+
     it "filters test_types using LIKE" do
       results = schema.execute(query, variables: { filters: [{ field: "name", operation: "LIKE", value: "unique" }] })
       data = results["data"]["testTypes"]["testTypes"]
@@ -193,12 +236,32 @@ describe ::HQ::GraphQL::Filters do
       expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.map(&:id))
     end
 
-    (described_class::Filter::OPERATIONS - [described_class::Filter::EQUAL, described_class::Filter::NOT_EQUAL, described_class::Filter::LIKE, described_class::Filter::NOT_LIKE, described_class::Filter::WITH]).each do |operation|
+    it "filters test_types comparing columns" do
+      results = schema.execute(query, variables: { filters: [{ field: "name", operation: "EQUAL", columnValue: "name" }] })
+      data = results["data"]["testTypes"]["testTypes"]
+      expect(data.length).to be 1
+      expect(data[0]["id"]).to eql(target.id)
+    end
+
+    it "filters test_types using OR statement" do
+      target_two = TestType.create(name: "Unique Name Two")
+      results = schema.execute(query, variables: { filters: [
+        { field: "name", operation: "EQUAL", value: target.name },
+        { field: "name", operation: "EQUAL", value: target_two.name, isOr: true},
+        { field: "name", operation: "IN", arrayValues: [target.name, target_two.name], isOr: true }
+        ]})
+      data = results["data"]["testTypes"]["testTypes"]
+      expect(data.length).to be 2
+      expect(data[0]["id"]).to eql(target_two.id)
+      expect(data[1]["id"]).to eql(target.id)
+    end
+
+    (described_class::Filter::OPERATIONS - [described_class::Filter::EQUAL, described_class::Filter::NOT_EQUAL, described_class::Filter::IN, described_class::Filter::LIKE, described_class::Filter::NOT_LIKE, described_class::Filter::WITH]).each do |operation|
       it "errors when using an unsupported operation: #{operation.name}" do
         results = schema.execute(query, variables: { filters: [{ field: "name", operation: operation.name, value: "unique" }] })
         errors = results["errors"]
         expect(errors.length).to be 1
-        expect(errors[0]["message"]).to eq "name (type: string, operation: #{operation.name}, value: \"unique\"): only supports the following operations: EQUAL, NOT_EQUAL, LIKE, NOT_LIKE, WITH"
+        expect(errors[0]["message"]).to eq "name (type: string, operation: #{operation.name}, value: \"unique\"): only supports the following operations: EQUAL, NOT_EQUAL, LIKE, NOT_LIKE, IN, WITH"
       end
     end
   end
@@ -220,6 +283,27 @@ describe ::HQ::GraphQL::Filters do
       expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.map(&:id))
     end
 
+    it "filters test_types using IN" do
+      target_two = TestType.create
+      results = schema.execute(query, variables: { filters: [{ field: "id", operation: "IN", arrayValues: [target.id, target_two.id] }] })
+      data = results["data"]["testTypes"]["testTypes"]
+      expect(data[0]["id"]).to eql(target_two.id)
+      expect(data[1]["id"]).to eql(target.id)
+    end
+
+    it "filters test_types using OR statement" do
+      target_two = TestType.create
+      results = schema.execute(query, variables: { filters: [
+        { field: "id", operation: "EQUAL", value: target.id },
+        { field: "id", operation: "EQUAL", value: target_two.id, isOr: true},
+        { field: "id", operation: "IN", arrayValues: [target.id, target_two.id], isOr: true }
+        ]})
+      data = results["data"]["testTypes"]["testTypes"]
+      expect(data.length).to be 2
+      expect(data[0]["id"]).to eql(target_two.id)
+      expect(data[1]["id"]).to eql(target.id)
+    end
+
     it "only supports uuid values" do
       results = schema.execute(query, variables: { filters: [{ field: "count", operation: "GREATER_THAN", value: "Fizz" }] })
       errors = results["errors"]
@@ -227,12 +311,12 @@ describe ::HQ::GraphQL::Filters do
       expect(errors[0]["message"]).to eq "count (type: integer, operation: GREATER_THAN, value: \"Fizz\"): only supports numerical values"
     end
 
-    (described_class::Filter::OPERATIONS - [described_class::Filter::EQUAL, described_class::Filter::NOT_EQUAL, described_class::Filter::WITH]).each do |operation|
+    (described_class::Filter::OPERATIONS - [described_class::Filter::EQUAL, described_class::Filter::NOT_EQUAL, described_class::Filter::IN, described_class::Filter::WITH]).each do |operation|
       it "errors when using an unsupported operation: #{operation.name}" do
         results = schema.execute(query, variables: { filters: [{ field: "id", operation: operation.name, value: target.id }] })
         errors = results["errors"]
         expect(errors.length).to be 1
-        expect(errors[0]["message"]).to eq "id (type: uuid, operation: #{operation.name}, value: \"#{target.id}\"): only supports the following operations: EQUAL, NOT_EQUAL, WITH"
+        expect(errors[0]["message"]).to eq "id (type: uuid, operation: #{operation.name}, value: \"#{target.id}\"): only supports the following operations: EQUAL, NOT_EQUAL, IN, WITH"
       end
     end
   end
