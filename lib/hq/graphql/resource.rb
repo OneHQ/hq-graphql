@@ -175,20 +175,9 @@ module HQ
           @excluded_inputs = fields
         end
 
-        def def_root(field_name, is_array: false, null: true, &block)
+        def def_root(field_name, is_array: false, null: true, hydrate: false, &block)
           resource = self
           suffix = is_array ? "List" : ""
-          resolver = -> {
-            klass = Class.new(::GraphQL::Schema::Resolver) do
-              type = is_array ? [resource.query_object] : resource.query_object
-              type type, null: null
-              class_eval(&block) if block
-            end
-
-            constant_name = "#{field_name.to_s.classify}Resolver#{suffix}"
-            resource.send(:remove_const, constant_name) if resource.const_defined?(constant_name, false)
-            resource.const_set(constant_name, klass)
-          }
           if is_array
             connection_resolver = -> {
               klass = Class.new(::GraphQL::Schema::Resolver) do
@@ -210,13 +199,24 @@ module HQ
               field_name: field_name, resolver: connection_resolver, model_name: model_name
             }
           else
+            resolver = -> {
+              klass = Class.new(::GraphQL::Schema::Resolver) do
+                type = hydrate ? resource.nil_query_object : resource.query_object
+                type type, null: null
+                class_eval(&block) if block
+              end
+
+              constant_name = "#{field_name.to_s.classify}Resolver#{suffix}"
+              resource.send(:remove_const, constant_name) if resource.const_defined?(constant_name, false)
+              resource.const_set(constant_name, klass)
+            }
             ::HQ::GraphQL.root_queries << {
               field_name: field_name, resolver: resolver, model_name: model_name
             }
           end
         end
 
-        def root_query(find_one: true, find_all: true, pagination: true, limit_max: 250)
+        def root_query(find_one: true, find_all: true, hydrate: true, pagination: true, limit_max: 250)
           field_name = graphql_name.underscore
           scoped_self = self
 
@@ -256,6 +256,16 @@ module HQ
                 scope = scope.reorder(sort_by => sort_order)
 
                 scope
+              end
+            end
+          end
+
+          if hydrate
+            def_root "hydrate_#{field_name}", is_array: false, null: true, hydrate: true do
+              klass = scoped_self.model_klass
+
+              define_method(:resolve) do
+                klass.new
               end
             end
           end

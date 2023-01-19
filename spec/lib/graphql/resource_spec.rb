@@ -390,6 +390,16 @@ describe ::HQ::GraphQL::Resource do
       GRAPHQL
     }
 
+    let(:hydrate_advisor) { <<-GRAPHQL
+        query hydrateAdvisor {
+          hydrateAdvisor {
+            name
+            organizationId
+          }
+        }
+      GRAPHQL
+    }
+
     before(:each) do
       organization_type
 
@@ -468,6 +478,12 @@ describe ::HQ::GraphQL::Resource do
         expect(data["destroyAdvisor"]["resource"]["name"]).to eql advisor.name
         expect(Advisor.where(id: advisor.id).exists?).to eql false
       end
+    end
+
+    it "uses hydrate" do
+      results = schema.execute(hydrate_advisor)
+      data = results["data"]["hydrateAdvisor"]
+      expect(data.length).to be 2
     end
 
     context "with authorization" do
