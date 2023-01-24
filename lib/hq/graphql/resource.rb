@@ -153,7 +153,18 @@ module HQ
         end
 
         def mutations(create: true, copy: true, update: true, destroy: true)
-          mutation_klasses["create_#{graphql_name.underscore}"] = build_create if create
+          scoped_self = self
+          if create
+            mutation_klasses["create_#{graphql_name.underscore}"] = build_create
+
+            def_root "hydrate_#{graphql_name.underscore}", is_array: false, null: true, hydrate: true do
+              klass = scoped_self.model_klass
+
+              define_method(:resolve) do
+                klass.new
+              end
+            end
+          end
           mutation_klasses["copy_#{graphql_name.underscore}"] = build_copy if copy
           mutation_klasses["update_#{graphql_name.underscore}"] = build_update if update
           mutation_klasses["destroy_#{graphql_name.underscore}"] = build_destroy if destroy
@@ -182,10 +193,6 @@ module HQ
             connection_resolver = -> {
               klass = Class.new(::GraphQL::Schema::Resolver) do
                 type = resource.query_object.connection_type
-                type.field field_name, [resource.query_object], null: true
-                type.define_method(field_name) do
-                  object.items
-                end
 
                 type type, null: null
                 class_eval(&block) if block
@@ -216,7 +223,7 @@ module HQ
           end
         end
 
-        def root_query(find_one: true, find_all: true, hydrate: true, pagination: true, limit_max: 250)
+        def root_query(find_one: true, find_all: true, pagination: true, limit_max: 250)
           field_name = graphql_name.underscore
           scoped_self = self
 
@@ -256,16 +263,6 @@ module HQ
                 scope = scope.reorder(sort_by => sort_order)
 
                 scope
-              end
-            end
-          end
-
-          if hydrate
-            def_root "hydrate_#{field_name}", is_array: false, null: true, hydrate: true do
-              klass = scoped_self.model_klass
-
-              define_method(:resolve) do
-                klass.new
               end
             end
           end
