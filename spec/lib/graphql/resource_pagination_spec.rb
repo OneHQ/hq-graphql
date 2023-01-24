@@ -7,6 +7,7 @@ describe ::HQ::GraphQL::Resource do
       self.model_name = "Manager"
 
       root_query
+      mutations
     end
   end
 
@@ -18,6 +19,7 @@ describe ::HQ::GraphQL::Resource do
       sort_fields :name
 
       root_query
+      mutations
     end
   end
 

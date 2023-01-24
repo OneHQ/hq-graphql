@@ -31,9 +31,6 @@ describe ::HQ::GraphQL::PaginationConnectionType do
           nodes {
             id
           }
-          testTypes{
-            id
-          }
           edges {
             cursor
             node{
@@ -109,14 +106,6 @@ describe ::HQ::GraphQL::PaginationConnectionType do
       results = schema.execute(query, variables: { first: 2, before: cursor, sortOrder: "ASC" })
       advisors = results["data"]["testTypes"]["nodes"].pluck("id")
       expect(advisors).to eq test_types.first(1).map(&:id)
-    end
-  end
-  context "total elements" do
-    it "totalCount equal to testTypes size" do
-      results = schema.execute(query, variables: { first: 2, sortOrder: "ASC" })
-      advisors = results["data"]["testTypes"]["testTypes"]
-      totalCount = results["data"]["testTypes"]["totalCount"]
-      expect(advisors.length).to eq totalCount
     end
   end
 end

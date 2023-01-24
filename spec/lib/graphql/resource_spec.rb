@@ -235,7 +235,7 @@ describe ::HQ::GraphQL::Resource do
     let(:find_onehq) { <<-GRAPHQL
         query advisorsNamedOneHq {
           advisorsNamedOneHq {
-            advisorsNamedOneHq {
+            nodes {
               name
               organizationId
 
@@ -264,7 +264,7 @@ describe ::HQ::GraphQL::Resource do
       FactoryBot.create(:advisor)
       onehq = FactoryBot.create(:advisor, name: "OneHQ")
       results = schema.execute(find_onehq)
-      data = results["data"]["advisorsNamedOneHq"]["advisorsNamedOneHq"]
+      data = results["data"]["advisorsNamedOneHq"]["nodes"]
       expect(data.size).to eq 1
       advisor = data[0]
 
@@ -337,7 +337,7 @@ describe ::HQ::GraphQL::Resource do
     let(:find_advisors) { <<-GRAPHQL
         query findAdvisors($limit: Int) {
           advisors(limit: $limit) {
-            advisors {
+            nodes {
               name
               organizationId
               organization {
@@ -427,7 +427,7 @@ describe ::HQ::GraphQL::Resource do
     it "uses pagination" do
       10.times { FactoryBot.create(:advisor) }
       results = schema.execute(find_advisors, variables: { limit: 5 })
-      data = results["data"]["advisors"]["advisors"]
+      data = results["data"]["advisors"]["nodes"]
       expect(data.length).to be 5
     end
 
