@@ -186,13 +186,13 @@ module HQ
           @excluded_inputs = fields
         end
 
-        def def_root(field_name, is_array: false, null: true, hydrate: false, &block)
+        def def_root(field_name, is_array: false, pagination: true, null: true, hydrate: false, &block)
           resource = self
           suffix = is_array ? "List" : ""
           if is_array
             connection_resolver = -> {
               klass = Class.new(::GraphQL::Schema::Resolver) do
-                type = resource.query_object.connection_type
+                type = pagination ? resource.query_object.connection_type : [resource.query_object]
 
                 type type, null: null
                 class_eval(&block) if block
@@ -241,7 +241,7 @@ module HQ
           end
 
           if find_all
-            def_root field_name.pluralize, is_array: true, null: false do
+            def_root field_name.pluralize, is_array: true, pagination: pagination, null: false do
               extension FieldExtension::PaginatedArguments, klass: scoped_self.model_klass if pagination
               argument :filters, [scoped_self.filter_input], required: false
 
@@ -251,7 +251,7 @@ module HQ
 
                 scope = scoped_self.scope(context).all.merge(filters_scope.to_scope)
 
-                if pagination || page || limit
+                if pagination || limit
                   offset = [0, *offset].max
                   limit = [[limit_max, *limit].min, 0].max
                   scope = scope.limit(limit).offset(offset)
