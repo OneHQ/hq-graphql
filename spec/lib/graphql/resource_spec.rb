@@ -390,9 +390,9 @@ describe ::HQ::GraphQL::Resource do
       GRAPHQL
     }
 
-    let(:hydrate_advisor) { <<-GRAPHQL
-        query hydrateAdvisor {
-          hydrateAdvisor {
+    let(:new_advisor) { <<-GRAPHQL
+        query newAdvisor {
+          newAdvisor {
             name
             organizationId
           }
@@ -480,9 +480,9 @@ describe ::HQ::GraphQL::Resource do
       end
     end
 
-    it "uses hydrate" do
-      results = schema.execute(hydrate_advisor)
-      data = results["data"]["hydrateAdvisor"]
+    it "uses new" do
+      results = schema.execute(new_advisor)
+      data = results["data"]["newAdvisor"]
       expect(data.length).to be 2
     end
 
