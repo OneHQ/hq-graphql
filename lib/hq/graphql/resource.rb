@@ -152,12 +152,18 @@ module HQ
           @input_klass = build_input_object(**options, &block)
         end
 
+        # mutations generates available default mutations on RootMutation for a certain resource
+        # Parameters:
+        # create => adds create operation
+        # copy => adds copy operation
+        # update => adds update operation
+        # destroy => adds destroy operation
         def mutations(create: true, copy: true, update: true, destroy: true)
           scoped_self = self
           if create
             mutation_klasses["create_#{graphql_name.underscore}"] = build_create
-
-            def_root "hydrate_#{graphql_name.underscore}", is_array: false, null: true, hydrate: true do
+            # new_resource query will be created only if create mutation is created
+            def_root "new_#{graphql_name.underscore}", is_array: false, null: true, new_query: true do
               klass = scoped_self.model_klass
 
               define_method(:resolve) do
@@ -186,13 +192,22 @@ module HQ
           @excluded_inputs = fields
         end
 
-        def def_root(field_name, is_array: false, pagination: true, null: true, hydrate: false, &block)
+        # def_root generates available queries on RootQuery
+        # this method can be used to create resource's custom queries
+        # Parameters:
+        # field_name => operation name in RootQuery
+        # is_array => if true, creates List query. false for single record query.
+        # null => sets if result can be null.
+        # new_query it's only used to stablish the correct Object type that must be configured in the resolver.
+        # new_query is necessary because the same block of code is used to create getById and new_resource queries.
+        # block => code block that it's going to be executed to get the result.
+        def def_root(field_name, is_array: false, null: true, new_query: false, &block)
           resource = self
           suffix = is_array ? "List" : ""
           if is_array
             connection_resolver = -> {
               klass = Class.new(::GraphQL::Schema::Resolver) do
-                type = pagination ? resource.query_object.connection_type : [resource.query_object]
+                type = resource.query_object.connection_type
 
                 type type, null: null
                 class_eval(&block) if block
@@ -208,7 +223,7 @@ module HQ
           else
             resolver = -> {
               klass = Class.new(::GraphQL::Schema::Resolver) do
-                type = hydrate ? resource.nil_query_object : resource.query_object
+                type = new_query ? resource.nil_query_object : resource.query_object
                 type type, null: null
                 class_eval(&block) if block
               end
@@ -223,7 +238,12 @@ module HQ
           end
         end
 
-        def root_query(find_one: true, find_all: true, pagination: true, limit_max: 250)
+        # root_query generates available default queries on RootQuery for a certain resource
+        # Parameters:
+        # find_one => getById query
+        # find_all => list query
+        # limit_max => max amount of record that can be obtained
+        def root_query(find_one: true, find_all: true, limit_max: 250)
           field_name = graphql_name.underscore
           scoped_self = self
 
@@ -241,8 +261,8 @@ module HQ
           end
 
           if find_all
-            def_root field_name.pluralize, is_array: true, pagination: pagination, null: false do
-              extension FieldExtension::PaginatedArguments, klass: scoped_self.model_klass if pagination
+            def_root field_name.pluralize, is_array: true, null: false do
+              extension FieldExtension::PaginatedArguments, klass: scoped_self.model_klass
               argument :filters, [scoped_self.filter_input], required: false
 
               define_method(:resolve) do |filters: nil, limit: nil, offset: nil, sort_by: nil, sort_order: nil, **_attrs|
@@ -251,11 +271,9 @@ module HQ
 
                 scope = scoped_self.scope(context).all.merge(filters_scope.to_scope)
 
-                if pagination || limit
-                  offset = [0, *offset].max
-                  limit = [[limit_max, *limit].min, 0].max
-                  scope = scope.limit(limit).offset(offset)
-                end
+                offset = [0, *offset].max
+                limit = [[limit_max, *limit].min, 0].max
+                scope = scope.limit(limit).offset(offset)
 
                 sort_by ||= :updated_at
                 sort_order ||= :desc
