@@ -7,6 +7,7 @@ describe ::HQ::GraphQL::Resource do
       self.model_name = "Manager"
 
       root_query
+      mutations
     end
   end
 
@@ -18,6 +19,7 @@ describe ::HQ::GraphQL::Resource do
       sort_fields :name
 
       root_query
+      mutations
     end
   end
 
@@ -48,7 +50,7 @@ describe ::HQ::GraphQL::Resource do
   end
 
   it "adds pagination to the root query and pagination queries" do
-    expect(root_fields.keys).to contain_exactly("manager", "managers", "user", "users")
+    expect(root_fields.keys).to contain_exactly("manager", "managers", "newManager", "user", "users", "newUser")
     expect(managers_arguments.keys).to contain_exactly(*query_fields)
     expect(users_arguments.keys).to contain_exactly(*query_fields)
   end
