@@ -12,8 +12,8 @@ git:
 
 global:
   taskAnnotations: 
-    vault.security.banzaicloud.io/vault-addr: "https://vault.internal.onehq.com"
-    vault.security.banzaicloud.io/vault-path: "jwt"
+    vault.security.banzaicloud.io/vault-addr: "https://vault-onehq.apps.hub.internal.onehq.com"
+    vault.security.banzaicloud.io/vault-path: "jwt-hub"
     vault.security.banzaicloud.io/vault-auth-method: "jwt"
     vault.security.banzaicloud.io/vault-tls-secret: "custom-trusted-ca"  
   rubyVersion: 3.0.4
