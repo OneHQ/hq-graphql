@@ -242,7 +242,7 @@ module HQ
         # Parameters:
         # find_one => getById query
         # find_all => list query
-        # limit_max => max amount of record that can be obtained if 'first' is not provided
+        # limit_max => max amount of record that can be obtained if 'first/last' is not provided
         def root_query(find_one: true, find_all: true, limit_max: 250)
           field_name = graphql_name.underscore
           scoped_self = self
@@ -272,8 +272,8 @@ module HQ
                 scope = scoped_self.scope(context).all.merge(filters_scope.to_scope)
                 offset = [0, *offset].max
 
-                # set limit_max if first N is not provided                
-                scope = if limit.present? || !context.query.provided_variables.key?("first")
+                # set limit_max if first/last N is not provided
+                scope = if limit.present? || !(context.query.provided_variables.keys & [:first, :last]).any?
                   limit = [[limit_max, *limit].min, 0].max
                   scope.limit(limit).offset(offset)
                 else
