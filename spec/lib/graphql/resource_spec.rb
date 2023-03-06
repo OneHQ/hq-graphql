@@ -431,6 +431,13 @@ describe ::HQ::GraphQL::Resource do
       expect(data.length).to be 5
     end
 
+    it "set limit_max if limit/first is not provided" do
+      251.times { FactoryBot.create(:advisor) }
+      results = schema.execute(find_advisors, variables: {})
+      data = results["data"]["advisors"]["nodes"]
+      expect(data.length).to be 250
+    end
+
     it "creates" do
       organization = FactoryBot.create(:organization)
       name = "Bob"

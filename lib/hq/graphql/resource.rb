@@ -242,7 +242,7 @@ module HQ
         # Parameters:
         # find_one => getById query
         # find_all => list query
-        # limit_max => max amount of record that can be obtained
+        # limit_max => max amount of record that can be obtained if 'first/last' is not provided
         def root_query(find_one: true, find_all: true, limit_max: 250)
           field_name = graphql_name.underscore
           scoped_self = self
@@ -270,11 +270,16 @@ module HQ
                 filters_scope.validate!
 
                 scope = scoped_self.scope(context).all.merge(filters_scope.to_scope)
-
                 offset = [0, *offset].max
-                limit = [[limit_max, *limit].min, 0].max
-                scope = scope.limit(limit).offset(offset)
 
+                # set limit_max if first/last N is not provided
+                scope = if limit.present? || !(context.query.provided_variables.symbolize_keys.keys & [:first, :last]).any?
+                  limit = [[limit_max, *limit].min, 0].max
+                  scope.limit(limit).offset(offset)
+                else
+                  scope.offset(offset)
+                end
+                
                 sort_by ||= :updated_at
                 sort_order ||= :desc
                 # There should be no risk for SQL injection since an enum is being used for both sort_by and sort_order
