@@ -165,9 +165,14 @@ module HQ
             # new_resource query will be created only if create mutation is created
             def_root "new_#{graphql_name.underscore}", is_array: false, null: true, new_query: true do
               klass = scoped_self.model_klass
+              input_object = scoped_self.input_klass
 
-              define_method(:resolve) do
-                klass.new
+              argument :attributes, input_object, required: false
+
+              define_method(:resolve) do |**attrs|
+                resource_instance = klass.new(attrs[:attributes].to_h)
+                resource_instance.valid?
+                resource_instance
               end
             end
           end
@@ -279,7 +284,7 @@ module HQ
                 else
                   scope.offset(offset)
                 end
-                
+
                 sort_by ||= :updated_at
                 sort_order ||= :desc
                 # There should be no risk for SQL injection since an enum is being used for both sort_by and sort_order
