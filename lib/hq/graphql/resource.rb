@@ -162,7 +162,7 @@ module HQ
           scoped_self = self
           if create
             mutation_klasses["create_#{graphql_name.underscore}"] = build_create
-            # new_resource query will be created only if create mutation is created and hydrate method exist
+            # new_resource query will be created only if create mutation exist
             klass = scoped_self.model_klass
             def_root "new_#{graphql_name.underscore}", is_array: false, null: true, new_query: true do
               input_object = scoped_self.input_klass
@@ -174,7 +174,7 @@ module HQ
                 resource_instance.hydrate
                 resource_instance
               end
-            end if klass.method_defined? :hydrate
+            end
           end
           mutation_klasses["copy_#{graphql_name.underscore}"] = build_copy if copy
           mutation_klasses["update_#{graphql_name.underscore}"] = build_update if update
