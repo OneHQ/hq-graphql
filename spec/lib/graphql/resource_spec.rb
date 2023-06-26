@@ -53,6 +53,10 @@ describe ::HQ::GraphQL::Resource do
       expect(::HQ::GraphQL::Inputs[Advisor]).to eql(advisor_resource.input_klass)
     end
 
+    it "builds the nil input klass" do
+      expect(::HQ::GraphQL::NilInputs[Advisor]).to eql(advisor_resource.nil_input_klass)
+    end
+
     it "creates query fields" do
       query_object = ::HQ::GraphQL::Types[Advisor]
       query_object.lazy_load!
@@ -89,6 +93,17 @@ describe ::HQ::GraphQL::Resource do
       expect(::HQ::GraphQL::Inputs[Advisor].graphql_name).to eql("AdvisorInput")
     end
 
+    it "creates nil input arguments" do
+      ::HQ::GraphQL::NilInputs[Advisor].lazy_load!
+      expected = ["id", "organizationId", "name", "nickname", "createdAt", "updatedAt", "X"]
+      expect(::HQ::GraphQL::NilInputs[Advisor].arguments.keys).to contain_exactly(*expected)
+    end
+
+    it "creates nil input graphql name" do
+      ::HQ::GraphQL::NilInputs[Advisor].lazy_load!
+      expect(::HQ::GraphQL::NilInputs[Advisor].graphql_name).to eql("AdvisorNilInput")
+    end
+
     it "doesn't create mutations" do
       expect(advisor_resource.mutation_klasses).to be_empty
     end
@@ -106,8 +121,10 @@ describe ::HQ::GraphQL::Resource do
 
       it "doesn't add organization type" do
         ::HQ::GraphQL::Inputs[Advisor].lazy_load!
+        ::HQ::GraphQL::NilInputs[Advisor].lazy_load!
         expected = ["id", "organizationId", "name", "nickname", "createdAt", "updatedAt", "X"]
         expect(::HQ::GraphQL::Inputs[Advisor].arguments.keys).to contain_exactly(*expected)
+        expect(::HQ::GraphQL::NilInputs[Advisor].arguments.keys).to contain_exactly(*expected)
       end
     end
   end
@@ -168,6 +185,10 @@ describe ::HQ::GraphQL::Resource do
           graphql_name "CustomAdvisorInput"
           remove_attr :name
         end
+        nil_input do
+          graphql_name "CustomAdvisorInput"
+          remove_attr :name
+        end
       end
     end
 
@@ -178,12 +199,16 @@ describe ::HQ::GraphQL::Resource do
 
     it "removes name" do
       ::HQ::GraphQL::Inputs[Advisor].lazy_load!
+      ::HQ::GraphQL::NilInputs[Advisor].lazy_load!
       expected = ["id", "nickname", "organizationId", "createdAt", "updatedAt", "X"]
       expect(::HQ::GraphQL::Inputs[Advisor].arguments.keys).to contain_exactly(*expected)
+      expect(::HQ::GraphQL::NilInputs[Advisor].arguments.keys).to contain_exactly(*expected)
     end
 
     it "customizes graphql name" do
       ::HQ::GraphQL::Inputs[Advisor].lazy_load!
+      ::HQ::GraphQL::NilInputs[Advisor].lazy_load!
+      expect(::HQ::GraphQL::Inputs[Advisor].graphql_name).to eql("CustomAdvisorInput")
       expect(::HQ::GraphQL::Inputs[Advisor].graphql_name).to eql("CustomAdvisorInput")
     end
   end
@@ -197,6 +222,10 @@ describe ::HQ::GraphQL::Resource do
         mutations
 
         input do
+          remove_attr :name
+          add_association :organization
+        end
+        nil_input do
           remove_attr :name
           add_association :organization
         end
@@ -292,8 +321,10 @@ describe ::HQ::GraphQL::Resource do
 
     it "removes id, createdAt and updatedAt" do
       ::HQ::GraphQL::Inputs[Advisor].lazy_load!
+      ::HQ::GraphQL::NilInputs[Advisor].lazy_load!
       expected = ["name", "nickname", "organizationId", "X"]
       expect(::HQ::GraphQL::Inputs[Advisor].arguments.keys).to contain_exactly(*expected)
+      expect(::HQ::GraphQL::NilInputs[Advisor].arguments.keys).to contain_exactly(*expected)
     end
   end
 

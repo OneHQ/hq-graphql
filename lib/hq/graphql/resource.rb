@@ -60,7 +60,11 @@ module HQ
         end
 
         def input_klass
-          @input_klass ||= build_input_object
+          @input_klass ||= const_set(:Input, build_input_object)
+        end
+
+        def nil_input_klass
+          @nil_input_klass ||= const_set(:NilInput, build_input_object(name: "#{graphql_name}Nil"))
         end
 
         def nil_query_object
@@ -95,6 +99,8 @@ module HQ
             nil_query_object
           when :Input
             input_klass
+          when :NilInput
+            nil_input_klass
           when :FilterInput
             filter_input
           when :FilterFields
@@ -152,6 +158,10 @@ module HQ
           @input_klass = build_input_object(**options, &block)
         end
 
+        def nil_input(**options, &block)
+          @nil_input_klass = build_input_object(**options, name: "#{options.try(:name) || graphql_name}Nil", &block)
+        end
+
         # mutations generates available default mutations on RootMutation for a certain resource
         # Parameters:
         # create => adds create operation
@@ -165,9 +175,8 @@ module HQ
             # new_resource query will be created only if create mutation exist
             klass = scoped_self.model_klass
             def_root "new_#{graphql_name.underscore}", is_array: false, null: true, new_query: true do
-              input_object = scoped_self.input_klass
 
-              argument :attributes, input_object, required: false
+              argument :attributes, ::HQ::GraphQL::NilInputs[scoped_self.model_name], required: false
 
               define_method(:resolve) do |**attrs|
                 resource_instance = klass.new(attrs[:attributes].to_h)
@@ -313,21 +322,18 @@ module HQ
           end
         end
 
-        def build_input_object(**options, &block)
-          scoped_graphql_name = graphql_name
+        def build_input_object(name: graphql_name, **options, &block)
+          scoped_graphql_name = name
           scoped_model_name = model_name
           scoped_excluded_inputs = @excluded_inputs || []
 
-          input_klass = Class.new(::GraphQL::Schema::InputObject) do
+          Class.new(::GraphQL::Schema::InputObject) do
             graphql_name "#{scoped_graphql_name}Input"
 
             with_model scoped_model_name, excluded_inputs: scoped_excluded_inputs, **options
 
             class_eval(&block) if block
           end
-
-          remove_const(:Input) if const_defined?(:Input, false)
-          const_set(:Input, input_klass)
         end
 
         def sort_fields_enum=(fields)

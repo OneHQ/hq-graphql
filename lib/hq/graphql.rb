@@ -56,6 +56,7 @@ module HQ
       @enums = nil
       @resources = nil
       ::HQ::GraphQL::Inputs.reset!
+      ::HQ::GraphQL::NilInputs.reset!
       ::HQ::GraphQL::Types.reset!
     end
 
@@ -90,6 +91,7 @@ require "hq/graphql/scalars"
 require "hq/graphql/comparator"
 require "hq/graphql/ext"
 require "hq/graphql/inputs"
+require "hq/graphql/nil_inputs"
 require "hq/graphql/paginated_association_loader"
 require "hq/graphql/record_loader"
 require "hq/graphql/resource"
