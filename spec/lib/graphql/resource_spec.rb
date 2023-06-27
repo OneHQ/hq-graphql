@@ -185,10 +185,6 @@ describe ::HQ::GraphQL::Resource do
           graphql_name "CustomAdvisorInput"
           remove_attr :name
         end
-        nil_input do
-          graphql_name "CustomAdvisorInput"
-          remove_attr :name
-        end
       end
     end
 
@@ -222,10 +218,6 @@ describe ::HQ::GraphQL::Resource do
         mutations
 
         input do
-          remove_attr :name
-          add_association :organization
-        end
-        nil_input do
           remove_attr :name
           add_association :organization
         end

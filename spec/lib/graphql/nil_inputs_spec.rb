@@ -9,7 +9,7 @@ describe ::HQ::GraphQL::NilInputs do
 
         self.model_name = "Advisor"
 
-        nil_input(attributes: false, associations: false) do
+        input(attributes: false, associations: false) do
           argument :customField, String, "Header for the post", required: true
         end
       end

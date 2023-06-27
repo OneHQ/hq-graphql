@@ -156,9 +156,6 @@ module HQ
 
         def input(**options, &block)
           @input_klass = build_input_object(**options, &block)
-        end
-
-        def nil_input(**options, &block)
           @nil_input_klass = build_input_object(**options, name: "#{options.try(:name) || graphql_name}Nil", &block)
         end
 
