@@ -64,7 +64,7 @@ module HQ
         end
 
         def nil_input_klass
-          @nil_input_klass ||= const_set(:NilInput, build_input_object(name: "#{graphql_name}Nil"))
+          @nil_input_klass ||= const_set(:NilInput, build_input_object(name: "#{graphql_name}Nil", auto_nil: false))
         end
 
         def nil_query_object
@@ -156,7 +156,7 @@ module HQ
 
         def input(**options, &block)
           @input_klass = build_input_object(**options, &block)
-          @nil_input_klass = build_input_object(**options, name: "#{options.try(:name) || graphql_name}Nil", &block)
+          @nil_input_klass = build_input_object(**options, name: "#{options.try(:name) || graphql_name}Nil", auto_nil: false, &block)
         end
 
         # mutations generates available default mutations on RootMutation for a certain resource

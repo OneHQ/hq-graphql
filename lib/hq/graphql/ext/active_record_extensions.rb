@@ -72,21 +72,6 @@ module HQ
 
           private
 
-          #method that handles arguments addition for reosurce inputs and resource's hydrate Inputs
-          #attrs: two element array of arrays
-          #first element: input's name
-          #second element: input's type
-          #returns required or not required arguments checking if graphql_name contains the substring 'NilInput'
-          def add_required_arguments(*attrs)
-            validate_model!
-            graphql_name = self.graphql_name
-            return attrs.map { |el| argument el[0], el[1], required: false } if graphql_name.include? "NilInput"
-            attrs.map { |el| argument el[0], el[1], required: true }
-          end
-          alias_method :add_required_argument, :add_required_arguments
-          alias_method :add_req_args, :add_required_arguments
-          alias_method :add_req_arg, :add_required_arguments
-
           def add_attributes(*attrs)
             validate_model!
             added_attributes.concat attrs.map(&:to_sym)
