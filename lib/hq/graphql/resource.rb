@@ -234,7 +234,7 @@ module HQ
           else
             resolver = -> {
               klass = Class.new(::GraphQL::Schema::Resolver) do
-                type = resource.query_object
+                type = new_query ? resource.nil_query_object : resource.query_object
                 type type, null: null
                 class_eval(&block) if block
               end
