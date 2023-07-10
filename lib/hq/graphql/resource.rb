@@ -60,11 +60,11 @@ module HQ
         end
 
         def input_klass
-          @input_klass ||= const_set(:Input, build_input_object)
+            @input_klass ||= const_set(:Input, build_input_object)
         end
 
         def nil_input_klass
-          @nil_input_klass ||= const_set(:NilInput, build_input_object(name: "#{graphql_name}Nil", auto_nil: false))
+            @nil_input_klass ||= const_set(:NilInput, build_input_object(name: "#{graphql_name}Nil"))
         end
 
         def nil_query_object
@@ -156,7 +156,7 @@ module HQ
 
         def input(**options, &block)
           @input_klass = build_input_object(**options, &block)
-          @nil_input_klass = build_input_object(**options, name: "#{options.try(:name) || graphql_name}Nil", auto_nil: false, &block)
+          @nil_input_klass = build_input_object(**options, name: "#{options.try(:name) || graphql_name}Nil", &block)
         end
 
         # mutations generates available default mutations on RootMutation for a certain resource
@@ -234,7 +234,7 @@ module HQ
           else
             resolver = -> {
               klass = Class.new(::GraphQL::Schema::Resolver) do
-                type = new_query ? resource.nil_query_object : resource.query_object
+                type = resource.query_object
                 type type, null: null
                 class_eval(&block) if block
               end
@@ -308,6 +308,7 @@ module HQ
           scoped_graphql_name = name
           scoped_model_name = model_name
           object_class = @query_class || ::HQ::GraphQL.default_object_class || ::GraphQL::Schema::Object
+
           Class.new(object_class) do
             graphql_name scoped_graphql_name
 
@@ -319,7 +320,7 @@ module HQ
           end
         end
 
-        def build_input_object(name: graphql_name, **options, &block)
+          def build_input_object(name: graphql_name, **options, &block)
           scoped_graphql_name = name
           scoped_model_name = model_name
           scoped_excluded_inputs = @excluded_inputs || []

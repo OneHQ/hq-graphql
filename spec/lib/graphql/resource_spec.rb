@@ -511,6 +511,7 @@ describe ::HQ::GraphQL::Resource do
     end
 
     it "uses new" do
+      organization = FactoryBot.create(:organization)
       results = schema.execute(new_advisor)
       data = results["data"]["newAdvisor"]
       expect(data.length).to be 2

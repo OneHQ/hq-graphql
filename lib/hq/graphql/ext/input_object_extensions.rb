@@ -41,7 +41,20 @@ module HQ
 
         module ClassMethods
           #### Class Methods ####
-          def with_model(model_name, attributes: true, associations: false, auto_nil: nil, enums: true, excluded_inputs: [])
+          def argument(*args, **kwargs, &block)
+            kwargs[:required] = false if graphql_name.include? "NilInput"
+            argument_defn = super(*args, **kwargs, &block)
+            # Add a method access
+            method_name = argument_defn.keyword
+            class_eval <<-RUBY, __FILE__, __LINE__
+              def #{method_name}
+                self[#{method_name.inspect}]
+              end
+            RUBY
+            argument_defn
+          end
+
+          def with_model(model_name, attributes: true, associations: false, enums: true, excluded_inputs: [])
             self.model_name = model_name
             self.auto_load_attributes = attributes
             self.auto_load_associations = associations
@@ -51,11 +64,11 @@ module HQ
               excluded_inputs += ::HQ::GraphQL.excluded_inputs
 
               model_columns.each do |column|
-                argument_from_column(column, auto_nil: auto_nil) unless excluded_inputs.include?(column.name.to_sym)
+                argument_from_column(column) unless excluded_inputs.include?(column.name.to_sym)
               end
 
               model_associations.each do |association|
-                argument_from_association(association, auto_nil: auto_nil) unless excluded_inputs.include?(association.name.to_sym)
+                argument_from_association(association) unless excluded_inputs.include?(association.name.to_sym)
               end
 
               argument :X, String, required: false
@@ -68,7 +81,7 @@ module HQ
 
           private
 
-          def argument_from_association(association, auto_nil:)
+          def argument_from_association(association)
             is_enum = is_enum?(association)
             input_or_type = is_enum ? ::HQ::GraphQL::Types[association.klass] : ::HQ::GraphQL::Inputs[association.klass]
             name = association.name
@@ -77,10 +90,8 @@ module HQ
             case association.macro
             when :has_many
               argument name, [input_or_type], required: false
-            when :has_one
-              argument name, input_or_type, required: auto_nil.nil? ? has_presence_validation?(association) : auto_nil
             else
-              argument name, input_or_type, required: auto_nil.nil? ? association_required?(association) : auto_nil
+              argument name, input_or_type, required: false
             end
 
             return if is_enum
@@ -94,25 +105,14 @@ module HQ
             nil
           end
 
-          def argument_from_column(column, auto_nil:)
+          def argument_from_column(column)
             name = column.name
             return if argument_exists?(name)
-            argument name, ::HQ::GraphQL::Types.type_from_column(column), required: auto_nil.nil? ? column.null : auto_nil
+            argument name, ::HQ::GraphQL::Types.type_from_column(column), required: false
           end
 
           def argument_exists?(name)
             !!arguments[camelize(name)]
-          end
-
-          def association_required?(association)
-            !association.options[:optional] || has_presence_validation?(association)
-          end
-
-          def has_presence_validation?(association)
-            model_klass.validators.any? do |validation|
-              next unless validation.class == ActiveRecord::Validations::PresenceValidator && !(validation.options.include?(:if) || validation.options.include?(:unless))
-              validation.attributes.any? { |a| a.to_s == association.name.to_s }
-            end
           end
         end
       end
