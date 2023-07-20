@@ -13,12 +13,18 @@ module HQ
 
           build_mutation(action: :create) do
             define_method(:resolve) do |**args|
+              return {
+                resource: nil,
+                errors: { resource: "Unauthorized action for #{self.class.graphql_name}" }
+              } if is_base_restricted(scoped_self.model_name, HasHelpers::RestrictionOperation::CREATE)
+
               resource = scoped_self.new_record(context)
-              resource.assign_attributes(args[:attributes].format_nested_attributes)
+              result = attribute_restrictions_handler(scoped_self.model_name, args[:attributes], HasHelpers::RestrictionOperation::CREATE)
+              resource.assign_attributes(result[:filtered_attrs])
               if resource.save
                 {
                   resource: resource,
-                  errors: {},
+                  errors: result[:errors],
                 }
               else
                 {
@@ -39,14 +45,21 @@ module HQ
 
           build_mutation(action: :update, require_primary_key: true) do
             define_method(:resolve) do |**args|
+              return {
+                resource: nil,
+                errors: { resource: "Unauthorized action for #{self.class.graphql_name}" }
+              } if is_base_restricted(scoped_self.model_name, HasHelpers::RestrictionOperation::UPDATE)
+
               resource = scoped_self.find_record(args, context)
 
+              result = attribute_restrictions_handler(scoped_self.model_name, args[:attributes], HasHelpers::RestrictionOperation::UPDATE)
+
               if resource
-                resource.assign_attributes(args[:attributes].format_nested_attributes)
+                resource.assign_attributes(result[:filtered_attrs])
                 if resource.save
                   {
                     resource: resource,
-                    errors: {},
+                    errors: result[:errors],
                   }
                 else
                   {
@@ -73,6 +86,11 @@ module HQ
 
           build_mutation(action: :copy, require_primary_key: true, nil_klass: true) do
             define_method(:resolve) do |**args|
+              return {
+                resource: nil,
+                errors: { resource: "Unauthorized action for #{self.class.graphql_name}" }
+              } if is_base_restricted(scoped_self.model_name, HasHelpers::RestrictionOperation::COPY)
+
               resource = scoped_self.find_record(args, context)
 
               if resource
@@ -103,6 +121,11 @@ module HQ
 
           build_mutation(action: :destroy, require_primary_key: true) do
             define_method(:resolve) do |**attrs|
+              return {
+                resource: nil,
+                errors: { resource: "Unauthorized action for #{self.class.graphql_name}" }
+              } if is_base_restricted(scoped_self.model_name, HasHelpers::RestrictionOperation::DELETE)
+
               resource = scoped_self.find_record(attrs, context)
 
               if resource
@@ -155,6 +178,35 @@ module HQ
 
             def errors_from_resource(resource)
               resource.errors.to_h.deep_transform_keys { |k| k.to_s.camelize(:lower) }
+            end
+
+            def is_base_restricted(model_name, restriction_operation)
+              association_name = model_name.demodulize
+              restriction = context[:restrictions].detect { |el|
+                (el.resource.name == association_name || el.resource.alias == association_name) &&
+                el.restriction_operation == restriction_operation &&
+                el.resource.resource_type == HasHelpers::ResourceType::BASE_RESOURCE
+              }
+              restriction.present?
+            end
+
+            def attribute_restrictions_handler(model_name, attributes, restriction_operation)
+              association_name = model_name.demodulize
+              formatted_attrs = attributes.format_nested_attributes
+              restrictions = context[:restrictions].select { |el|
+                (el.resource.name != association_name && el.resource.alias != association_name) &&
+                el.restriction_operation == restriction_operation
+              }
+
+              restrictions = restrictions.map{ |el| [el.resource.name, el.resource.alias]}.flatten if !restrictions.empty?
+              filtered_attrs = formatted_attrs.with_indifferent_access.except(*restrictions)
+              restricted_keys = formatted_attrs.with_indifferent_access.keys.select { |el| restrictions.include?(el) }
+
+              errors = {}
+
+              errors = { warning: "Unauthorized for update the following attributes: #{restricted_keys.join(', ')}"} if !restricted_keys.empty?
+
+              { errors: errors, filtered_attrs: filtered_attrs }
             end
           end
 

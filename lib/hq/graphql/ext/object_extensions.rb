@@ -96,7 +96,16 @@ module HQ
             name = column.name
             return if field_exists?(name)
 
-            field name, Types.type_from_column(column), null: !auto_nil || column.null
+            field name, Types.type_from_column(column), null: !auto_nil || column.null,
+            authorize: -> (obj, ctx) do
+              restriction = ctx[:restrictions].detect { |el|
+                (el.resource.name == name || el.resource.alias == name) &&
+                el.restriction_operation == HasHelpers::RestrictionOperation::VIEW &&
+                el.resource.resource_type != HasHelpers::ResourceType::REQUIRED_FIELD
+              }
+              return false if restriction.present?
+              true
+            end
           end
 
           def field_exists?(name)

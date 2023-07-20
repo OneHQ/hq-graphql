@@ -23,6 +23,16 @@ module HQ
             sort_order:           sort_order
           )
 
+          association_name = object.object.class.name.demodulize
+          restriction = _kwargs[:context][:restrictions].detect { |el|
+            (el.restriction_operation == HasHelpers::RestrictionOperation::VIEW &&
+            ((el.resource.name == field.original_name.camelize || el.resource.alias == field.original_name.camelize) &&
+            el.resource_type == HasHelpers::ResourceType::BASE_RESOURCE) ||
+            ((el.resource.parent&.name == options[:klass].name || el.resource.parent&.alias == options[:klass].name) &&
+            el.resource.field_class_name == field.original_name.camelize || el.resource.alias == field.original_name.camelize))
+          }
+          return {} if restriction.present?
+
           loader.load(object.object)
         end
 
