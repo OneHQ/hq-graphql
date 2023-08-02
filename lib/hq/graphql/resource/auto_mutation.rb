@@ -180,97 +180,124 @@ module HQ
               resource.errors.to_h.deep_transform_keys { |k| k.to_s.camelize(:lower) }
             end
 
-            def get_base_restrictions(restriction_operation)
+            # return all restrictions related to a resource of type BaseResource, filtered by restriction operation type
+            # restriction_operations is an array of ::HasHelpers::RestrictionOperation
+            def get_base_restrictions(restriction_operations)
               restrictions = context[:restrictions].select { |el|
                 (el.resource.resource_type == HasHelpers::ResourceType::BASE_RESOURCE &&
-                el.restriction_operation == restriction_operation)
+                restriction_operations.include?(el.restriction_operation))
               }
               restrictions
             end
 
-
-            def is_base_restricted(model_name, restriction_operation)
-              association_name = model_name.demodulize
-              restriction = get_base_restrictions(restriction_operation).detect { |el|
-                el.resource.name == association_name || el.resource.alias == association_name
+            # Return true if a restriction related to a specific BaseResource, filtered by restriction operation type exist
+            # model_name is an specific resource used for filter restrictions
+            # restriction_operation is a ::HasHelpers::RestrictionOperation type
+            def is_base_restricted(association_name, restriction_operation)
+              association_name = association_name.demodulize
+              restriction = get_base_restrictions([restriction_operation]).detect { |el|
+                el.resource.name == association_name
               }
               restriction.present?
             end
 
-
-            def get_attributes_restrictions(model_name, restriction_operation)
-              association_name = model_name.demodulize
+            # Return all attribute restriction related to a specific resource and also all BaseResource restrictions,
+            # both filtered by restriction operation
+            # association_name is an specific resource used for filter restrictions
+            # restriction_operations is an array of ::HasHelpers::RestrictionOperation
+            def get_attributes_restrictions(association_name, restriction_operations)
               restrictions = context[:restrictions].select { |el|
-                (el.resource.parent&.name != association_name && el.resource.parent&.alias != association_name && el.resource.parent&.resource_type == HasHelpers::ResourceType::BASE_RESOURCE) &&
-                el.restriction_operation == restriction_operation
+                ((el.resource.parent&.name == association_name &&
+                  el.resource.parent&.resource_type == HasHelpers::ResourceType::BASE_RESOURCE) ||
+                el.resource.resource_type == HasHelpers::ResourceType::BASE_RESOURCE) &&
+                restriction_operations.include?(el.restriction_operation)
               }
 
               restrictions
             end
 
-            def recursive_nested_restrictions(formatted_attrs, aux_restricted, restriction_operation)
-              byebug
-              nested_attributes = formatted_attrs.keys.select { |el| el.to_s.include?("_attributes") }
-              nested_attributes.each{ |el|
-                nested_attr_name = el.to_s.gsub("_attributes","").classify
-                nested_attr_restrictions = context[:restrictions].detect { |el|
-                  (el.resource.name == nested_attr_name || el.resource.alias == nested_attr_name) &&
-                    el.resource.resource_type == HasHelpers::ResourceType::BASE_RESOURCE &&
-                  [HasHelpers::RestrictionOperation::CREATE, HasHelpers::RestrictionOperation::UPDATE].include?(el.restriction_operation)
-                }
-                if(!nested_attr_restrictions.blank?)
-                  aux_restricted.push([el]) if !nested_attr_restrictions.nil?
-                  formatted_attrs = formatted_attrs.with_indifferent_access.except(el)
-                end
-
-                if(nested_attr_restrictions.blank?)
-                  nested_attr_restrictions_two = context[:restrictions].select { |el|
-                    (el.resource.parent&.name == nested_attr_name || el.resource.parent&.alias == nested_attr_name &&
-                      el.resource.parent&.resource_type == HasHelpers::ResourceType::BASE_RESOURCE) &&
-                    el.restriction_operation == restriction_operation
+            # Returns filtered mutation arguments based on restrictions and a list of filtered arguments
+            # model_name is an specific resource used for filter restrictions
+            # formatted_args are mutation's nested arguments
+            # restricted_args list of arguments that are restricted based on restrictions
+            # restriction_operation is a ::HasHelpers::RestrictionOperation type
+            def recursive_nested_restrictions(model_name, formatted_args, restricted_args, restriction_operation)
+              # gets attribute restrictions of a resource
+              # if restrictions exist, add related args to restricted_args array and removes those args from formatted_args
+              restrictions = get_attributes_restrictions(model_name, restriction_operation)
+              restrictions = restrictions.map{ |el| [el.resource.name, el.restriction_operation.id] } if !restrictions.empty?
+              if(!restrictions.blank?)
+                excluded_attrs = formatted_args.kind_of?(Array) ?
+                formatted_args.map{ |attr|
+                  restrictions.select {
+                    |r| attr.with_indifferent_access.keys.include?(r[0]) && r[1] ==  (attr.key?("id") ? HasHelpers::RestrictionOperation::UPDATE.id : HasHelpers::RestrictionOperation::CREATE.id)
                   }
+                }.reject { |c| c.empty? } :
+                restrictions.select { |r|
+                  formatted_args.with_indifferent_access.keys.include?(r[0]) && r[1] ==  (formatted_args.key?("id") ? HasHelpers::RestrictionOperation::UPDATE.id : HasHelpers::RestrictionOperation::CREATE.id)
+                }.reject { |c| c.empty? }
+                restricted_args[model_name.camelize(:lower)] += excluded_attrs.map { |el| {el[0].camelize(:lower) => "don't have permissions to #{el[1].demodulize.camelize(:lower)}"}} if !excluded_attrs.blank?
+                formatted_args = formatted_args.kind_of?(Array) ?
+                formatted_args.map{ |el|
+                  el.with_indifferent_access.except(*restrictions.flatten)
+                } :
+                formatted_args.with_indifferent_access.except(*restrictions.flatten) if !restrictions.blank?
+              end
 
-                  nested_attr_restrictions_two = nested_attr_restrictions_two.map{ |el| [el.resource.name, el.resource.alias] }.flatten if !nested_attr_restrictions_two.empty?
-                  restricted_nested_params = formatted_attrs[el].kind_of?(Array) ?
-                  formatted_attrs[el].map{ |attr| attr.with_indifferent_access.keys.select { |el| nested_attr_restrictions_two.include?(el) }}.flatten :
-                  formatted_attrs[el].with_indifferent_access.keys.select { |el| nested_attr_restrictions_two.include?(el) }
-
-
-                  aux_restricted.push([el, restricted_nested_params]) if !restricted_nested_params.empty?
-                  formatted_attrs[el] = formatted_attrs[el].kind_of?(Array) ?
-                  formatted_attrs[el].map{ |el| el.with_indifferent_access.except(*restricted_nested_params) } :
-                  formatted_attrs[el].with_indifferent_access.except(*restricted_nested_params) if !restricted_nested_params.blank?
-
-                  if(formatted_attrs[el].kind_of?(Array))
-                    formatted_attrs[el].each_with_index{ |attr,idx|
-                       nested = formatted_attrs[el][idx].select { |el| el.to_s.include?("_attributes") }
-                       aux_result = {}
-                       aux_result = recursive_nested_restrictions(nested, [], restriction_operation) if !nested.empty?
-                       formatted_attrs[el][idx] = aux_result[:formatted_attrs]
-                       aux_restricted.push(aux_result[:aux_restricted])
-                    }
+              # if there's an association for create/update, checks the existance of related restrictions
+              # if restrictions exist, add related args to restricted_args array and removes those args from formatted_args
+              if(formatted_args.kind_of?(Array))
+                formatted_args.each_with_index{ |attr, idx|
+                  nested_attributes = attr.keys.select { |el| el.to_s.include?("_attributes") }
+                  nested_attributes.each{ |el|
+                    nested_attr_name = el.gsub("_attributes","").classify
+                    attr_restrictions = get_base_restrictions(
+                      [HasHelpers::RestrictionOperation::CREATE, HasHelpers::RestrictionOperation::UPDATE]).detect { |el| el.resource.name == nested_attr_name }
+                    if(!attr_restrictions.blank?)
+                      restricted_args[model_name.camelize(:lower)].push(nested_attr_name.camelize(:lower) => "don't have permissions to create/edit") if !attr_restrictions.nil?
+                      formatted_args[idx] = formatted_args[idx].except(el)
+                    else
+                      result = recursive_nested_restrictions(nested_attr_name, formatted_args[idx][el], {nested_attr_name.camelize(:lower) => []}, [HasHelpers::RestrictionOperation::CREATE, HasHelpers::RestrictionOperation::UPDATE])
+                      formatted_args[idx][el] = result[:formatted_args]
+                      restricted_args[model_name.camelize(:lower)].push(result[:restricted_args]) if !result[:restricted_args].blank?
+                    end
+                  }
+                }
+                formatted_args = formatted_args.reject { |c| c.blank? }
+              else
+                nested_attributes = formatted_args.keys.select { |el| el.to_s.include?("_attributes") }
+                nested_attributes.each{ |el|
+                  nested_attr_name = el.gsub("_attributes","").classify
+                  attr_restrictions = get_base_restrictions(
+                    [HasHelpers::RestrictionOperation::CREATE, HasHelpers::RestrictionOperation::UPDATE]).detect { |el| el.resource.name == nested_attr_name }
+                  if(!attr_restrictions.blank?)
+                    restricted_args[model_name.camelize(:lower)].push(nested_attr_name.camelize(:lower) => "don't have permissions to create/edit") if !attr_restrictions.nil?
+                    formatted_args = formatted_args.except(el)
                   else
-                    nested = formatted_attrs[el].keys.select { |el| el.to_s.include?("_attributes") }
-                    aux_result = {}
-                    aux_result = recursive_nested_restrictions(nested, [], restriction_operation) if !nested.empty?
-                    formatted_attrs[el] = aux_result[:formatted_attrs]
-                    aux_restricted.push(aux_result[:aux_restricted])
+                    result = recursive_nested_restrictions(nested_attr_name, formatted_args[el], {nested_attr_name.camelize(:lower) => []}, [HasHelpers::RestrictionOperation::CREATE, HasHelpers::RestrictionOperation::UPDATE])
+                    if(result[:formatted_args].blank?)
+                      formatted_args = formatted_args.except(el)
+                    else
+                      formatted_args[el] = result[:formatted_args]
+                    end
+                    restricted_args[model_name.camelize(:lower)].push(result[:restricted_args]) if !result[:restricted_args].blank?
                   end
-                end
-              }
-              return { formatted_attrs: formatted_attrs, aux_restricted: aux_restricted }
+                }
+              end
+              return { formatted_args: formatted_args, restricted_args: restricted_args }
             end
 
+            # returns mutation args filtered by restrictions and errors warning with all args removed
             def attribute_restrictions_handler(model_name, attributes, restriction_operation)
               association_name = model_name.demodulize
-              formatted_attrs = attributes.format_nested_attributes
-              restrictions = get_attributes_restrictions(model_name, restriction_operation)
+              formatted_args = attributes.format_nested_attributes.with_indifferent_access
+              # restrictions = get_attributes_restrictions(association_name, [restriction_operation])
+              #
+              # restrictions = restrictions.map{ |el| [el.resource.name, el.resource.alias] }.flatten if !restrictions.empty?
+              # filtered_attrs = formatted_args.with_indifferent_access.except(*restrictions)
+              # restricted_keys = formatted_args.with_indifferent_access.keys.select { |el| restrictions.include?(el) }
 
-              restrictions = restrictions.map{ |el| [el.resource.name, el.resource.alias] }.flatten if !restrictions.empty?
-              filtered_attrs = formatted_attrs.with_indifferent_access.except(*restrictions)
-              restricted_keys = formatted_attrs.with_indifferent_access.keys.select { |el| restrictions.include?(el) }
-
-              prueba = recursive_nested_restrictions(formatted_attrs, [], restriction_operation)
+              prueba = recursive_nested_restrictions(association_name, formatted_args, {association_name.camelize(:lower) => []}, [restriction_operation])
 byebug
               errors = {}
 
