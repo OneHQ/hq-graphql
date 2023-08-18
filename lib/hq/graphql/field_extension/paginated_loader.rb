@@ -24,10 +24,10 @@ module HQ
           )
 
           association_name = object.object.class.name.demodulize
-          restriction = _kwargs[:context][:restrictions].detect { |el|
-            (el.restriction_operation == HasHelpers::RestrictionOperation::VIEW &&
+          restriction = _options[:context][:restrictions]&.detect { |el|
+            (el.restriction_operation_id == "HasHelpers::RestrictionOperation::::View" &&
             ((el.resource.name == field.original_name.camelize || el.resource.alias == field.original_name.camelize) &&
-            el.resource_type == HasHelpers::ResourceType::BASE_RESOURCE) ||
+            el.resource_type_id == "HasHelpers::ResourceType::::BaseResource") ||
             ((el.resource.parent&.name == options[:klass].name || el.resource.parent&.alias == options[:klass].name) &&
             el.resource.field_class_name == field.original_name.camelize || el.resource.alias == field.original_name.camelize))
           }

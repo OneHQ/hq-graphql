@@ -98,10 +98,10 @@ module HQ
 
             field name, Types.type_from_column(column), null: !auto_nil || column.null,
             authorize: -> (obj, ctx) do
-              restriction = ctx[:restrictions].detect { |el|
+              restriction = ctx[:restrictions]&.detect { |el|
                 (el.resource.name == name || el.resource.alias == name) &&
-                el.restriction_operation == HasHelpers::RestrictionOperation::VIEW &&
-                el.resource.resource_type != HasHelpers::ResourceType::REQUIRED_FIELD
+                el.restriction_operation_id == "HasHelpers::RestrictionOperation::::View" &&
+                el.resource.resource_type_id != "HasHelpers::ResourceType::::RequiredField"
               }
               return false if restriction.present?
               true

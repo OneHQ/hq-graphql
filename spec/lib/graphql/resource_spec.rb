@@ -56,17 +56,19 @@ describe ::HQ::GraphQL::Resource do
     it "creates query fields" do
       query_object = ::HQ::GraphQL::Types[Advisor]
       query_object.lazy_load!
-      expected = ["id", "organizationId", "name", "nickname", "createdAt", "updatedAt"]
+      expected = ["id", "organizationId", "optionalOrgId", "name", "nickname", "createdAt", "updatedAt"]
       aggregate_failures do
         expect(query_object.fields.keys).to contain_exactly(*expected)
-        expect(query_object.fields.values.map(&:type)).to be_all { |f| f.kind_of? ::GraphQL::Schema::NonNull }
+        expect(query_object.fields.values).to be_all { |f|
+          (["nickname", "optionalOrgId"].include?(f.name) || f.type.kind_of?(::GraphQL::Schema::NonNull))
+        }
       end
     end
 
     it "creates nil query fields" do
       query_object = ::HQ::GraphQL::Types[Advisor, true]
       query_object.lazy_load!
-      expected = ["id", "organizationId", "name", "nickname", "createdAt", "updatedAt"]
+      expected = ["id", "organizationId", "optionalOrgId", "name", "nickname", "createdAt", "updatedAt"]
       aggregate_failures do
         expect(query_object.fields.keys).to contain_exactly(*expected)
         expect(query_object.fields.values.map(&:type)).to be_none { |f| f.kind_of? ::GraphQL::Schema::NonNull }
@@ -80,7 +82,7 @@ describe ::HQ::GraphQL::Resource do
 
     it "creates input arguments" do
       ::HQ::GraphQL::Inputs[Advisor].lazy_load!
-      expected = ["id", "organizationId", "name", "nickname", "createdAt", "updatedAt", "X"]
+      expected = ["id", "organizationId", "optionalOrgId", "name", "nickname", "createdAt", "updatedAt", "X"]
       expect(::HQ::GraphQL::Inputs[Advisor].arguments.keys).to contain_exactly(*expected)
     end
 
@@ -100,13 +102,13 @@ describe ::HQ::GraphQL::Resource do
 
       it "adds organization type" do
         ::HQ::GraphQL::Types[Advisor].lazy_load!
-        expected = ["id", "organization", "organizationId", "name", "nickname", "createdAt", "updatedAt"]
+        expected = ["id", "organization", "organizationId", "optionalOrg", "optionalOrgId", "name", "nickname", "createdAt", "updatedAt"]
         expect(::HQ::GraphQL::Types[Advisor].fields.keys).to contain_exactly(*expected)
       end
 
       it "doesn't add organization type" do
         ::HQ::GraphQL::Inputs[Advisor].lazy_load!
-        expected = ["id", "organizationId", "name", "nickname", "createdAt", "updatedAt", "X"]
+        expected = ["id", "organizationId", "optionalOrgId", "name", "nickname", "createdAt", "updatedAt", "X"]
         expect(::HQ::GraphQL::Inputs[Advisor].arguments.keys).to contain_exactly(*expected)
       end
     end
@@ -132,7 +134,7 @@ describe ::HQ::GraphQL::Resource do
 
     it "removes name" do
       ::HQ::GraphQL::Types[Advisor].lazy_load!
-      expected = ["id", "nickname", "organizationId", "createdAt", "updatedAt"]
+      expected = ["id", "nickname", "organizationId", "optionalOrgId", "createdAt", "updatedAt"]
       expect(::HQ::GraphQL::Types[Advisor].fields.keys).to contain_exactly(*expected)
     end
 
@@ -178,7 +180,7 @@ describe ::HQ::GraphQL::Resource do
 
     it "removes name" do
       ::HQ::GraphQL::Inputs[Advisor].lazy_load!
-      expected = ["id", "nickname", "organizationId", "createdAt", "updatedAt", "X"]
+      expected = ["id", "nickname", "organizationId", "optionalOrgId", "createdAt", "updatedAt", "X"]
       expect(::HQ::GraphQL::Inputs[Advisor].arguments.keys).to contain_exactly(*expected)
     end
 
@@ -219,7 +221,7 @@ describe ::HQ::GraphQL::Resource do
       input_object.lazy_load!
 
       aggregate_failures do
-        expected_arguments = ["id", "nickname", "organizationId", "organization", "createdAt", "updatedAt", "X"]
+        expected_arguments = ["id", "nickname", "organizationId", "optionalOrgId", "organization", "createdAt", "updatedAt", "X"]
         expect(input_object.arguments.keys).to contain_exactly(*expected_arguments)
 
         expected_arguments = ["id", "attributes"]
@@ -292,7 +294,7 @@ describe ::HQ::GraphQL::Resource do
 
     it "removes id, createdAt and updatedAt" do
       ::HQ::GraphQL::Inputs[Advisor].lazy_load!
-      expected = ["name", "nickname", "organizationId", "X"]
+      expected = ["name", "nickname", "organizationId", "optionalOrgId", "X"]
       expect(::HQ::GraphQL::Inputs[Advisor].arguments.keys).to contain_exactly(*expected)
     end
   end
@@ -357,6 +359,10 @@ describe ::HQ::GraphQL::Resource do
               id
               name
               nickname
+              optionalOrg {
+                id
+                name
+              }
             }
           }
         }
@@ -408,6 +414,7 @@ describe ::HQ::GraphQL::Resource do
 
         input do
           add_association :organization
+          add_association :optional_org
         end
       end
     end
@@ -561,6 +568,226 @@ describe ::HQ::GraphQL::Resource do
         data = results["data"]
         aggregate_failures do
           expect(data["destroyAdvisor"]).to be_nil
+          expect(Advisor.where(id: advisor.id).exists?).to eql true
+        end
+      end
+    end
+
+    context "with restrictions" do
+      it "fails to create" do
+        organization = FactoryBot.build(:organization)
+        role = FactoryBot.build(:role, organization: organization)
+        baseResource = FactoryBot.build(:resource, name: "Advisor", resource_type_id: "HasHelpers::ResourceType::::BaseResource", parent: nil, field_resource: nil)
+        fieldResource = FactoryBot.build(:resource, name: "name", resource_type_id: "HasHelpers::ResourceType::::Field", parent: baseResource, field_resource: nil)
+        restriction = FactoryBot.build(:restriction, resource: baseResource, restriction_operation_id: "HasHelpers::RestrictionOperation::::Create", role: role, organization: organization)
+
+        name = "Bob"
+        results = schema.execute(create_mutation, variables: { attributes: { name: name, organizationId: organization.id } }, context: { restrictions: [restriction] })
+        data = results["data"]
+
+        aggregate_failures do
+          expect(data["createAdvisor"]["resource"]).to be_nil
+          expect(data["createAdvisor"]["errors"]["resource"]).to eql "Unauthorized action for Advisor create"
+          expect(Advisor.where(name: name).exists?).to eql false
+        end
+      end
+
+      it "creates with restricted arguments" do
+        organization = FactoryBot.create(:organization)
+        role = FactoryBot.create(:role, organization: organization)
+        advisorBaseResource = FactoryBot.create(:resource,
+          name: "Advisor",
+          alias: "Advisor",
+          resource_type_id: "HasHelpers::ResourceType::::BaseResource",
+          parent: nil,
+          field_resource: nil
+        )
+        orgBaseResource = FactoryBot.create(:resource,
+          name: "Organization", resource_type_id: "HasHelpers::ResourceType::::BaseResource",
+          alias: "Organization",
+          parent: nil,
+          field_resource: nil
+        )
+        associationResource = FactoryBot.create(:resource,
+          name: "optional_org_id",
+          alias: "optional_org_id",
+          field_resource: orgBaseResource,
+          field_class_name: "Organization",
+          resource_type_id: "HasHelpers::ResourceType::::Field",
+          parent: advisorBaseResource)
+        fieldResource = FactoryBot.create(:resource,
+          name: "nickname",
+          alias: "nickname",
+          resource_type_id: "HasHelpers::ResourceType::::Field",
+          parent: advisorBaseResource,
+          field_resource: nil
+        )
+        restriction_one = FactoryBot.build(:restriction,
+          resource: fieldResource,
+          restriction_operation_id: "HasHelpers::RestrictionOperation::::Create",
+          role: role,
+          organization: organization
+        )
+        restriction_two = FactoryBot.build(:restriction,
+          resource: associationResource,
+          restriction_operation_id: "HasHelpers::RestrictionOperation::::Create",
+          role: role,
+          organization: organization
+        )
+
+        name = "Bob"
+        nickname = "Michael"
+        results = schema.execute(create_mutation,
+          variables: {
+            attributes: { name: name, nickname: nickname, organizationId: organization.id, optionalOrgId: organization.id }
+          },
+          context: { restrictions: [restriction_one, restriction_two] }
+        )
+        data = results["data"]
+        
+        aggregate_failures do
+          expect(data["createAdvisor"]["resource"]["nickname"]).to be_nil
+          expect(data["createAdvisor"]["resource"]["optionalOrg"]).to be_nil
+          expect(data["createAdvisor"]["errors"]["warning"]["advisor"].size).to eql 2
+          expect(Advisor.where(name: name).exists?).to eql true
+        end
+
+        name = "Bob"
+        nickname = "Michael"
+        new_optional_org = { name: "org-test" }
+        results = schema.execute(create_mutation,
+          variables: {
+            attributes: { name: name, nickname: nickname, organizationId: organization.id, optionalOrg: new_optional_org }
+          },
+          context: { restrictions: [restriction_one, restriction_two] }
+        )
+        data = results["data"]
+        end
+
+      it "fails to update" do
+        organization = FactoryBot.create(:organization)
+        role = FactoryBot.build(:role, organization: organization)
+        advisorBaseResource = FactoryBot.build(:resource,
+          name: "Advisor",
+          resource_type_id: "HasHelpers::ResourceType::::BaseResource",
+          parent: nil,
+          field_resource: nil
+        )
+        restriction = FactoryBot.build(:restriction,
+          resource: advisorBaseResource,
+          restriction_operation_id: "HasHelpers::RestrictionOperation::::Update",
+          role: role,
+          organization: organization
+        )
+
+        advisor = FactoryBot.create(:advisor)
+        name = "Bob"
+        organization_name = "Foo"
+
+        results = schema.execute(update_mutation,
+          variables: {
+            id: advisor.id,
+            attributes: {
+              name: name,
+              organization: { id: advisor.organization_id, name: organization_name }
+            }
+          },
+          context: { restrictions: [restriction] }
+        )
+
+        data = results["data"]
+        aggregate_failures do
+          expect(data["updateAdvisor"]["resource"]).to be_nil
+          expect(data["updateAdvisor"]["errors"]["resource"]).to eql "Unauthorized action for Advisor update"
+          expect(Advisor.find(advisor.id).name).to eql advisor.name
+          expect(Organization.find(advisor.organization_id).name).to eql advisor.organization.name
+        end
+      end
+
+      it "update with restricted arguments" do
+        organization = FactoryBot.create(:organization)
+        role = FactoryBot.build(:role, organization: organization)
+        advisorBaseResource = FactoryBot.build(:resource,
+          name: "Advisor",
+          resource_type_id: "HasHelpers::ResourceType::::BaseResource",
+          parent: nil,
+          field_resource: nil
+        )
+        orgBaseResource = FactoryBot.build(:resource,
+          name: "Organization", resource_type_id: "HasHelpers::ResourceType::::BaseResource",
+          parent: nil,
+          field_resource: nil
+        )
+        advisorfieldResource = FactoryBot.build(:resource,
+          name: "name",
+          resource_type_id: "HasHelpers::ResourceType::::Field",
+          parent: advisorBaseResource,
+          field_resource: nil
+        )
+        orgfieldResource = FactoryBot.build(:resource,
+          name: "name",
+          resource_type_id: "HasHelpers::ResourceType::::Field",
+          parent: orgBaseResource,
+          field_resource: nil
+        )
+        restriction_one = FactoryBot.build(:restriction,
+          resource: advisorfieldResource,
+          restriction_operation_id: "HasHelpers::RestrictionOperation::::Update",
+          role: role,
+          organization: organization
+        )
+        restriction_two = FactoryBot.build(:restriction,
+          resource: orgfieldResource,
+          restriction_operation_id: "HasHelpers::RestrictionOperation::::Update",
+          role: role,
+          organization: organization
+        )
+
+        advisor = FactoryBot.create(:advisor)
+        name = "Bob"
+        organization_name = "Foo"
+
+        results = schema.execute(update_mutation,
+          variables: {
+            id: advisor.id,
+            attributes: {
+              name: name,
+              organization: { id: advisor.organization_id, name: organization_name }
+            }
+          },
+          context: { restrictions: [restriction_one, restriction_two] }
+        )
+
+        data = results["data"]
+        aggregate_failures do
+          expect(data["updateAdvisor"]["errors"]["warning"]["advisor"].size).to eql 2
+          expect(Advisor.find(advisor.id).name).to eql advisor.name
+          expect(Organization.find(advisor.organization_id).name).to eql advisor.organization.name
+        end
+      end
+
+      it "fails to destroy" do
+        organization = FactoryBot.create(:organization)
+        role = FactoryBot.build(:role, organization: organization)
+        advisorBaseResource = FactoryBot.build(:resource,
+          name: "Advisor",
+          resource_type_id: "HasHelpers::ResourceType::::BaseResource",
+          parent: nil,
+          field_resource: nil
+        )
+        restriction = FactoryBot.build(:restriction,
+          resource: advisorBaseResource,
+          restriction_operation_id: "HasHelpers::RestrictionOperation::::Delete",
+          role: role,
+          organization: organization
+        )
+        advisor = FactoryBot.create(:advisor)
+        results = schema.execute(destroy_mutation, variables: { id: advisor.id }, context: { restrictions: [restriction] })
+
+        data = results["data"]
+        aggregate_failures do
+          expect(data["destroyAdvisor"]["resource"]).to be_nil
+          expect(data["destroyAdvisor"]["errors"]["resource"]).to eql "Unauthorized action for Advisor destroy"
           expect(Advisor.where(id: advisor.id).exists?).to eql true
         end
       end

@@ -28,7 +28,7 @@ describe ::HQ::GraphQL::Ext::ObjectExtensions do
 
       expect(hq_object.fields.keys).to be_empty
       hq_object.lazy_load!
-      expected = ["createdAt", "id", "name", "nickname", "organization", "organizationId", "updatedAt"]
+      expected = ["createdAt", "id", "name", "nickname", "optionalOrg", "optionalOrgId", "organization", "organizationId", "updatedAt"]
       expect(hq_object.fields.keys).to contain_exactly(*expected)
     end
 
@@ -49,13 +49,13 @@ describe ::HQ::GraphQL::Ext::ObjectExtensions do
     describe ".remove_attributes" do
       it "removes an attribute" do
         hq_object.class_eval do
-          remove_attributes :created_at, :id, :organization_id
+          remove_attributes :created_at, :id, :organization_id, :optional_org_id
           with_model "Advisor"
         end
 
         expect(hq_object.fields.keys).to be_empty
         hq_object.lazy_load!
-        expected = ["name", "nickname", "organization", "updatedAt"]
+        expected = ["name", "nickname", "optionalOrg", "organization", "updatedAt"]
         expect(hq_object.fields.keys).to contain_exactly(*expected)
       end
 
@@ -81,12 +81,13 @@ describe ::HQ::GraphQL::Ext::ObjectExtensions do
       it "removes an association" do
         hq_object.class_eval do
           remove_associations :organization
+          remove_associations :optional_org
           with_model "Advisor"
         end
 
         expect(hq_object.fields.keys).to be_empty
         hq_object.lazy_load!
-        expected = ["createdAt", "id", "name", "nickname", "organizationId", "updatedAt"]
+        expected = ["createdAt", "id", "name", "nickname", "optionalOrgId", "organizationId", "updatedAt"]
         expect(hq_object.fields.keys).to contain_exactly(*expected)
       end
 

@@ -11,10 +11,12 @@ ActiveRecord::Schema.define do
 
   create_table "advisors", force: true, id: :uuid do |t|
     t.references  :organization,       null: false, index: true, foreign_key: true, type: :uuid
+    t.uuid        :optional_org_id
     t.string      :name,               null: false
-    t.string      :nickname,           null: false
+    t.string      :nickname
     t.timestamps                       null: false
   end
+  add_foreign_key :advisors, :organizations, column: :optional_org_id
 
   create_table "managers", force: true, id: :uuid do |t|
     t.references  :organization,       null: false, index: true, foreign_key: true, type: :uuid
@@ -28,6 +30,7 @@ ActiveRecord::Schema.define do
 
   create_table "resources", force: true, id: :uuid do |t|
     t.string      :name,               null: false
+    t.string      :alias,              null: false
     t.string      :resource_type_id,   null: false
     t.uuid        :parent_id
     t.uuid        :field_resource_id
