@@ -575,14 +575,15 @@ describe ::HQ::GraphQL::Resource do
 
     context "with restrictions" do
       it "fails to create" do
-        organization = FactoryBot.build(:organization)
+        organization = FactoryBot.create(:organization)
         role = FactoryBot.build(:role, organization: organization)
+        current_user = FactoryBot.create(:user, role: role)
         baseResource = FactoryBot.build(:resource, name: "Advisor", resource_type_id: "HasHelpers::ResourceType::::BaseResource", parent: nil, field_resource: nil)
         fieldResource = FactoryBot.build(:resource, name: "name", resource_type_id: "HasHelpers::ResourceType::::Field", parent: baseResource, field_resource: nil)
-        restriction = FactoryBot.build(:restriction, resource: baseResource, restriction_operation_id: "HasHelpers::RestrictionOperation::::Create", role: role, organization: organization)
+        FactoryBot.create(:restriction, resource: baseResource, restriction_operation_id: "HasHelpers::RestrictionOperation::::Create", role: role, organization: organization)
 
         name = "Bob"
-        results = schema.execute(create_mutation, variables: { attributes: { name: name, organizationId: organization.id } }, context: { restrictions: [restriction] })
+        results = schema.execute(create_mutation, variables: { attributes: { name: name, organizationId: organization.id } }, context: { current_user: current_user })
         data = results["data"]
 
         aggregate_failures do
@@ -594,41 +595,42 @@ describe ::HQ::GraphQL::Resource do
 
       it "creates with restricted arguments" do
         organization = FactoryBot.create(:organization)
-        role = FactoryBot.create(:role, organization: organization)
-        advisorBaseResource = FactoryBot.create(:resource,
+        role = FactoryBot.build(:role, organization: organization)
+        current_user = FactoryBot.create(:user, role: role)
+        advisorBaseResource = FactoryBot.build(:resource,
           name: "Advisor",
           alias: "Advisor",
           resource_type_id: "HasHelpers::ResourceType::::BaseResource",
           parent: nil,
           field_resource: nil
         )
-        orgBaseResource = FactoryBot.create(:resource,
+        orgBaseResource = FactoryBot.build(:resource,
           name: "Organization", resource_type_id: "HasHelpers::ResourceType::::BaseResource",
           alias: "Organization",
           parent: nil,
           field_resource: nil
         )
-        associationResource = FactoryBot.create(:resource,
+        associationResource = FactoryBot.build(:resource,
           name: "optional_org_id",
           alias: "optional_org_id",
           field_resource: orgBaseResource,
           field_class_name: "Organization",
           resource_type_id: "HasHelpers::ResourceType::::Field",
           parent: advisorBaseResource)
-        fieldResource = FactoryBot.create(:resource,
+        fieldResource = FactoryBot.build(:resource,
           name: "nickname",
           alias: "nickname",
           resource_type_id: "HasHelpers::ResourceType::::Field",
           parent: advisorBaseResource,
           field_resource: nil
         )
-        restriction_one = FactoryBot.build(:restriction,
+        FactoryBot.create(:restriction,
           resource: fieldResource,
           restriction_operation_id: "HasHelpers::RestrictionOperation::::Create",
           role: role,
           organization: organization
         )
-        restriction_two = FactoryBot.build(:restriction,
+        FactoryBot.create(:restriction,
           resource: associationResource,
           restriction_operation_id: "HasHelpers::RestrictionOperation::::Create",
           role: role,
@@ -641,10 +643,10 @@ describe ::HQ::GraphQL::Resource do
           variables: {
             attributes: { name: name, nickname: nickname, organizationId: organization.id, optionalOrgId: organization.id }
           },
-          context: { restrictions: [restriction_one, restriction_two] }
+          context: { current_user: current_user }
         )
         data = results["data"]
-        
+
         aggregate_failures do
           expect(data["createAdvisor"]["resource"]["nickname"]).to be_nil
           expect(data["createAdvisor"]["resource"]["optionalOrg"]).to be_nil
@@ -659,7 +661,7 @@ describe ::HQ::GraphQL::Resource do
           variables: {
             attributes: { name: name, nickname: nickname, organizationId: organization.id, optionalOrg: new_optional_org }
           },
-          context: { restrictions: [restriction_one, restriction_two] }
+          context: { current_user: current_user }
         )
         data = results["data"]
         end
@@ -667,13 +669,14 @@ describe ::HQ::GraphQL::Resource do
       it "fails to update" do
         organization = FactoryBot.create(:organization)
         role = FactoryBot.build(:role, organization: organization)
+        current_user = FactoryBot.create(:user, role: role)
         advisorBaseResource = FactoryBot.build(:resource,
           name: "Advisor",
           resource_type_id: "HasHelpers::ResourceType::::BaseResource",
           parent: nil,
           field_resource: nil
         )
-        restriction = FactoryBot.build(:restriction,
+        FactoryBot.create(:restriction,
           resource: advisorBaseResource,
           restriction_operation_id: "HasHelpers::RestrictionOperation::::Update",
           role: role,
@@ -692,7 +695,7 @@ describe ::HQ::GraphQL::Resource do
               organization: { id: advisor.organization_id, name: organization_name }
             }
           },
-          context: { restrictions: [restriction] }
+          context: { current_user: current_user }
         )
 
         data = results["data"]
@@ -707,6 +710,7 @@ describe ::HQ::GraphQL::Resource do
       it "update with restricted arguments" do
         organization = FactoryBot.create(:organization)
         role = FactoryBot.build(:role, organization: organization)
+        current_user = FactoryBot.create(:user, role: role)
         advisorBaseResource = FactoryBot.build(:resource,
           name: "Advisor",
           resource_type_id: "HasHelpers::ResourceType::::BaseResource",
@@ -730,13 +734,13 @@ describe ::HQ::GraphQL::Resource do
           parent: orgBaseResource,
           field_resource: nil
         )
-        restriction_one = FactoryBot.build(:restriction,
+        FactoryBot.create(:restriction,
           resource: advisorfieldResource,
           restriction_operation_id: "HasHelpers::RestrictionOperation::::Update",
           role: role,
           organization: organization
         )
-        restriction_two = FactoryBot.build(:restriction,
+        FactoryBot.create(:restriction,
           resource: orgfieldResource,
           restriction_operation_id: "HasHelpers::RestrictionOperation::::Update",
           role: role,
@@ -755,7 +759,7 @@ describe ::HQ::GraphQL::Resource do
               organization: { id: advisor.organization_id, name: organization_name }
             }
           },
-          context: { restrictions: [restriction_one, restriction_two] }
+          context: { current_user: current_user }
         )
 
         data = results["data"]
@@ -769,20 +773,21 @@ describe ::HQ::GraphQL::Resource do
       it "fails to destroy" do
         organization = FactoryBot.create(:organization)
         role = FactoryBot.build(:role, organization: organization)
+        current_user = FactoryBot.create(:user, role: role)
         advisorBaseResource = FactoryBot.build(:resource,
           name: "Advisor",
           resource_type_id: "HasHelpers::ResourceType::::BaseResource",
           parent: nil,
           field_resource: nil
         )
-        restriction = FactoryBot.build(:restriction,
+        FactoryBot.create(:restriction,
           resource: advisorBaseResource,
           restriction_operation_id: "HasHelpers::RestrictionOperation::::Delete",
           role: role,
           organization: organization
         )
         advisor = FactoryBot.create(:advisor)
-        results = schema.execute(destroy_mutation, variables: { id: advisor.id }, context: { restrictions: [restriction] })
+        results = schema.execute(destroy_mutation, variables: { id: advisor.id }, context: { current_user: current_user })
 
         data = results["data"]
         aggregate_failures do

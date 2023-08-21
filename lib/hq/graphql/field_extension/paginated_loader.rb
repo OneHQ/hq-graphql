@@ -24,7 +24,7 @@ module HQ
           )
 
           association_name = object.object.class.name.demodulize
-          restriction = _options[:context][:restrictions]&.detect { |el|
+          restriction = _options[:context][:current_user]&.restrictions&.detect { |el|
             (el.restriction_operation_id == "HasHelpers::RestrictionOperation::::View" &&
             ((el.resource.name == field.original_name.camelize || el.resource.alias == field.original_name.camelize) &&
             el.resource_type_id == "HasHelpers::ResourceType::::BaseResource") ||

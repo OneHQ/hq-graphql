@@ -30,7 +30,7 @@ ActiveRecord::Schema.define do
 
   create_table "resources", force: true, id: :uuid do |t|
     t.string      :name,               null: false
-    t.string      :alias,              null: false
+    t.string      :alias
     t.string      :resource_type_id,   null: false
     t.uuid        :parent_id
     t.uuid        :field_resource_id
@@ -48,6 +48,7 @@ ActiveRecord::Schema.define do
 
   create_table "users", force: true, id: :uuid do |t|
     t.belongs_to  :organization,       null: false, index: true, foreign_key: true, type: :uuid
+    t.belongs_to  :role,               null: false, index: true, foreign_key: true, type: :uuid
     t.belongs_to  :advisor,            null: true, index: true, foreign_key: true, type: :uuid
     t.belongs_to  :manager,            null: true, index: true, foreign_key: true, type: :uuid
     t.boolean     :inactive

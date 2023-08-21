@@ -7,7 +7,7 @@ module HQ
     module FieldExtension
       class AssociationLoaderExtension < ::GraphQL::Schema::FieldExtension
         def resolve(object:, **_kwargs)
-          restriction = _kwargs[:context][:restrictions]&.detect { |el|
+          restriction = _kwargs[:context][:current_user]&.restrictions&.detect { |el|
             el.restriction_operation_id == "HasHelpers::RestrictionOperation::::View" &&
             (((el.resource.name == field.original_name.camelize || el.resource.alias == field.original_name.camelize) &&
             el.resource_type_id == "HasHelpers::ResourceType::::BaseResource") ||

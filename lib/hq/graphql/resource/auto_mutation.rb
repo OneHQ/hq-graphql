@@ -183,7 +183,7 @@ module HQ
             # return all restrictions related to a resource of type BaseResource, filtered by restriction operation type
             # restriction_operations is an array of ::HasHelpers::RestrictionOperation
             def get_base_restrictions(restriction_operations)
-              restrictions = context[:restrictions]&.select { |el|
+              restrictions = context[:current_user]&.restrictions&.select { |el|
                 (el.resource.resource_type_id == "HasHelpers::ResourceType::::BaseResource" &&
                 restriction_operations.include?(el.restriction_operation_id))
               }
@@ -206,7 +206,7 @@ module HQ
             # association_name is an specific resource used for filter restrictions
             # restriction_operations is an array of ::HasHelpers::RestrictionOperation
             def get_attributes_restrictions(association_name, restriction_operations)
-              restrictions = context[:restrictions]&.select { |el|
+              restrictions = context[:current_user]&.restrictions&.select { |el|
                 ((el.resource.parent&.name == association_name &&
                   el.resource.parent&.resource_type_id == "HasHelpers::ResourceType::::BaseResource") ||
                 el.resource.resource_type_id == "HasHelpers::ResourceType::::BaseResource") &&
@@ -290,7 +290,7 @@ module HQ
               filtered_attrs = attributes.format_nested_attributes.with_indifferent_access
 
               filtered_attrs, restricted_attrs = recursive_nested_restrictions(association_name, filtered_attrs, {association_name.camelize(:lower) => []}, [restriction_operation], true).
-              values_at(:filtered_attrs, :restricted_attrs) if !context[:restrictions].blank?
+              values_at(:filtered_attrs, :restricted_attrs) if !context[:current_user]&.restrictions.blank?
 
               errors = {}
               errors = { "warning" => restricted_attrs} if !restricted_attrs.blank?
