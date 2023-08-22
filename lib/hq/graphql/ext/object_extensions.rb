@@ -97,12 +97,12 @@ module HQ
             return if field_exists?(name)
 
             field name, Types.type_from_column(column), null: !auto_nil || column.null,
-            authorize: -> (obj, ctx) do
-              restriction = ctx[:current_user]&.restrictions&.detect { |el|
+            authorize: -> (_obj, ctx) do
+              restriction = ctx[:current_user]&.restrictions&.detect do |el|
                 (el.resource.name == name || el.resource.alias == name) &&
                 el.restriction_operation_id == "HasHelpers::RestrictionOperation::::View" &&
                 el.resource.resource_type_id != "HasHelpers::ResourceType::::RequiredField"
-              }
+              end
               return false if restriction.present?
               true
             end
