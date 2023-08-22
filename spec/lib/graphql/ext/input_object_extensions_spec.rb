@@ -28,7 +28,7 @@ describe ::HQ::GraphQL::Ext::InputObjectExtensions do
 
       expect(hq_input_object.arguments.keys).to be_empty
       hq_input_object.lazy_load!
-      expected = ["createdAt", "id", "name", "nickname", "organizationId", "updatedAt", "X"]
+      expected = ["createdAt", "id", "name", "nickname", "optionalOrgId", "organizationId", "updatedAt", "X"]
       expect(hq_input_object.arguments.keys).to contain_exactly(*expected)
     end
 
@@ -49,7 +49,7 @@ describe ::HQ::GraphQL::Ext::InputObjectExtensions do
     describe ".remove_attributes" do
       it "removes an attribute" do
         hq_input_object.class_eval do
-          remove_attributes :created_at, :id, :organization_id
+          remove_attributes :created_at, :id, :organization_id, :optional_org_id
           with_model "Advisor"
         end
 
@@ -86,7 +86,7 @@ describe ::HQ::GraphQL::Ext::InputObjectExtensions do
 
         expect(hq_input_object.arguments.keys).to be_empty
         hq_input_object.lazy_load!
-        expected = ["createdAt", "id", "name", "nickname", "organizationId", "updatedAt", "X"]
+        expected = ["createdAt", "id", "name", "nickname", "optionalOrgId", "organizationId", "updatedAt", "X"]
         expect(hq_input_object.arguments.keys).to contain_exactly(*expected)
       end
 
