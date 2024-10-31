@@ -15,7 +15,7 @@ module HQ
           klass, nil_klass = Array(options)
           # byebug
           # Aca sigue llegando solo User!!!!
-          # byebug if klass.to_s == "User"
+          byebug if klass.to_s == "User"
           klass = HasHelpers::User if klass.to_s == "User"
           hash[options] = nil_klass ? nil_query_object(klass) : klass_for(klass)
         end
