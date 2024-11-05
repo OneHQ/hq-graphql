@@ -23,7 +23,8 @@ module HQ
         private
 
         def klass_for(klass_or_string)
-          klass_or_string = HasHelpers::User if klass_or_string.to_s == "User"
+          # byebug if klass_or_string.to_s == "User"
+          # klass_or_string = HasHelpers::User if klass_or_string.to_s == "User"
           klass = klass_or_string.is_a?(String) ? klass_or_string.constantize : klass_or_string
           resource = ::HQ::GraphQL.lookup_resource(klass)
 

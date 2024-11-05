@@ -15,8 +15,8 @@ module HQ
           klass, nil_klass = Array(options)
           # byebug
           # Aca sigue llegando solo User!!!!
-          byebug if klass.to_s == "User"
-          klass = HasHelpers::User if klass.to_s == "User"
+          # byebug if klass.to_s == "User"
+          # klass = HasHelpers::User if klass.to_s == "User"
           hash[options] = nil_klass ? nil_query_object(klass) : klass_for(klass)
         end
       end
@@ -74,7 +74,8 @@ module HQ
         end
 
         def find_klass(klass_or_string, method)
-          klass_or_string = HasHelpers::User if klass_or_string.to_s == "User"
+          # byebug if klass_or_string.to_s == "User"
+          # klass_or_string = HasHelpers::User if klass_or_string.to_s == "User"
           klass = klass_or_string.is_a?(String) ? klass_or_string.constantize : klass_or_string
           resource = ::HQ::GraphQL.lookup_resource(klass)
 
