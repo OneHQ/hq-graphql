@@ -41,8 +41,6 @@ module HQ
     end
 
     def self.lookup_resource(klass)
-      # klass = HasHelpers::User if klass.to_s == "User"
-      # byebug if klass.to_s == "HasHelpers::User"
       [klass, klass.base_class, klass.superclass].lazy.map do |k|
         config.resource_lookup.call(k) || resources.detect { |r| r.model_klass == k }
       end.reject(&:nil?).first
