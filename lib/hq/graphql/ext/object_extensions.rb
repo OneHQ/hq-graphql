@@ -101,7 +101,7 @@ module HQ
               restriction = ctx[:current_user]&.restrictions&.detect do |el|
                 (el.resource.name == name || el.resource.alias == name) &&
                 el.restriction_operation_id == "HasHelpers::RestrictionOperation::::View" &&
-                el.resource.resource_type_id != "HasHelpers::ResourceType::::RequiredField"
+                el.resource&.resource_type_id != "HasHelpers::ResourceType::::RequiredField"
               end
               return false if restriction.present?
               true

@@ -180,17 +180,17 @@ module HQ
               resource.errors.to_h.deep_transform_keys { |k| k.to_s.camelize(:lower) }
             end
 
-            # return all restrictions related to a resource of type BaseResource, filtered by restriction operation type
+            # return all restrictions related to a resource of type Base, filtered by restriction operation type
             # restriction_operations is an array of ::HasHelpers::RestrictionOperation
             def get_base_restrictions(restriction_operations)
               restrictions = context[:current_user]&.restrictions&.select do |el|
-                (el.resource.resource_type_id == "HasHelpers::ResourceType::::BaseResource" &&
+                (el.resource.resource_type_id == "HasHelpers::ResourceType::::Base" &&
                 restriction_operations.include?(el.restriction_operation_id))
               end
               restrictions
             end
 
-            # Return true if a restriction related to a specific BaseResource, filtered by restriction operation type exist
+            # Return true if a restriction related to a specific Base, filtered by restriction operation type exist
             # model_name is an specific resource used for filter restrictions
             # restriction_operation is a ::HasHelpers::RestrictionOperation type
             def is_base_restricted(association_name, restriction_operation)
@@ -201,15 +201,15 @@ module HQ
               restriction.present?
             end
 
-            # Return all attribute restrictions related to a specific resource and also all BaseResource restrictions,
+            # Return all attribute restrictions related to a specific resource and also all Base restrictions,
             # both filtered by restriction operation
             # association_name is an specific resource used for filter restrictions
             # restriction_operations is an array of ::HasHelpers::RestrictionOperation
             def get_attributes_restrictions(association_name, restriction_operations)
               restrictions = context[:current_user]&.restrictions&.select do |el|
-                ((el.resource.parent&.name == association_name &&
-                  el.resource.parent&.resource_type_id == "HasHelpers::ResourceType::::BaseResource") ||
-                el.resource.resource_type_id == "HasHelpers::ResourceType::::BaseResource") &&
+                ((el.resource&.parent&.name == association_name &&
+                  el.resource&.parent&.resource_type_id == "HasHelpers::ResourceType::::Base") ||
+                el.resource.resource_type_id == "HasHelpers::ResourceType::::Base") &&
                 restriction_operations.include?(el.restriction_operation_id)
               end
 
@@ -232,7 +232,11 @@ module HQ
             # attr_restrictions are the restrictions related to the model_name
             # filtered_attrs are the initial attributes
             # restricted_attrs are the initial restricted attributes.
-            def apply_restrictions_in_nested(model_name, attr, attr_restrictions, filtered_attrs, restricted_attrs)
+            def apply_restrictions_in_nested(model_name, attr, filtered_attrs, restricted_attrs)
+              attr_restrictions = (
+                get_base_restrictions(["HasHelpers::RestrictionOperation::::Create", "HasHelpers::RestrictionOperation::::Update"]) +
+                get_attributes_restrictions(model_name, ["HasHelpers::RestrictionOperation::::Create", "HasHelpers::RestrictionOperation::::Update"])
+              )
               nested_attributes = attr.keys.select { |el| el.to_s.include?("_attributes") }
               nested_attributes.each do |el|
                 nested_attr_name = el.gsub("_attributes", "").classify
@@ -285,19 +289,15 @@ module HQ
 
               # if there's an association for create/update, checks the existance of related restrictions
               # if restrictions exist, add related args to restricted_attrs array and removes those args from filtered_attrs
-              attr_restrictions = (
-                get_base_restrictions(["HasHelpers::RestrictionOperation::::Create", "HasHelpers::RestrictionOperation::::Update"]) +
-                get_attributes_restrictions(model_name, ["HasHelpers::RestrictionOperation::::Create", "HasHelpers::RestrictionOperation::::Update"])
-              )
               if filtered_attrs.kind_of?(Array)
                 filtered_attrs.each_with_index do |attr, idx|
-                  result = apply_restrictions_in_nested(model_name, attr, attr_restrictions, filtered_attrs[idx], restricted_attrs)
+                  result = apply_restrictions_in_nested(model_name, attr, filtered_attrs[idx], restricted_attrs)
                   filtered_attrs[idx] = result[:filtered_attrs]
                   restricted_attrs = result[:restricted_attrs]
                 end
                 filtered_attrs = filtered_attrs.reject { |c| c.blank? }
               else
-                filtered_attrs, restricted_attrs = apply_restrictions_in_nested(model_name, filtered_attrs, attr_restrictions, filtered_attrs, restricted_attrs).
+                filtered_attrs, restricted_attrs = apply_restrictions_in_nested(model_name, filtered_attrs, filtered_attrs, restricted_attrs).
                 values_at(:filtered_attrs, :restricted_attrs)
               end
               restricted_attrs[model_name.camelize(:lower)] = restricted_attrs[model_name.camelize(:lower)].uniq
