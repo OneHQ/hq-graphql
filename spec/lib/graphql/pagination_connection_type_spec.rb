@@ -123,4 +123,28 @@ describe ::HQ::GraphQL::PaginationConnectionType do
       expect(advisors).to eq test_types.first(1).map(&:id)
     end
   end
+
+  context "first + last" do
+    it "page size == 250 with first > 250" do
+      results = schema.execute(query, variables: { first: 1000, sortOrder: "ASC" })
+      data = results["data"]["testTypes"]["nodes"]
+      totalCount = results["data"]["testTypes"]["totalCount"]
+      expect(data.length).to be 250
+      expect(totalCount).to be 252
+    end
+    it "page size == 250 with last > 250" do
+      results = schema.execute(query, variables: { last: 1000, sortOrder: "ASC" })
+      data = results["data"]["testTypes"]["nodes"]
+      totalCount = results["data"]["testTypes"]["totalCount"]
+      expect(data.length).to be 250
+      expect(totalCount).to be 252
+    end
+    it "page size == 250 without first and last" do
+      results = schema.execute(query, variables: { first: 1000, sortOrder: "ASC" })
+      data = results["data"]["testTypes"]["nodes"]
+      totalCount = results["data"]["testTypes"]["totalCount"]
+      expect(data.length).to be 250
+      expect(totalCount).to be 252
+    end
+  end
 end
