@@ -337,8 +337,8 @@ describe ::HQ::GraphQL::Resource do
     }
 
     let(:find_advisors) { <<-GRAPHQL
-        query findAdvisors($limit: Int) {
-          advisors(limit: $limit) {
+        query findAdvisors($first: Int, $limit: Int) {
+          advisors(first: $first, limit: $limit) {
             nodes {
               name
               organizationId
@@ -433,7 +433,7 @@ describe ::HQ::GraphQL::Resource do
 
     it "uses pagination" do
       10.times { FactoryBot.create(:advisor) }
-      results = schema.execute(find_advisors, variables: { limit: 5 })
+      results = schema.execute(find_advisors, variables: { first: 5 })
       data = results["data"]["advisors"]["nodes"]
       expect(data.length).to be 5
     end
