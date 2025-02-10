@@ -44,7 +44,7 @@ module HQ
        if klass.to_s == "Organization"
           klass = HasHelpers::Organization
        elsif klass.to_s == "User"
-          klass = HasHelpers::User if klass.to_s == "User"
+          klass = HasHelpers::User
        end
       [klass, klass.base_class, klass.superclass].lazy.map do |k|
         config.resource_lookup.call(k) || resources.detect { |r| r.model_klass == k }
