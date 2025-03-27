@@ -90,7 +90,7 @@ describe ::HQ::GraphQL::PaginatedAssociationLoader do
       user3.update(advisor: advisor3)
 
       # Create dummy data to verify data is properly filtered
-      other_user = ::HasHelpers::User.find_by(manager: manager2)
+      other_user = ::User.find_by(manager: manager2)
       2.times do
         advisor = ::FactoryBot.create(:advisor, organization: organization)
         other_user.update(advisor: advisor)

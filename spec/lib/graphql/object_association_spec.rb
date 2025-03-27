@@ -14,7 +14,7 @@ describe ::HQ::GraphQL::ObjectAssociation do
 
           scope do |name: nil|
             if name
-              ::HasHelpers::User.where(name: name)
+              User.where(name: name)
             end
           end
         end
