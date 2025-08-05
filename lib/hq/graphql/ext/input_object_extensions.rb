@@ -29,8 +29,9 @@ module HQ
                   end
 
                 formatted_attrs[:"#{key}_attributes"] = formatted_value if formatted_value
-              elsif key.to_s == "x"
+              elsif key.to_s.downcase == "x"
                 formatted_attrs[:X] = value
+                formatted_attrs[:_destroy] = true if value.present? # This is a workaround for the `X` field being used to trigger nested attributes
               else
                 formatted_attrs[key] = value
               end
