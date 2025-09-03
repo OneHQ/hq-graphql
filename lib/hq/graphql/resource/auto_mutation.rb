@@ -43,6 +43,7 @@ module HQ
 
               if resource
                 resource.assign_attributes(args[:attributes].format_nested_attributes)
+                scoped_self.after_assign_attributes(resource, args[:attributes], context) if scoped_self&.respond_to?(:after_assign_attributes)
                 if resource.save
                   {
                     resource: resource,
