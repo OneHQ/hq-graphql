@@ -136,18 +136,9 @@ module HQ
           klass = Class.new(::GraphQL::Schema::Mutation) do
             graphql_name gql_name
 
-          define_method(:ready?) do |**args|
-            super_result = defined?(super) ? super(**args) : true
-
-            authorized_result =
-              if scoped_self.respond_to?(:authorized?)
-                scoped_self.authorized?(action, context, args)
-              else
-                true
-              end
-
-            super_result && authorized_result
-          end
+            define_method(:ready?) do |**args|
+              super(**args) && ::HQ::GraphQL.authorized?(action, scoped_model_name, context, args)
+            end
 
             lazy_load do
               field :errors, ::GraphQL::Types::JSON, null: false
