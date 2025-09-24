@@ -131,13 +131,12 @@ module HQ
         def build_mutation(action:, require_primary_key: false, nil_klass: false, &block)
           gql_name = "#{graphql_name}#{action.to_s.titleize}"
           scoped_model_name = model_name
-          scoped_self = self
 
           klass = Class.new(::GraphQL::Schema::Mutation) do
             graphql_name gql_name
 
             define_method(:ready?) do |**args|
-              super(**args) && ::HQ::GraphQL.authorized?(action, scoped_model_name, context, args)
+              super(**args) && ::HQ::GraphQL.authorized?(action, scoped_model_name, context, **args)
             end
 
             lazy_load do

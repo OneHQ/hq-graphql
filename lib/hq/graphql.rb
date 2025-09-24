@@ -20,8 +20,8 @@ module HQ
       config.instance_eval(&block)
     end
 
-    def self.authorized?(action, object, context, args)
-      !config.authorize || config.authorize.call(action, object, context, args)
+    def self.authorized?(action, object, context, **args)
+      !config.authorize || config.authorize.call(action, object, context, **args)
     end
 
     def self.authorize_field(action, field, object, context)
