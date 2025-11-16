@@ -41,22 +41,13 @@ module HQ
             case kind
             when :relative
               raise ArgumentError, "relative field is required" if payload[:relative].blank?
-              parse_absolute(payload[:absolute])
+              parse_relative(payload[:relative])
             when :anchor
               raise ArgumentError, "anchored field is required" if payload[:anchored].blank?
               parse_anchor(payload[:anchored])
             when :absolute
               raise ArgumentError, "absolute field is required" if payload[:absolute].blank?
               parse_absolute(payload[:absolute])
-            end
-          end
-
-          def map_kind_to_field(kind)
-            case kind
-            when :anchor
-              :anchored
-            else
-              kind
             end
           end
 
@@ -112,7 +103,7 @@ module HQ
           end
 
           def fetch_kind(payload)
-            kind = payload[:kind] || payload[:type]
+            kind = payload[:kind]
             raise ArgumentError, "kind is required" if kind.blank?
             kind.to_s.downcase.to_sym
           end
