@@ -7,9 +7,61 @@ module HQ
   module GraphQL
     class Filters
       BOOLEAN_VALUES = ["t", "f", "true", "false"]
+      DATE_FILTER_OPERATIONS = [
+        FilterOperations::GREATER_THAN,
+        FilterOperations::LESS_THAN,
+        FilterOperations::EQUAL,
+        FilterOperations::NOT_EQUAL,
+        FilterOperations::DATE_RANGE_BETWEEN,
+        FilterOperations::DATE_RANGE_NOT_BETWEEN
+      ].freeze
+      DATE_FILTER_OPERATION_NAMES = DATE_FILTER_OPERATIONS.map { |operation| operation.name.to_sym }.freeze
 
       def self.supported?(column)
         !!Filter.class_from_column(column)
+      end
+
+      def self.apply_date_filter(scope, column:, operation:, date_value:, date_range_value:)
+        column = normalize_column(scope, column)
+        operation_name = operation.respond_to?(:name) ? operation.name : operation.to_s
+
+        case operation_name
+        when "DATE_RANGE_BETWEEN"
+          from, to = RelativeDateExpression.parse_range(date_range_value)
+          scope.where(column.between(from..to))
+        when "DATE_RANGE_NOT_BETWEEN"
+          from, to = RelativeDateExpression.parse_range(date_range_value)
+          scope.where(column.lt(from).or(column.gt(to)))
+        when "GREATER_THAN"
+          cutoff = RelativeDateExpression.parse_boundary(date_value)
+          scope.where(column.gt(cutoff))
+        when "LESS_THAN"
+          cutoff = RelativeDateExpression.parse_boundary(date_value)
+          scope.where(column.lt(cutoff))
+        when "EQUAL"
+          timestamp = RelativeDateExpression.parse_boundary(date_value)
+          scope.where(column.eq(timestamp))
+        when "NOT_EQUAL"
+          timestamp = RelativeDateExpression.parse_boundary(date_value)
+          scope.where(column.not_eq(timestamp).or(column.eq(nil)))
+        else
+          raise ArgumentError, "Unsupported date filter operation #{operation_name}"
+        end
+      end
+
+      def self.normalize_column(scope, column)
+        return column if column.is_a?(Arel::Attributes::Attribute)
+        return column if column.respond_to?(:relation) && column.respond_to?(:name)
+
+        arel_table = if scope.respond_to?(:arel_table)
+          scope.arel_table
+        elsif scope.respond_to?(:klass)
+          scope.klass.arel_table
+        else
+          raise ArgumentError, "Cannot determine table for provided scope"
+        end
+
+        arel_table[column.to_sym]
       end
 
       class FieldDefinition
@@ -36,7 +88,7 @@ module HQ
           @operations
         end
 
-        def apply(scope:, table:, model:, operation:, value:, array_values:, column_value:, filter:)
+        def apply(scope:, table:, model:, operation:, value:, array_values:, column_value:, date_value:, date_range_value:, filter:)
           return unless resolver?
           @resolver.call(
             scope,
@@ -44,6 +96,8 @@ module HQ
             value: value,
             array_values: array_values,
             column_value: column_value,
+            date_value: date_value,
+            date_range_value: date_range_value,
             table: table,
             model: model,
             filter: filter
@@ -171,6 +225,8 @@ module HQ
               value: value,
               array_values: array_values,
               column_value: column_value,
+              date_value: date_value,
+              date_range_value: date_range_value,
               filter: self
             )
           else
@@ -259,7 +315,7 @@ module HQ
       end
 
       class DateFilter < Filter
-        validate_operations GREATER_THAN, LESS_THAN, EQUAL, NOT_EQUAL, DATE_RANGE_BETWEEN, DATE_RANGE_NOT_BETWEEN
+        validate_operations(*DATE_FILTER_OPERATIONS)
         validate :validate_date_expression
 
         def to_arel

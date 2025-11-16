@@ -21,6 +21,35 @@ describe ::HQ::GraphQL::Filters do
         end
       end
 
+      filter_field :created_recently,
+                   type: :datetime,
+                   graphql_name: "createdRecently",
+                   operations: ::HQ::GraphQL::Filters::DATE_FILTER_OPERATION_NAMES do |scope, operation:, date_value:, date_range_value:, table:, **|
+        ::HQ::GraphQL::Filters.apply_date_filter(
+          scope,
+          column: table[:created_at],
+          operation: operation,
+          date_value: date_value,
+          date_range_value: date_range_value
+        )
+      end
+
+      filter_field :related_created_recently,
+                   type: :datetime,
+                   graphql_name: "relatedCreatedRecently",
+                   operations: ::HQ::GraphQL::Filters::DATE_FILTER_OPERATION_NAMES do |scope, operation:, date_value:, date_range_value:, **|
+        scope = scope.joins("INNER JOIN test_types related_test_types ON related_test_types.id = test_types.id")
+        related_table = TestType.arel_table.alias("related_test_types")
+
+        ::HQ::GraphQL::Filters.apply_date_filter(
+          scope,
+          column: related_table[:created_at],
+          operation: operation,
+          date_value: date_value,
+          date_range_value: date_range_value
+        )
+      end
+
       root_query
     end
   end
@@ -56,7 +85,7 @@ describe ::HQ::GraphQL::Filters do
 
   it "generates enums of filterable fields" do
     resource::FilterFields.lazy_load!
-    expect(resource::FilterFields.values.keys).to contain_exactly("id", "count", "amount", "isBool", "name", "createdDate", "createdAt", "updatedAt", "countPlusOne")
+    expect(resource::FilterFields.values.keys).to contain_exactly("id", "count", "amount", "isBool", "name", "createdDate", "createdAt", "updatedAt", "countPlusOne", "createdRecently")
 
     resource::FilterColumnFields.lazy_load!
     expect(resource::FilterColumnFields.values.keys).to contain_exactly("id", "count", "amount", "isBool", "name", "createdDate", "createdAt", "updatedAt")
@@ -381,6 +410,15 @@ describe ::HQ::GraphQL::Filters do
   end
 
   context "custom filter field" do
+    around do |example|
+      travel_to(Time.zone.parse("2024-05-15 12:00:00 UTC")) { example.run }
+    end
+
+    let!(:custom_today) { TestType.create(created_at: Time.zone.now.change(hour: 10)) }
+    let!(:custom_old) { TestType.create(created_at: 10.days.ago) }
+    let!(:custom_range_inside) { TestType.create(created_at: Time.zone.now.beginning_of_month + 5.days) }
+    let!(:custom_range_outside) { TestType.create(created_at: Time.zone.now.beginning_of_month - 5.days) }
+
     it "filters using GREATER_THAN with a resolver proc" do
       results = schema.execute(query, variables: { filters: [{ field: "countPlusOne", operation: "GREATER_THAN", value: "5" }] })
       data = results["data"]["testTypes"]["nodes"]
@@ -408,6 +446,67 @@ describe ::HQ::GraphQL::Filters do
       errors = results["errors"]
       expect(errors.length).to be >= 1
       expect(errors.first["message"]).to include("countPlusOne")
+    end
+
+    it "supports GREATER_THAN for custom date filters" do
+      expression = { kind: "RELATIVE", relative: { amount: 2, unit: "DAY", direction: "AGO" } }
+      results = schema.execute(query, variables: { filters: [{ field: "createdRecently", operation: "GREATER_THAN", dateValue: expression }] })
+      ids = results["data"]["testTypes"]["nodes"].map { |node| node["id"] }
+      expect(ids).to include(custom_today.id)
+      expect(ids).not_to include(custom_old.id)
+    end
+
+    it "supports LESS_THAN for custom date filters" do
+      expression = { kind: "RELATIVE", relative: { amount: 2, unit: "DAY", direction: "AGO" } }
+      results = schema.execute(query, variables: { filters: [{ field: "createdRecently", operation: "LESS_THAN", dateValue: expression }] })
+      ids = results["data"]["testTypes"]["nodes"].map { |node| node["id"] }
+      expect(ids).to include(custom_old.id)
+      expect(ids).not_to include(custom_today.id)
+    end
+
+    it "supports EQUAL for custom date filters" do
+      expression = { kind: "ABSOLUTE", absolute: { value: custom_today.created_at.iso8601 } }
+      results = schema.execute(query, variables: { filters: [{ field: "createdRecently", operation: "EQUAL", dateValue: expression }] })
+      ids = results["data"]["testTypes"]["nodes"].map { |node| node["id"] }
+      expect(ids).to include(custom_today.id)
+      expect(ids).not_to include(custom_old.id)
+    end
+
+    it "supports NOT_EQUAL for custom date filters" do
+      expression = { kind: "ABSOLUTE", absolute: { value: custom_today.created_at.iso8601 } }
+      results = schema.execute(query, variables: { filters: [{ field: "createdRecently", operation: "NOT_EQUAL", dateValue: expression }] })
+      ids = results["data"]["testTypes"]["nodes"].map { |node| node["id"] }
+      expect(ids).to include(custom_old.id)
+      expect(ids).not_to include(custom_today.id)
+    end
+
+    it "supports DATE_RANGE_BETWEEN for custom date filters" do
+      range_expression = {
+        from: { kind: "ANCHOR", anchored: { anchor: "START_OF", position: "THIS", period: "MONTH" } },
+        to: { kind: "ANCHOR", anchored: { anchor: "END_OF", position: "THIS", period: "MONTH" } }
+      }
+      results = schema.execute(query, variables: { filters: [{ field: "createdRecently", operation: "DATE_RANGE_BETWEEN", dateRangeValue: range_expression }] })
+      ids = results["data"]["testTypes"]["nodes"].map { |node| node["id"] }
+      expect(ids).to include(custom_range_inside.id)
+      expect(ids).not_to include(custom_range_outside.id)
+    end
+
+    it "supports DATE_RANGE_NOT_BETWEEN for custom date filters" do
+      range_expression = {
+        from: { kind: "ANCHOR", anchored: { anchor: "START_OF", position: "THIS", period: "MONTH" } },
+        to: { kind: "ANCHOR", anchored: { anchor: "END_OF", position: "THIS", period: "MONTH" } }
+      }
+      results = schema.execute(query, variables: { filters: [{ field: "createdRecently", operation: "DATE_RANGE_NOT_BETWEEN", dateRangeValue: range_expression }] })
+      ids = results["data"]["testTypes"]["nodes"].map { |node| node["id"] }
+      expect(ids).to include(custom_range_outside.id)
+      expect(ids).not_to include(custom_range_inside.id)
+    end
+
+    it "supports related resource date filters via helper" do
+      expression = { kind: "RELATIVE", relative: { amount: 2, unit: "DAY", direction: "AGO" } }
+      results = schema.execute(query, variables: { filters: [{ field: "relatedCreatedRecently", operation: "GREATER_THAN", dateValue: expression }] })
+      ids = results["data"]["testTypes"]["nodes"].map { |node| node["id"] }
+      expect(ids).to include(custom_today.id)
     end
   end
 
