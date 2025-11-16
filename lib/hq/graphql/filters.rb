@@ -23,29 +23,28 @@ module HQ
 
       def self.apply_date_filter(scope, column:, operation:, date_value:, date_range_value:)
         column = normalize_column(scope, column)
-        operation_name = operation.respond_to?(:name) ? operation.name : operation.to_s
+        condition = date_filter_condition(column: column, operation: operation, date_value: date_value, date_range_value: date_range_value)
+        scope.where(condition)
+      end
 
-        case operation_name
-        when "DATE_RANGE_BETWEEN"
+      def self.date_filter_condition(column:, operation:, date_value:, date_range_value:)
+        operation_obj = resolve_date_operation(operation)
+        case operation_obj
+        when FilterOperations::DATE_RANGE_BETWEEN
           from, to = RelativeDateExpression.parse_range(date_range_value)
-          scope.where(column.between(from..to))
-        when "DATE_RANGE_NOT_BETWEEN"
+          column.between(from..to)
+        when FilterOperations::DATE_RANGE_NOT_BETWEEN
           from, to = RelativeDateExpression.parse_range(date_range_value)
-          scope.where(column.lt(from).or(column.gt(to)))
-        when "GREATER_THAN"
-          cutoff = RelativeDateExpression.parse_boundary(date_value)
-          scope.where(column.gt(cutoff))
-        when "LESS_THAN"
-          cutoff = RelativeDateExpression.parse_boundary(date_value)
-          scope.where(column.lt(cutoff))
-        when "EQUAL"
-          timestamp = RelativeDateExpression.parse_boundary(date_value)
-          scope.where(column.eq(timestamp))
-        when "NOT_EQUAL"
-          timestamp = RelativeDateExpression.parse_boundary(date_value)
-          scope.where(column.not_eq(timestamp).or(column.eq(nil)))
+          column.lt(from).or(column.gt(to))
         else
-          raise ArgumentError, "Unsupported date filter operation #{operation_name}"
+          value = RelativeDateExpression.parse_boundary(date_value)
+          operation_obj.to_arel(
+            table: column.relation,
+            column_name: column.name,
+            value: value,
+            array_values: nil,
+            column_value: nil
+          )
         end
       end
 
@@ -62,6 +61,12 @@ module HQ
         end
 
         arel_table[column.to_sym]
+      end
+
+      def self.resolve_date_operation(operation)
+        return operation if operation.is_a?(FilterOperations::Operation)
+        DATE_FILTER_OPERATIONS.find { |op| op.name == operation.to_s } or
+          raise ArgumentError, "Unsupported date filter operation #{operation}"
       end
 
       class FieldDefinition
@@ -323,15 +328,13 @@ module HQ
             return operation.to_arel(table: table, column_name: column.name, value: value, array_values: array_values, column_value: column_value)
           end
 
-          case operation
-          when DATE_RANGE_BETWEEN
-            table[column.name].between(parsed_range)
-          when DATE_RANGE_NOT_BETWEEN
-            range = parsed_range
-            table[column.name].lt(range.begin).or(table[column.name].gt(range.end))
-          else
-            operation.to_arel(table: table, column_name: column.name, value: parsed_value, array_values: array_values, column_value: column_value)
-          end
+          column_attribute = table[column.name]
+          Filters.date_filter_condition(
+            column: column_attribute,
+            operation: operation,
+            date_value: expression_source,
+            date_range_value: range_expression_source
+          )
         end
 
         private
@@ -344,25 +347,13 @@ module HQ
           date_range_value.presence || value
         end
 
-        def parsed_value
-          @parsed_value ||= RelativeDateExpression.parse_boundary(expression_source)
-        end
-
-        def parsed_range
-          @parsed_range ||= begin
-            from, to = RelativeDateExpression.parse_range(range_expression_source)
-            (from..to)
-          end
-        end
-
-
         def validate_date_expression
           return if column_value.present?
 
           if range_operation?
-            parsed_range
+            RelativeDateExpression.parse_range(range_expression_source)
           else
-            parsed_value
+            RelativeDateExpression.parse_boundary(expression_source)
           end
         rescue ArgumentError => e
           errors.add(:value, e.message)

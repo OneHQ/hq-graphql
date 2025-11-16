@@ -38,10 +38,17 @@ module HQ
 
           def interpret_hash(payload)
             kind = fetch_kind(payload)
-            field = map_kind_to_field(kind)
-            payload = payload[field]
-            raise ArgumentError, "#{field.to_s} field is required" if payload.blank?
-            send("parse_#{kind}", payload)
+            case kind
+            when :relative
+              raise ArgumentError, "relative field is required" if payload[:relative].blank?
+              parse_absolute(payload[:absolute])
+            when :anchor
+              raise ArgumentError, "anchored field is required" if payload[:anchored].blank?
+              parse_anchor(payload[:anchored])
+            when :absolute
+              raise ArgumentError, "absolute field is required" if payload[:absolute].blank?
+              parse_absolute(payload[:absolute])
+            end
           end
 
           def map_kind_to_field(kind)
