@@ -1,10 +1,25 @@
 require 'rails_helper'
 
 describe ::HQ::GraphQL::Filters do
+  include ActiveSupport::Testing::TimeHelpers
   let(:resource) do
     Class.new do
       include ::HQ::GraphQL::Resource
       self.model_name = "TestType"
+
+      filter_field :count_plus_one, type: :integer, graphql_name: "countPlusOne", operations: [:GREATER_THAN, :LESS_THAN] do |scope, operation:, value:, table:, **|
+        comparison = value.to_i
+        expression = table[:count].plus(1)
+
+        case operation.name
+        when "GREATER_THAN"
+          scope.where(expression.gt(comparison))
+        when "LESS_THAN"
+          scope.where(expression.lt(comparison))
+        else
+          scope
+        end
+      end
 
       root_query
     end
@@ -39,9 +54,12 @@ describe ::HQ::GraphQL::Filters do
     stub_const("RootQuery", root_query)
   end
 
-  it "generates an enum of filterable fields" do
+  it "generates enums of filterable fields" do
     resource::FilterFields.lazy_load!
-    expect(resource::FilterFields.values.keys).to contain_exactly("id", "count", "amount", "isBool", "name", "createdDate", "createdAt", "updatedAt")
+    expect(resource::FilterFields.values.keys).to contain_exactly("id", "count", "amount", "isBool", "name", "createdDate", "createdAt", "updatedAt", "countPlusOne")
+
+    resource::FilterColumnFields.lazy_load!
+    expect(resource::FilterColumnFields.values.keys).to contain_exactly("id", "count", "amount", "isBool", "name", "createdDate", "createdAt", "updatedAt")
   end
 
   context "boolean field" do
@@ -124,6 +142,47 @@ describe ::HQ::GraphQL::Filters do
         expect(errors.length).to be 1
         expect(errors[0]["message"]).to eq "createdAt (type: datetime, operation: #{operation.name}, value: \"#{target.created_at.iso8601}\"): only supports the following operations: GREATER_THAN, LESS_THAN, WITH"
       end
+    end
+  end
+
+  context "date field advanced filters" do
+    around do |example|
+      travel_to(Time.zone.parse("2024-05-15 12:00:00 UTC")) { example.run }
+    end
+
+    let!(:today_record) { TestType.create(created_at: Time.zone.now) }
+    let!(:last_week_record) { TestType.create(created_at: 7.days.ago) }
+    let!(:last_month_record) { TestType.create(created_at: 1.month.ago.beginning_of_month + 2.days) }
+
+    it "filters using GREATER_THAN with relative expressions" do
+      expression = { kind: "RELATIVE", relative: { amount: 3, unit: "DAY", direction: "AGO" } }
+      results = schema.execute(query, variables: { filters: [{ field: "createdAt", operation: "GREATER_THAN", dateValue: expression }] })
+      data = results["data"]["testTypes"]["nodes"]
+      ids = data.map { |d| d["id"] }
+      expect(ids).to include(today_record.id)
+      expect(ids).not_to include(last_week_record.id, last_month_record.id)
+    end
+
+    it "filters using DATE_RANGE_BETWEEN with anchors" do
+      expression = {
+        from: { kind: "ANCHOR", anchored: { anchor: "START_OF", position: "LAST", period: "MONTH" } },
+        to: { kind: "ANCHOR", anchored: { anchor: "END_OF", position: "LAST", period: "MONTH" } }
+      }
+
+      results = schema.execute(query, variables: { filters: [{ field: "createdAt", operation: "DATE_RANGE_BETWEEN", dateRangeValue: expression }] })
+      data = results["data"]["testTypes"]["nodes"]
+      ids = data.map { |d| d["id"] }
+      expect(ids).to include(last_month_record.id)
+      expect(ids).not_to include(today_record.id)
+    end
+
+    it "filters using NOT_EQUAL to exclude a specific day" do
+      value = { kind: "ABSOLUTE", absolute: { value: Time.zone.now.iso8601 } }
+      results = schema.execute(query, variables: { filters: [{ field: "createdAt", operation: "NOT_EQUAL", dateValue: value }] })
+      data = results["data"]["testTypes"]["nodes"]
+      ids = data.map { |d| d["id"] }
+      expect(ids).not_to include(today_record.id)
+      expect(ids).to include(last_week_record.id, last_month_record.id)
     end
   end
 
@@ -318,6 +377,56 @@ describe ::HQ::GraphQL::Filters do
         expect(errors.length).to be 1
         expect(errors[0]["message"]).to eq "id (type: uuid, operation: #{operation.name}, value: \"#{target.id}\"): only supports the following operations: EQUAL, NOT_EQUAL, IN, WITH"
       end
+    end
+  end
+
+  context "custom filter field" do
+    it "filters using GREATER_THAN with a resolver proc" do
+      results = schema.execute(query, variables: { filters: [{ field: "countPlusOne", operation: "GREATER_THAN", value: "5" }] })
+      data = results["data"]["testTypes"]["nodes"]
+      expect(data.length).to be 5
+      expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.select { |t| t.count > 4 }.map(&:id))
+    end
+
+    it "filters using LESS_THAN with a resolver proc" do
+      results = schema.execute(query, variables: { filters: [{ field: "countPlusOne", operation: "LESS_THAN", value: "3" }] })
+      data = results["data"]["testTypes"]["nodes"]
+      expect(data.length).to be 2
+      expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.select { |t| t.count < 2 }.map(&:id))
+    end
+
+    it "rejects unsupported operations" do
+      results = schema.execute(query, variables: { filters: [{ field: "countPlusOne", operation: "IN", arrayValues: ["1"] }] })
+      errors = results["errors"]
+      expect(errors.length).to be 1
+      expect(errors[0]["message"]).to include("countPlusOne")
+      expect(errors[0]["message"]).to include("only supports the following operations: GREATER_THAN, LESS_THAN")
+    end
+
+    it "cannot be referenced via columnValue" do
+      results = schema.execute(query, variables: { filters: [{ field: "count", operation: "GREATER_THAN", columnValue: "countPlusOne" }] })
+      errors = results["errors"]
+      expect(errors.length).to be >= 1
+      expect(errors.first["message"]).to include("countPlusOne")
+    end
+  end
+
+  context "column_value enum selection" do
+    let(:plain_resource) do
+      Class.new do
+        include ::HQ::GraphQL::Resource
+        self.model_name = "TestType"
+      end
+    end
+
+    it "reuses FilterFields when no custom filters exist" do
+      argument = plain_resource.filter_input.arguments["columnValue"]
+      expect(argument.type.graphql_name).to eq("#{plain_resource.graphql_name}QueryFilterFields")
+    end
+
+    it "uses FilterColumnFields when custom filters exist" do
+      argument = resource.filter_input.arguments["columnValue"]
+      expect(argument.type.graphql_name).to eq("#{resource.graphql_name}QueryFilterColumnFields")
     end
   end
 end

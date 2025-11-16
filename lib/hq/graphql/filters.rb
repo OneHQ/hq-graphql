@@ -1,7 +1,7 @@
 # frozen_string_literal: true
-
 require "hq/graphql/filter_operations"
 require "hq/graphql/util"
+require "hq/graphql/filters/relative_date_expression"
 
 module HQ
   module GraphQL
@@ -10,6 +10,60 @@ module HQ
 
       def self.supported?(column)
         !!Filter.class_from_column(column)
+      end
+
+      class FieldDefinition
+        attr_reader :name, :type, :description
+
+        def initialize(name:, type:, graphql_name: nil, description: nil, operations: nil, resolver: nil)
+          @name = name.to_s
+          @graphql_name = graphql_name || @name.camelize(:lower)
+          @type = type
+          @description = description
+          @resolver = resolver
+          @operations = normalize_operations(Array(operations))
+        end
+
+        def graphql_name
+          @graphql_name
+        end
+
+        def resolver?
+          @resolver.present?
+        end
+
+        def allowed_operations
+          @operations
+        end
+
+        def apply(scope:, table:, model:, operation:, value:, array_values:, column_value:, filter:)
+          return unless resolver?
+          @resolver.call(
+            scope,
+            operation: operation,
+            value: value,
+            array_values: array_values,
+            column_value: column_value,
+            table: table,
+            model: model,
+            filter: filter
+          )
+        end
+
+        private
+
+        def normalize_operations(operations)
+          filtered = operations.compact
+          return if filtered.empty?
+
+          filtered.map do |operation|
+            next operation if operation.is_a?(::HQ::GraphQL::FilterOperations::Operation)
+
+            ::HQ::GraphQL::FilterOperations::OPERATIONS.find do |defined_operation|
+              defined_operation.name == operation.to_s
+            end or raise ArgumentError, "Unknown filter operation: #{operation}"
+          end
+        end
       end
 
       attr_reader :filters, :model
@@ -31,8 +85,10 @@ module HQ
       end
 
       def to_scope
-        filters.reduce(model.all) do |s, filter|
-          filter.is_or ? s.or(model.all.where(filter.to_arel)) : s.where(filter.to_arel)
+        filters.reduce(model.all) do |scope, filter|
+          filter_scope = filter.to_relation(model)
+          next scope unless filter_scope
+          filter.is_or ? scope.or(filter_scope) : scope.merge(filter_scope)
         end
       end
 
@@ -45,7 +101,9 @@ module HQ
         end
 
         def self.class_from_column(column)
-          case column.type
+          return unless column
+          column_type = column.type
+          case column_type
           when :boolean
             BooleanFilter
           when :date, :datetime
@@ -77,7 +135,7 @@ module HQ
         validate :array_values_presence, if: ->(filter) { filter.operation == IN }
         validate :column_value_presence, if: ->(filter) { filter.operation == EQUAL || filter.operation == NOT_EQUAL }
 
-        attr_reader :table, :column, :operation, :is_or, :value, :array_values, :column_value
+        attr_reader :table, :column, :operation, :is_or, :value, :array_values, :column_value, :date_value, :date_range_value
 
         def initialize(filter, table:)
           @table = table
@@ -87,16 +145,37 @@ module HQ
           @value = filter.value
           @array_values = filter.array_values
           @column_value = filter.column_value
+          @date_value = normalize_input(filter.respond_to?(:date_value) ? filter.date_value : nil)
+          @date_range_value = normalize_input(filter.respond_to?(:date_range_value) ? filter.date_range_value : nil)
         end
+
+        validate :validate_field_operations
 
         def display_error_message
           return unless errors.any?
           messages = errors.messages.values.join(", ")
-          "#{column.name.camelize(:lower)} (type: #{column.type}, operation: #{operation.name}, value: \"#{value || array_values || column_value}\"): #{messages}"
+          "#{filter_name} (type: #{column.type}, operation: #{operation.name}, value: \"#{display_value}\"): #{messages}"
         end
 
         def to_arel
           operation.to_arel(table: table, column_name: column.name, value: value, array_values: array_values, column_value: column_value)
+        end
+
+        def to_relation(model)
+          if custom_field?
+            column.apply(
+              scope: model.all,
+              table: table,
+              model: model,
+              operation: operation,
+              value: value,
+              array_values: array_values,
+              column_value: column_value,
+              filter: self
+            )
+          else
+            model.all.where(to_arel)
+          end
         end
 
         def validate_boolean_values
@@ -119,6 +198,50 @@ module HQ
           return unless value.nil? && column_value.nil?
           errors.add(:array_values, "value or column value must be provided")
         end
+
+        private
+
+        def filter_name
+          if column.respond_to?(:graphql_name)
+            column.graphql_name
+          else
+            column.name.camelize(:lower)
+          end
+        end
+
+        def normalize_input(value)
+          return if value.nil?
+
+          case value
+          when Hash
+            value.deep_symbolize_keys
+          when ::GraphQL::Schema::InputObject
+            value.to_h.each_with_object({}) do |(key, val), memo|
+              memo[key.to_sym] = normalize_input(val)
+            end
+          else
+            value
+          end
+        end
+
+        def display_value
+          value || array_values || column_value || date_value || date_range_value
+        end
+
+        def custom_field?
+          column.is_a?(FieldDefinition) && column.resolver?
+        end
+
+        def validate_field_operations
+          return unless column.respond_to?(:allowed_operations)
+          allowed_operations = column.allowed_operations
+          return if allowed_operations.blank?
+
+          return if allowed_operations.any? { |allowed| allowed.name == operation.name }
+
+          messages = allowed_operations.map(&:name).join(", ")
+          errors.add(:operation, "only supports the following operations: #{messages}")
+        end
       end
 
       class BooleanFilter < Filter
@@ -136,22 +259,83 @@ module HQ
       end
 
       class DateFilter < Filter
-        validate_operations GREATER_THAN, LESS_THAN
-        validate :validate_iso8601
+        validate_operations GREATER_THAN, LESS_THAN, EQUAL, NOT_EQUAL, DATE_RANGE_BETWEEN, DATE_RANGE_NOT_BETWEEN
+        validate :validate_date_expression
 
-        def validate_iso8601
-          is_valid = begin
-            DateTime.iso8601(value)
-            true
-          rescue ArgumentError
-            false
+        def to_arel
+          if column_value.present?
+            return operation.to_arel(table: table, column_name: column.name, value: value, array_values: array_values, column_value: column_value)
           end
 
-          return if is_valid
-
-          today = Date.today
-          errors.add(:value, "only supports ISO8601 values (\"#{today.iso8601}\", \"#{today.to_datetime.iso8601}\")")
+          case operation
+          when DATE_RANGE_BETWEEN
+            table[column.name].between(parsed_range)
+          when DATE_RANGE_NOT_BETWEEN
+            range = parsed_range
+            table[column.name].lt(range.begin).or(table[column.name].gt(range.end))
+          else
+            operation.to_arel(table: table, column_name: column.name, value: parsed_value, array_values: array_values, column_value: column_value)
+          end
         end
+
+        private
+
+        def expression_source
+          date_value.presence || value
+        end
+
+        def range_expression_source
+          date_range_value.presence || value
+        end
+
+        def parsed_value
+          @parsed_value ||= RelativeDateExpression.parse_boundary(expression_source)
+        end
+
+        def parsed_range
+          @parsed_range ||= begin
+            from, to = RelativeDateExpression.parse_range(range_expression_source)
+            (from..to)
+          end
+        end
+
+
+        def validate_date_expression
+          return if column_value.present?
+
+          if range_operation?
+            parsed_range
+          else
+            parsed_value
+          end
+        rescue ArgumentError => e
+          errors.add(:value, e.message)
+        end
+
+        def value_presence
+          return if column_value.present?
+
+          if range_operation?
+            if range_expression_source.blank?
+              errors.add(:value, "dateRangeValue must be provided for this operation")
+            end
+          elsif expression_source.blank?
+            errors.add(:value, "value or dateValue must be provided for this operation")
+          end
+        end
+
+        def column_value_presence
+          return unless [EQUAL, NOT_EQUAL].include?(operation)
+          return if column_value.present?
+          return if expression_source.present?
+
+          errors.add(:value, "value, dateValue, or columnValue must be provided")
+        end
+
+        def range_operation?
+          [DATE_RANGE_BETWEEN, DATE_RANGE_NOT_BETWEEN].include?(operation)
+        end
+
       end
 
       class NumericFilter < Filter

@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "set"
 require "hq/graphql/ext/enum_extensions"
 require "hq/graphql/ext/input_object_extensions"
 require "hq/graphql/ext/object_extensions"
@@ -10,6 +11,7 @@ require "hq/graphql/filters"
 require "hq/graphql/resource/auto_mutation"
 require "hq/graphql/scalars"
 require "hq/graphql/pagination_connection_type"
+require "hq/graphql/types/date_filter_inputs"
 
 module HQ
   module GraphQL
@@ -26,6 +28,10 @@ module HQ
         include AutoMutation
 
         attr_writer :graphql_name, :model_name
+
+        def filter_fields_config
+          @filter_fields_config ||= []
+        end
 
         def scope(context)
           scope = model_klass
@@ -99,6 +105,8 @@ module HQ
             filter_input
           when :FilterFields
             filter_fields_enum
+          when :FilterColumnFields
+            filter_column_fields_enum
           else
             super
           end
@@ -115,8 +123,10 @@ module HQ
               argument :operation, Enum::FilterOperation, required: true
               argument :is_or, ::GraphQL::Schema::Scalar::Boolean, required: false
               argument :value, String, required: false
+              argument :date_value, ::HQ::GraphQL::Types::DateFilterValueInput, required: false
+              argument :date_range_value, ::HQ::GraphQL::Types::DateFilterRangeInput, required: false
               argument :array_values, [String], required: false
-              argument :column_value, scoped_self.filter_fields_enum, required: false
+              argument :column_value, scoped_self.filter_column_value_enum, required: false
             end
 
             const_set(:FilterInput, input_class)
@@ -124,22 +134,42 @@ module HQ
         end
 
         def filter_fields_enum
-          @filter_fields_enum ||= begin
-            scoped_self = self
-
-            enum_class = Class.new(::GraphQL::Schema::Enum) do
-              graphql_name "#{scoped_self.graphql_name}QueryFilterFields"
-
-              lazy_load do
-                scoped_self.model_klass.columns.sort_by(&:name).each do |column|
-                  next unless HQ::GraphQL::Filters.supported?(column)
-                  value column.name.camelize(:lower), value: column
-                end
-              end
-            end
-
+          @filter_fields_enum ||= build_filter_fields_enum(include_custom_fields: true).tap do |enum_class|
             const_set(:FilterFields, enum_class)
           end
+        end
+
+        def filter_column_fields_enum
+          @filter_column_fields_enum ||= build_filter_fields_enum(include_custom_fields: false).tap do |enum_class|
+            const_set(:FilterColumnFields, enum_class)
+          end
+        end
+
+        def filter_column_value_enum
+          if filter_fields_config.any?
+            filter_column_fields_enum
+          else
+            filter_fields_enum
+          end
+        end
+
+        def filter_field(name, type:, graphql_name: nil, description: nil, operations: nil, resolver: nil, &block)
+          field_definition = ::HQ::GraphQL::Filters::FieldDefinition.new(
+            name: name,
+            type: type,
+            graphql_name: graphql_name,
+            description: description,
+            operations: operations,
+            resolver: resolver || block
+          )
+
+          unless ::HQ::GraphQL::Filters.supported?(field_definition)
+            raise ArgumentError, "Unsupported filter field type: #{type}"
+          end
+
+          filter_fields_config << field_definition
+          reset_filter_definitions!
+          field_definition
         end
 
         protected
@@ -338,6 +368,55 @@ module HQ
 
           Array(fields).each do |field|
             @sort_fields_enum.value field.to_s.classify, value: field
+          end
+        end
+
+        def reset_filter_definitions!
+          if defined?(@filter_fields_enum)
+            remove_const(:FilterFields) if const_defined?(:FilterFields, false)
+            @filter_fields_enum = nil
+          end
+
+          if defined?(@filter_column_fields_enum)
+            remove_const(:FilterColumnFields) if const_defined?(:FilterColumnFields, false)
+            @filter_column_fields_enum = nil
+          end
+
+          if defined?(@filter_input)
+            remove_const(:FilterInput) if const_defined?(:FilterInput, false)
+            @filter_input = nil
+          end
+        end
+
+        def build_filter_fields_enum(include_custom_fields: true)
+          scoped_self = self
+
+          Class.new(::GraphQL::Schema::Enum) do
+            enum_name = include_custom_fields ?
+              "#{scoped_self.graphql_name}QueryFilterFields" :
+              "#{scoped_self.graphql_name}QueryFilterColumnFields"
+
+            graphql_name enum_name
+
+            lazy_load do
+              seen_field_names = Set.new
+              scoped_self.model_klass.columns.sort_by(&:name).each do |column|
+                next unless HQ::GraphQL::Filters.supported?(column)
+                field_name = column.name.camelize(:lower)
+                next if seen_field_names.include?(field_name)
+                value field_name, value: column
+                seen_field_names << field_name
+              end
+
+              next unless include_custom_fields
+
+              scoped_self.filter_fields_config.each do |field|
+                graphql_name = field.graphql_name
+                next if seen_field_names.include?(graphql_name)
+                value graphql_name, value: field, description: field.description
+                seen_field_names << graphql_name
+              end
+            end
           end
         end
       end
