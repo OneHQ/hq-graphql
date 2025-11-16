@@ -50,6 +50,59 @@ describe ::HQ::GraphQL::Filters do
         )
       end
 
+      filter_field :count_filtered,
+                   type: :integer,
+                   graphql_name: "countFiltered",
+                   operations: ::HQ::GraphQL::Filters::NUMERIC_FILTER_OPERATION_NAMES do |scope, operation:, value:, array_values:, column_value:, table:, **|
+        ::HQ::GraphQL::Filters.apply_numeric_filter(
+          scope,
+          column: table[:count],
+          operation: operation,
+          value: value,
+          array_values: array_values,
+          column_value: column_value
+        )
+      end
+
+      filter_field :name_filtered,
+                   type: :string,
+                   graphql_name: "nameFiltered",
+                   operations: ::HQ::GraphQL::Filters::STRING_FILTER_OPERATION_NAMES do |scope, operation:, value:, array_values:, column_value:, table:, **|
+        ::HQ::GraphQL::Filters.apply_string_filter(
+          scope,
+          column: table[:name],
+          operation: operation,
+          value: value,
+          array_values: array_values,
+          column_value: column_value
+        )
+      end
+
+      filter_field :id_filtered,
+                   type: :string,
+                   graphql_name: "idFiltered",
+                   operations: ::HQ::GraphQL::Filters::UUID_FILTER_OPERATION_NAMES do |scope, operation:, value:, array_values:, column_value:, table:, **|
+        ::HQ::GraphQL::Filters.apply_uuid_filter(
+          scope,
+          column: table[:id],
+          operation: operation,
+          value: value,
+          array_values: array_values,
+          column_value: column_value
+        )
+      end
+
+      filter_field :bool_filtered,
+                   type: :boolean,
+                   graphql_name: "boolFiltered",
+                   operations: [:WITH] do |scope, value:, table:, **|
+        ::HQ::GraphQL::Filters.apply_boolean_filter(
+          scope,
+          column: table[:is_bool],
+          value: value
+        )
+      end
+
       root_query
     end
   end
@@ -85,7 +138,23 @@ describe ::HQ::GraphQL::Filters do
 
   it "generates enums of filterable fields" do
     resource::FilterFields.lazy_load!
-    expect(resource::FilterFields.values.keys).to contain_exactly("id", "count", "amount", "isBool", "name", "createdDate", "createdAt", "updatedAt", "countPlusOne", "createdRecently")
+    expect(resource::FilterFields.values.keys).to contain_exactly(
+      "id",
+      "count",
+      "amount",
+      "isBool",
+      "name",
+      "createdDate",
+      "createdAt",
+      "updatedAt",
+      "countPlusOne",
+      "createdRecently",
+      "relatedCreatedRecently",
+      "countFiltered",
+      "nameFiltered",
+      "idFiltered",
+      "boolFiltered"
+    )
 
     resource::FilterColumnFields.lazy_load!
     expect(resource::FilterColumnFields.values.keys).to contain_exactly("id", "count", "amount", "isBool", "name", "createdDate", "createdAt", "updatedAt")
@@ -418,6 +487,9 @@ describe ::HQ::GraphQL::Filters do
     let!(:custom_old) { TestType.create(created_at: 10.days.ago) }
     let!(:custom_range_inside) { TestType.create(created_at: Time.zone.now.beginning_of_month + 5.days) }
     let!(:custom_range_outside) { TestType.create(created_at: Time.zone.now.beginning_of_month - 5.days) }
+    let!(:named_record) { TestType.create(name: "Custom Name", count: 20) }
+    let!(:uuid_record) { TestType.create }
+    let!(:bool_record) { TestType.create(is_bool: true) }
 
     it "filters using GREATER_THAN with a resolver proc" do
       results = schema.execute(query, variables: { filters: [{ field: "countPlusOne", operation: "GREATER_THAN", value: "5" }] })
@@ -507,6 +579,31 @@ describe ::HQ::GraphQL::Filters do
       results = schema.execute(query, variables: { filters: [{ field: "relatedCreatedRecently", operation: "GREATER_THAN", dateValue: expression }] })
       ids = results["data"]["testTypes"]["nodes"].map { |node| node["id"] }
       expect(ids).to include(custom_today.id)
+    end
+
+    it "supports numeric helper for custom filters" do
+      results = schema.execute(query, variables: { filters: [{ field: "countFiltered", operation: "GREATER_THAN", value: "5" }] })
+      ids = results["data"]["testTypes"]["nodes"].map { |node| node["id"] }
+      expected_ids = TestType.where("count > ?", 5).pluck(:id)
+      expect(ids).to contain_exactly(*expected_ids)
+    end
+
+    it "supports string helper for custom filters" do
+      results = schema.execute(query, variables: { filters: [{ field: "nameFiltered", operation: "LIKE", value: "Custom" }] })
+      ids = results["data"]["testTypes"]["nodes"].map { |node| node["id"] }
+      expect(ids).to contain_exactly(named_record.id)
+    end
+
+    it "supports uuid helper for custom filters" do
+      results = schema.execute(query, variables: { filters: [{ field: "idFiltered", operation: "EQUAL", value: uuid_record.id }] })
+      ids = results["data"]["testTypes"]["nodes"].map { |node| node["id"] }
+      expect(ids).to contain_exactly(uuid_record.id)
+    end
+
+    it "supports boolean helper for custom filters" do
+      results = schema.execute(query, variables: { filters: [{ field: "boolFiltered", operation: "WITH", value: "t" }] })
+      ids = results["data"]["testTypes"]["nodes"].map { |node| node["id"] }
+      expect(ids).to include(bool_record.id)
     end
   end
 

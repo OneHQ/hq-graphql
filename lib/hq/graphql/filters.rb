@@ -7,6 +7,7 @@ module HQ
   module GraphQL
     class Filters
       BOOLEAN_VALUES = ["t", "f", "true", "false"]
+      BOOLEAN_FILTER_OPERATIONS = [FilterOperations::WITH].freeze
       DATE_FILTER_OPERATIONS = [
         FilterOperations::GREATER_THAN,
         FilterOperations::LESS_THAN,
@@ -16,6 +17,28 @@ module HQ
         FilterOperations::DATE_RANGE_NOT_BETWEEN
       ].freeze
       DATE_FILTER_OPERATION_NAMES = DATE_FILTER_OPERATIONS.map { |operation| operation.name.to_sym }.freeze
+      NUMERIC_FILTER_OPERATIONS = [
+        FilterOperations::GREATER_THAN,
+        FilterOperations::LESS_THAN,
+        FilterOperations::EQUAL,
+        FilterOperations::NOT_EQUAL,
+        FilterOperations::IN
+      ].freeze
+      NUMERIC_FILTER_OPERATION_NAMES = NUMERIC_FILTER_OPERATIONS.map { |operation| operation.name.to_sym }.freeze
+      STRING_FILTER_OPERATIONS = [
+        FilterOperations::EQUAL,
+        FilterOperations::NOT_EQUAL,
+        FilterOperations::LIKE,
+        FilterOperations::NOT_LIKE,
+        FilterOperations::IN
+      ].freeze
+      STRING_FILTER_OPERATION_NAMES = STRING_FILTER_OPERATIONS.map { |operation| operation.name.to_sym }.freeze
+      UUID_FILTER_OPERATIONS = [
+        FilterOperations::EQUAL,
+        FilterOperations::NOT_EQUAL,
+        FilterOperations::IN
+      ].freeze
+      UUID_FILTER_OPERATION_NAMES = UUID_FILTER_OPERATIONS.map { |operation| operation.name.to_sym }.freeze
 
       def self.supported?(column)
         !!Filter.class_from_column(column)
@@ -28,7 +51,11 @@ module HQ
       end
 
       def self.date_filter_condition(column:, operation:, date_value:, date_range_value:)
-        operation_obj = resolve_date_operation(operation)
+        operation_obj = resolve_operation(operation)
+        unless DATE_FILTER_OPERATIONS.include?(operation_obj)
+          raise ArgumentError, "Unsupported date filter operation #{operation}"
+        end
+
         case operation_obj
         when FilterOperations::DATE_RANGE_BETWEEN
           from, to = RelativeDateExpression.parse_range(date_range_value)
@@ -48,6 +75,43 @@ module HQ
         end
       end
 
+      def self.apply_basic_filter(scope, column:, operation:, value: nil, array_values: nil, column_value: nil)
+        column = normalize_column(scope, column)
+        condition = condition_for_operation(column: column, operation: operation, value: value, array_values: array_values, column_value: column_value)
+        scope.where(condition)
+      end
+
+      class << self
+        alias apply_numeric_filter apply_basic_filter
+        alias apply_string_filter apply_basic_filter
+        alias apply_uuid_filter apply_basic_filter
+      end
+
+      def self.apply_boolean_filter(scope, column:, value:, operation: FilterOperations::WITH)
+        column = normalize_column(scope, column)
+        condition = boolean_condition(column: column, value: value, operation: operation)
+        scope.where(condition)
+      end
+
+      def self.boolean_condition(column:, value:, operation: FilterOperations::WITH)
+        condition = condition_for_operation(column: column, operation: operation, value: value, array_values: nil, column_value: nil)
+        if value.present? && (value.casecmp("f") == 0 || value.casecmp("false") == 0)
+          condition = condition.or(column.eq(false))
+        end
+        condition
+      end
+
+      def self.condition_for_operation(column:, operation:, value:, array_values:, column_value:)
+        operation_obj = resolve_operation(operation)
+        operation_obj.to_arel(
+          table: column.relation,
+          column_name: column.name,
+          value: value,
+          array_values: array_values,
+          column_value: column_value
+        )
+      end
+
       def self.normalize_column(scope, column)
         return column if column.is_a?(Arel::Attributes::Attribute)
         return column if column.respond_to?(:relation) && column.respond_to?(:name)
@@ -63,10 +127,10 @@ module HQ
         arel_table[column.to_sym]
       end
 
-      def self.resolve_date_operation(operation)
+      def self.resolve_operation(operation)
         return operation if operation.is_a?(FilterOperations::Operation)
-        DATE_FILTER_OPERATIONS.find { |op| op.name == operation.to_s } or
-          raise ArgumentError, "Unsupported date filter operation #{operation}"
+        FilterOperations::OPERATIONS.find { |op| op.name == operation.to_s } or
+          raise ArgumentError, "Unsupported filter operation #{operation}"
       end
 
       class FieldDefinition
@@ -217,7 +281,14 @@ module HQ
         end
 
         def to_arel
-          operation.to_arel(table: table, column_name: column.name, value: value, array_values: array_values, column_value: column_value)
+          column_attribute = table[column.name]
+          Filters.condition_for_operation(
+            column: column_attribute,
+            operation: operation,
+            value: value,
+            array_values: array_values,
+            column_value: column_value
+          )
         end
 
         def to_relation(model)
@@ -306,16 +377,11 @@ module HQ
       end
 
       class BooleanFilter < Filter
-        validate_operations
+        validate_operations(*BOOLEAN_FILTER_OPERATIONS)
 
         def to_arel
-          arel = super
-
-          if value.casecmp("f") == 0 || value.casecmp("false") == 0
-            arel = arel.or(table[column.name].eq(false))
-          end
-
-          arel
+          column_attribute = table[column.name]
+          Filters.boolean_condition(column: column_attribute, value: value, operation: operation)
         end
       end
 
@@ -386,16 +452,16 @@ module HQ
       end
 
       class NumericFilter < Filter
-        validate_operations GREATER_THAN, LESS_THAN, EQUAL, NOT_EQUAL, IN
+        validate_operations(*NUMERIC_FILTER_OPERATIONS)
         validate_value numericality: { message: "only supports numerical values" }
       end
 
       class StringFilter < Filter
-        validate_operations EQUAL, NOT_EQUAL, LIKE, NOT_LIKE, IN
+        validate_operations(*STRING_FILTER_OPERATIONS)
       end
 
       class UuidFilter < Filter
-        validate_operations EQUAL, NOT_EQUAL, IN
+        validate_operations(*UUID_FILTER_OPERATIONS)
         validate_value format: { with: HQ::GraphQL::Util::UUID_FORMAT, message: "only supports UUID values (e.g. 00000000-0000-0000-0000-000000000000)" }
       end
     end
