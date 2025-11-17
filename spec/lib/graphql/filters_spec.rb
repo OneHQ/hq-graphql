@@ -9,7 +9,7 @@ describe ::HQ::GraphQL::Filters do
 
       filter_field :count_plus_one, type: :integer, graphql_name: "countPlusOne", operations: [:GREATER_THAN, :LESS_THAN] do |scope, operation:, value:, table:, **|
         comparison = value.to_i
-        expression = table[:count].plus(1)
+        expression = table[:count] + 1
 
         case operation.name
         when "GREATER_THAN"
@@ -229,16 +229,19 @@ describe ::HQ::GraphQL::Filters do
       results = schema.execute(query, variables: { filters: [{ field: "createdAt", operation: "GREATER_THAN", value: target.created_at.to_s }] })
       errors = results["errors"]
       expect(errors.length).to be 1
-      today = Date.today
-      expect(errors[0]["message"]).to eq "createdAt (type: datetime, operation: GREATER_THAN, value: \"#{target.created_at.to_s}\"): only supports ISO8601 values (\"#{today.iso8601}\", \"#{today.to_datetime.iso8601}\")"
+      expect(errors[0]["message"]).to eq "createdAt (type: datetime, operation: GREATER_THAN, value: \"#{target.created_at.to_s}\"): value must be an ISO8601 date"
     end
 
-    (described_class::Filter::OPERATIONS - [described_class::Filter::GREATER_THAN, described_class::Filter::LESS_THAN, described_class::Filter::WITH]).each do |operation|
+    allowed_date_ops = ::HQ::GraphQL::Filters::DATE_FILTER_OPERATIONS + [described_class::Filter::WITH]
+    unsupported_ops = described_class::Filter::OPERATIONS - allowed_date_ops
+
+    unsupported_ops.each do |operation|
       it "errors when using an unsupported operation: #{operation.name}" do
         results = schema.execute(query, variables: { filters: [{ field: "createdAt", operation: operation.name, value: target.created_at.iso8601, arrayValues: [] }] })
         errors = results["errors"]
         expect(errors.length).to be 1
-        expect(errors[0]["message"]).to eq "createdAt (type: datetime, operation: #{operation.name}, value: \"#{target.created_at.iso8601}\"): only supports the following operations: GREATER_THAN, LESS_THAN, WITH"
+        expected_ops = allowed_date_ops.map(&:name).uniq
+        expect(errors[0]["message"]).to eq "createdAt (type: datetime, operation: #{operation.name}, value: \"#{target.created_at.iso8601}\"): only supports the following operations: #{expected_ops.join(", ")}"
       end
     end
   end
@@ -494,8 +497,9 @@ describe ::HQ::GraphQL::Filters do
     it "filters using GREATER_THAN with a resolver proc" do
       results = schema.execute(query, variables: { filters: [{ field: "countPlusOne", operation: "GREATER_THAN", value: "5" }] })
       data = results["data"]["testTypes"]["nodes"]
-      expect(data.length).to be 5
-      expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.select { |t| t.count > 4 }.map(&:id))
+      ids = data.map { |d| d["id"] }
+      expected_ids = TestType.where("count IS NOT NULL AND count + 1 > ?", 5).pluck(:id)
+      expect(ids).to contain_exactly(*expected_ids)
     end
 
     it "filters using LESS_THAN with a resolver proc" do

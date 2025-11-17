@@ -52,12 +52,12 @@ module HQ
           end
 
           def parse_absolute(payload)
-            value = payload[:value]
+            value = payload.is_a?(Hash) ? payload[:value] : payload
             raise ArgumentError, "value can't be blank" if value.blank?
             return value if value.is_a?(Time) || value.is_a?(DateTime)
 
-            time_zone = Time.zone || ActiveSupport::TimeZone["UTC"]
-            time_zone.parse(value.to_s) || Time.iso8601(value.to_s)
+            time = Time.iso8601(value.to_s)
+            (Time.zone || ActiveSupport::TimeZone["UTC"]).at(time).utc
           rescue ArgumentError
             raise ArgumentError, "value must be an ISO8601 date"
           end

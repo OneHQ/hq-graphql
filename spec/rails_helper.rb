@@ -1,8 +1,8 @@
+require "logger"
 require "byebug"
 require "combustion"
 
 Combustion.initialize! :all do
-  config.load_defaults 6.0
 end
 
 require "database_cleaner"

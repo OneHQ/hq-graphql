@@ -241,7 +241,7 @@ module HQ
         end
 
         def self.validate_operations(*operations)
-          valid_operations = operations + [WITH]
+          valid_operations = (operations + [WITH]).uniq
           validates :operation, inclusion: {
             in: valid_operations,
             message: "only supports the following operations: #{valid_operations.map(&:name).join(", ")}"
