@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
   s.add_dependency "graphql-schema_comparator", "~> 1.0"
   s.add_dependency "pg",                        "~> 1.1"
 
+  s.add_development_dependency 'concurrent-ruby',                         "1.3.4"
   s.add_development_dependency "byebug",                                  "~> 11.0"
   s.add_development_dependency "combustion",                              "~> 1.1"
   s.add_development_dependency "database_cleaner",                        "~> 1.7"
