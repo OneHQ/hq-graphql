@@ -25,8 +25,8 @@ module HQ
             self.authorized_action = action
           end
 
-          def authorized?(object, context)
-            super && ::HQ::GraphQL.authorized?(authorized_action, object, context)
+          def authorized?(object, context, **args)
+            super && ::HQ::GraphQL.authorized?(authorized_action, object, context, **args)
           end
 
           def with_model(model_name, attributes: true, associations: true, auto_nil: true, enums: true)
