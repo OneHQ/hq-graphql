@@ -48,6 +48,14 @@ module HQ
         NOT_LIKE = Operation.new(name: "NOT_LIKE", arel: :does_not_match, check_for_null: true, sanitize: ->(value) { "%#{ActiveRecord::Base.sanitize_sql_like(value)}%" }),
         GREATER_THAN = Operation.new(name: "GREATER_THAN", arel: :gt),
         LESS_THAN = Operation.new(name: "LESS_THAN", arel: :lt),
+        DATE_RANGE_BETWEEN = Operation.new(name: "DATE_RANGE_BETWEEN", arel: :between),
+        DATE_RANGE_NOT_BETWEEN = Operation.new(
+          name: "DATE_RANGE_NOT_BETWEEN",
+          arel: ->(table:, column_name:, value:, **) do
+            range = value
+            table[column_name].lt(range.begin).or(table[column_name].gt(range.end))
+          end
+        ),
         WITH = Operation.new(
           name: "WITH",
           arel: ->(table:, column_name:, value:) do
