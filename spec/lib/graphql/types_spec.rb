@@ -36,7 +36,7 @@ describe ::HQ::GraphQL::Types do
     end
 
     it "raises an exception for unknown types" do
-      expect { described_class[Organization] }.to raise_error(described_class::Error)
+      expect { described_class[::HasHelpers::Organization] }.to raise_error(described_class::Error)
     end
 
     it "works with sti" do
