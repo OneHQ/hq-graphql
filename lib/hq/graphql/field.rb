@@ -5,7 +5,7 @@ module HQ
     class Field < ::GraphQL::Schema::Field
       attr_reader :authorize_action, :authorize
 
-      def initialize(*args, authorize_action: :read, authorize: nil, klass: nil, **options, &block)
+      def initialize(*args, authorize_action: :view, authorize: nil, klass: nil, **options, &block)
         super(*args, **options, &block)
         @authorize_action = authorize_action
         @authorize = authorize
