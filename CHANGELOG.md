@@ -122,7 +122,8 @@ query {
 ### Fixed
 - All pagination queries created with root_query, def_root and resolvers will have a 250 limit as default. 
 
-## [2.3.7] 2025-11-27
+## [5.0.0] 2025-12-01
 ### Changed
 - Changelog file modified for standard
-- On the gemspec file, allow to be used for Rails versions between 6.1 and 8.1.1.
+- Ruby version upgraded to 3.4.4
+- In the gemspec file, allow to be used for Rails versions between 6.1 and 8.1.1.
