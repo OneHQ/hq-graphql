@@ -1,4 +1,4 @@
-rubyVersion: 3.0.0
+rubyVersion: 3.4.4
 publish: false
 
 gem: &gem hq-graphql
