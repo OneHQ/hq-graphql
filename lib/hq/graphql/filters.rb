@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require "hq/graphql/filter_operations"
 require "hq/graphql/util"
 require "hq/graphql/filters/relative_date_expression"
@@ -145,9 +146,7 @@ module HQ
           @operations = normalize_operations(Array(operations))
         end
 
-        def graphql_name
-          @graphql_name
-        end
+        attr_reader :graphql_name
 
         def resolver?
           @resolver.present?
@@ -448,7 +447,6 @@ module HQ
         def range_operation?
           [DATE_RANGE_BETWEEN, DATE_RANGE_NOT_BETWEEN].include?(operation)
         end
-
       end
 
       class NumericFilter < Filter

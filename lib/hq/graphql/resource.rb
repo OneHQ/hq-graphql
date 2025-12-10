@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "set"
 require "hq/graphql/ext/enum_extensions"
 require "hq/graphql/ext/input_object_extensions"
 require "hq/graphql/ext/object_extensions"
