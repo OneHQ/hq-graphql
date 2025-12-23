@@ -5,12 +5,12 @@ describe ::HQ::GraphQL::PaginatedAssociationLoader do
 
   let(:organization) { ::FactoryBot.create(:organization) }
 
-  let(:manager1) { ::FactoryBot.create(:manager, organization: organization) }
-  let(:manager2) { ::FactoryBot.create(:manager, organization: organization) }
+  let(:manager1)     { ::FactoryBot.create(:manager, organization: organization) }
+  let(:manager2)     { ::FactoryBot.create(:manager, organization: organization) }
 
-  let!(:user1) { ::FactoryBot.create(:user, organization: organization, manager: manager1, created_at: now, updated_at: now + 1.minutes) }
-  let!(:user2) { ::FactoryBot.create(:user, organization: organization, manager: manager1, created_at: now + 1.minutes, updated_at: now + 2.minutes, inactive: true) }
-  let!(:user3) { ::FactoryBot.create(:user, organization: organization, manager: manager1, created_at: now + 2.minutes, updated_at: now) }
+  let!(:user1)       { ::FactoryBot.create(:user, organization: organization, manager: manager1, created_at: now, updated_at: now + 1.minutes) }
+  let!(:user2)       { ::FactoryBot.create(:user, organization: organization, manager: manager1, created_at: now + 1.minutes, updated_at: now + 2.minutes, inactive: true) }
+  let!(:user3)       { ::FactoryBot.create(:user, organization: organization, manager: manager1, created_at: now + 2.minutes, updated_at: now) }
 
   before(:each) do
     # Create dummy data to verify data is properly filtered

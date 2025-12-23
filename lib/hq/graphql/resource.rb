@@ -74,17 +74,17 @@ module HQ
 
         def query_object
           @query_object ||= begin
-            qo =
-              if @query_object_options
-                options, block = @query_object_options
-                @query_object_options = nil
-                build_graphql_object(**options, &block)
-              else
-                build_graphql_object
-              end
-            remove_const(:Query) if const_defined?(:Query, false)
-            const_set(:Query, qo)
-          end
+                              qo =
+                                if @query_object_options
+                                  options, block = @query_object_options
+                                  @query_object_options = nil
+                                  build_graphql_object(**options, &block)
+                                else
+                                  build_graphql_object
+                                end
+                              remove_const(:Query) if const_defined?(:Query, false)
+                              const_set(:Query, qo)
+                            end
         end
 
         def sort_fields_enum
@@ -113,23 +113,23 @@ module HQ
 
         def filter_input
           @filter_input ||= begin
-            scoped_self = self
+                              scoped_self = self
 
-            input_class = Class.new(::GraphQL::Schema::InputObject) do
-              graphql_name "#{scoped_self.graphql_name}QueryFilterInput"
+                              input_class = Class.new(::GraphQL::Schema::InputObject) do
+                                graphql_name "#{scoped_self.graphql_name}QueryFilterInput"
 
-              argument :field, scoped_self.filter_fields_enum, required: true
-              argument :operation, Enum::FilterOperation, required: true
-              argument :is_or, ::GraphQL::Schema::Scalar::Boolean, required: false
-              argument :value, String, required: false
-              argument :date_value, ::HQ::GraphQL::Types::DateFilterValueInput, required: false
-              argument :date_range_value, ::HQ::GraphQL::Types::DateFilterRangeInput, required: false
-              argument :array_values, [String], required: false
-              argument :column_value, scoped_self.filter_column_value_enum, required: false
-            end
+                                argument :field, scoped_self.filter_fields_enum, required: true
+                                argument :operation, Enum::FilterOperation, required: true
+                                argument :is_or, ::GraphQL::Schema::Scalar::Boolean, required: false
+                                argument :value, String, required: false
+                                argument :date_value, ::HQ::GraphQL::Types::DateFilterValueInput, required: false
+                                argument :date_range_value, ::HQ::GraphQL::Types::DateFilterRangeInput, required: false
+                                argument :array_values, [String], required: false
+                                argument :column_value, scoped_self.filter_column_value_enum, required: false
+                              end
 
-            const_set(:FilterInput, input_class)
-          end
+                              const_set(:FilterInput, input_class)
+                            end
         end
 
         def filter_fields_enum
@@ -308,11 +308,11 @@ module HQ
 
                 # set limit_max if first/last N is not provided
                 scope = if limit.present? || !(context.query.provided_variables.symbolize_keys.keys & [:first, :last]).any?
-                  limit = [[limit_max, *limit].min, 0].max
-                  scope.limit(limit).offset(offset)
-                else
-                  scope.offset(offset)
-                end
+                          limit = [[limit_max, *limit].min, 0].max
+                          scope.limit(limit).offset(offset)
+                        else
+                          scope.offset(offset)
+                        end
 
                 sort_by ||= :updated_at
                 sort_order ||= :desc
@@ -391,9 +391,7 @@ module HQ
           scoped_self = self
 
           Class.new(::GraphQL::Schema::Enum) do
-            enum_name = include_custom_fields ?
-              "#{scoped_self.graphql_name}QueryFilterFields" :
-              "#{scoped_self.graphql_name}QueryFilterColumnFields"
+            enum_name = include_custom_fields ? "#{scoped_self.graphql_name}QueryFilterFields" : "#{scoped_self.graphql_name}QueryFilterColumnFields"
 
             graphql_name enum_name
 

@@ -18,23 +18,23 @@ Gem::Specification.new do |s|
 
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
 
-  s.add_dependency "rails",                                               ">= 6.0", "<= 8.1.1"
+  s.add_dependency "rails",                                      ">= 6.0", "<= 8.1.1"
 
-  s.add_dependency "graphql",                                             "~> 1.12"
-  s.add_dependency "graphql-batch",                                       "~> 0.4"
-  s.add_dependency "graphql-schema_comparator",                           "~> 1.0"
-  s.add_dependency "pg",                                                  "~> 1.1"
+  s.add_dependency "graphql",                                    "~> 1.12"
+  s.add_dependency "graphql-batch",                              "~> 0.4"
+  s.add_dependency "graphql-schema_comparator",                  "~> 1.0"
+  s.add_dependency "pg",                                         "~> 1.1"
 
-  s.add_development_dependency "byebug",                                  "~> 12.0"
-  s.add_development_dependency "combustion",                              "~> 1.5"
-  s.add_development_dependency "concurrent-ruby",                         "1.3.5"
-  s.add_development_dependency "database_cleaner",                        "~> 2.1"
-  s.add_development_dependency "factory_bot_rails",                       "~> 6.5"
-  s.add_development_dependency "faker",                                   "~> 3.5"
-  s.add_development_dependency "rspec",                                   "~> 3.8"
-  s.add_development_dependency "rspec_junit_formatter",                   "~> 0.4.1"
-  s.add_development_dependency "rspec-rails",                             "~> 7.0"
-  s.add_development_dependency "rubocop",                                 "~> 1.81"  # code quality check for sonarqube
-  s.add_development_dependency "rubocop-performance",                     "~> 1.26"
-  s.add_development_dependency "rubocop-rails",                           "~> 2.34"
+  s.add_development_dependency "byebug",                         "~> 12.0"
+  s.add_development_dependency "combustion",                     "~> 1.5"
+  s.add_development_dependency "concurrent-ruby",                "1.3.5"
+  s.add_development_dependency "database_cleaner",               "~> 2.1"
+  s.add_development_dependency "factory_bot_rails",              "~> 6.5"
+  s.add_development_dependency "faker",                          "~> 3.5"
+  s.add_development_dependency "rspec",                          "~> 3.8"
+  s.add_development_dependency "rspec_junit_formatter",          "~> 0.6"
+  s.add_development_dependency "rspec-rails",                    "~> 7.0"
+  s.add_development_dependency "rubocop",                        "~> 1.81"  # code quality check for sonarqube
+  s.add_development_dependency "rubocop-performance",            "~> 1.26"
+  s.add_development_dependency "rubocop-rails",                  "~> 2.34"
 end

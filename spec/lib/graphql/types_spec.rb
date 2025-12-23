@@ -26,7 +26,9 @@ describe ::HQ::GraphQL::Types do
         expect(type_object.superclass).to eql(::GraphQL::Schema::Object)
         expect(type_object).to eql(described_class[Advisor])
         expect(type_object.fields.keys).to contain_exactly("customField")
+
         type_object.lazy_load!
+
         expect(type_object.fields.keys).to contain_exactly("customField")
       end
     end
@@ -44,6 +46,7 @@ describe ::HQ::GraphQL::Types do
         include ::HQ::GraphQL::Resource
         self.model_name = "Agent"
       end
+
       expect(sti_resource.query_object).to eql(described_class["Agent"])
     end
 

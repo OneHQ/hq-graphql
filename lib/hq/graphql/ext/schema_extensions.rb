@@ -11,6 +11,7 @@ module HQ
             klass.alias_method :add_type_and_traverse_without_types, :add_type_and_traverse
             klass.alias_method :add_type_and_traverse, :add_type_and_traverse_with_types
           end
+
           def multiplex(*args, **options)
             load_types!
             super

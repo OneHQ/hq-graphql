@@ -117,13 +117,14 @@ module HQ
         return column if column.is_a?(Arel::Attributes::Attribute)
         return column if column.respond_to?(:relation) && column.respond_to?(:name)
 
-        arel_table = if scope.respond_to?(:arel_table)
-          scope.arel_table
-        elsif scope.respond_to?(:klass)
-          scope.klass.arel_table
-        else
-          raise ArgumentError, "Cannot determine table for provided scope"
-        end
+        arel_table =
+          if scope.respond_to?(:arel_table)
+            scope.arel_table
+          elsif scope.respond_to?(:klass)
+            scope.klass.arel_table
+          else
+            raise ArgumentError, "Cannot determine table for provided scope"
+          end
 
         arel_table[column.to_sym]
       end
