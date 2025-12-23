@@ -90,9 +90,9 @@ module HQ
             anchor = payload[:anchor].to_s.downcase
 
             offset = case position
-            when "last" then -1
-            when "next" then 1
-            else 0
+                     when "last" then -1
+                     when "next" then 1
+                     else 0
             end
 
             adjusted = current_time.advance(period_plural(period) => offset)
@@ -133,7 +133,7 @@ module HQ
           end
 
           def current_time
-            Time.zone ? Time.zone.now : Time.now
+            Time.zone ? Time.zone.now : Time.current
           end
         end
       end

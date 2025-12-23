@@ -26,7 +26,8 @@ describe ::HQ::GraphQL::Ext::SchemaExtensions do
       end
     end
 
-    let(:query_str) { <<~GRAPHQL
+    let(:query_str) {
+      <<~GRAPHQL
         query {
           field
         }
@@ -35,12 +36,14 @@ describe ::HQ::GraphQL::Ext::SchemaExtensions do
 
     it "loads types when executing a query" do
       expect(schema).to receive(:load_types!)
+
       schema.execute(query_str)
     end
 
     it "loads types when executing multiple queries" do
       expect(schema).to receive(:load_types!)
-      schema.multiplex([ query: query_str ])
+
+      schema.multiplex([query: query_str])
     end
   end
 
@@ -57,9 +60,12 @@ describe ::HQ::GraphQL::Ext::SchemaExtensions do
 
     it "should write the schema successfully to the filepath" do
       schema.dump
+
       expect(schema.dump_directory).to eq(Rails.root.join("files"))
       expect(schema.dump_filename).to eq("temp_schema.graphql")
+
       file_contents = ::File.read(::File.join(schema.dump_directory, schema.dump_filename))
+
       expect(file_contents).to eq(schema.to_definition)
     end
   end
@@ -83,9 +89,11 @@ describe ::HQ::GraphQL::Ext::SchemaExtensions do
     it "should default to app/graphql" do
       schema.dump
       expected_filepath = Rails.root.join("app", "graphql")
+
       expect(schema.dump_directory).to eq(expected_filepath)
 
       file_contents = ::File.read(::File.join(schema.dump_directory, schema.dump_filename))
+
       expect(file_contents).to eq(schema.to_definition)
     end
   end
@@ -102,8 +110,11 @@ describe ::HQ::GraphQL::Ext::SchemaExtensions do
 
     it "should use the class name as the filename" do
       schema.dump
+
       expect(schema.dump_filename).to eq("#{class_name.underscore}.graphql")
+
       file_contents = ::File.read(::File.join(schema.dump_directory, schema.dump_filename))
+
       expect(file_contents).to eq(schema.to_definition)
     end
   end
