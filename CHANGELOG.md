@@ -97,18 +97,18 @@ query {
 # [2.3.3] 2023-02-03
 ### Added
 - By default, New Queries will be generated if Create Mutation is available. These queries will be useful for forms init. Default values will be based on methods applied using after_initialize callback on model.
-```
-{
-  newAdvisor {
-    name
-    advisor_status_id
-    demographic {
-      id
-      ...
+    ```
+    {
+      newAdvisor {
+        name
+        advisor_status_id
+        demographic {
+          id
+          ...
+        }
+      }
     }
-  }
-}
-```
+    ```
 
 # [2.3.4] 2023-03-06
 ### Changed

@@ -1,4 +1,4 @@
-require 'rails_helper'
+require "rails_helper"
 
 describe ::HQ::GraphQL::PaginatedAssociationLoader do
   let(:now) { Time.zone.now }
@@ -22,9 +22,9 @@ describe ::HQ::GraphQL::PaginatedAssociationLoader do
       loader = described_class.for(Manager, association, **options)
       # Load two associations to test that grouped limits + offsets work
       Promise.all([
-        loader.load(manager1),
-        loader.load(manager2)
-      ])
+                    loader.load(manager1),
+                    loader.load(manager2)
+                  ])
     end
 
     results
