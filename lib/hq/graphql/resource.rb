@@ -307,12 +307,13 @@ module HQ
                 offset = [0, *offset].max
 
                 # set limit_max if first/last N is not provided
-                scope = if limit.present? || !(context.query.provided_variables.symbolize_keys.keys & [:first, :last]).any?
-                          limit = [[limit_max, *limit].min, 0].max
-                          scope.limit(limit).offset(offset)
-                        else
-                          scope.offset(offset)
-                        end
+                scope =
+                  if limit.present? || !(context.query.provided_variables.symbolize_keys.keys & [:first, :last]).any?
+                    limit = [[limit_max, *limit].min, 0].max
+                    scope.limit(limit).offset(offset)
+                  else
+                    scope.offset(offset)
+                  end
 
                 sort_by ||= :updated_at
                 sort_order ||= :desc
