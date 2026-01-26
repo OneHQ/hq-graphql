@@ -1,4 +1,4 @@
-require 'rails_helper'
+require "rails_helper"
 
 describe ::HQ::GraphQL::ObjectAssociation do
   let!(:organization_resource) do
@@ -34,7 +34,6 @@ describe ::HQ::GraphQL::ObjectAssociation do
     Class.new(::HQ::GraphQL::RootQuery)
   end
 
-
   let(:schema) do
     Class.new(::GraphQL::Schema) do
       query(RootQuery)
@@ -61,16 +60,16 @@ describe ::HQ::GraphQL::ObjectAssociation do
     let!(:user3) { ::FactoryBot.create(:user, organization: organization) }
 
     let(:find_organization) { <<~GRAPHQL
-        query FindOrganization($id: ID!, $userName: String) {
-          organization(id: $id) {
+      query FindOrganization($id: ID!, $userName: String) {
+        organization(id: $id) {
+          id
+          customAssociation(name: $userName) {
             id
-            customAssociation(name: $userName) {
-              id
-              name
-            }
+            name
           }
         }
-      GRAPHQL
+      }
+    GRAPHQL
     }
 
     it "finds active users" do

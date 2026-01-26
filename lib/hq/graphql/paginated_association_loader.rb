@@ -18,14 +18,14 @@ module HQ
 
       def initialize(model, association_name, internal_association: false, limit: nil, offset: nil, scope: nil, sort_by: nil, sort_order: nil)
         super()
-        @model                = model
-        @association_name     = association_name
+        @model = model
+        @association_name = association_name
         @internal_association = internal_association
-        @limit                = [0, limit].max if limit
-        @offset               = [0, offset].max if offset
-        @scope                = scope
-        @sort_by              = sort_by || :created_at
-        @sort_order           = normalize_sort_order(sort_order)
+        @limit = [0, limit].max if limit
+        @offset = [0, offset].max if offset
+        @scope = scope
+        @sort_by = sort_by || :created_at
+        @sort_order = normalize_sort_order(sort_order)
 
         validate!
       end
@@ -41,7 +41,7 @@ module HQ
 
       def perform(records)
         values = records.map { |r| source_value(r) }
-        scope  =
+        scope =
           if @limit || @offset
             # If a limit or offset is added, then we need to transform the query
             # into a lateral join so that we can limit on groups of data.
@@ -59,9 +59,9 @@ module HQ
             # > ) a_top ON TRUE
             # > WHERE addresses.user_id IN ($1, $2, ..., $N)
             # > ORDER BY a_top.created_at DESC
-            inner_table        = association_class.arel_table
+            inner_table = association_class.arel_table
             lateral_join_table = through_reflection? ? through_association.klass.arel_table : inner_table
-            from_table         = lateral_join_table.alias("outer")
+            from_table = lateral_join_table.alias("outer")
 
             inside_scope = default_scope.
               select(inner_table[::Arel.star]).
@@ -134,8 +134,8 @@ module HQ
         if through_reflection?
           source = association_class.arel_table
           target = through_association.klass.arel_table
-          join   = source.join(target).on(target[association.foreign_key].eq(source[source_join_key]))
-          scope  = scope.joins(join.join_sources)
+          join = source.join(target).on(target[association.foreign_key].eq(source[source_join_key]))
+          scope = scope.joins(join.join_sources)
         end
 
         scope
