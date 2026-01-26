@@ -35,7 +35,10 @@ module HQ
       end
 
       def preload_association(records)
-        ::ActiveRecord::Associations::Preloader.new.preload(records, @association_name)
+        ::ActiveRecord::Associations::Preloader.new(
+          records: records,
+          associations: @association_name
+        ).call
       end
 
       def read_association(record)

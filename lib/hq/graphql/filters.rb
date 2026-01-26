@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require "hq/graphql/filter_operations"
 require "hq/graphql/util"
 require "hq/graphql/filters/relative_date_expression"
@@ -116,13 +117,14 @@ module HQ
         return column if column.is_a?(Arel::Attributes::Attribute)
         return column if column.respond_to?(:relation) && column.respond_to?(:name)
 
-        arel_table = if scope.respond_to?(:arel_table)
-          scope.arel_table
-        elsif scope.respond_to?(:klass)
-          scope.klass.arel_table
-        else
-          raise ArgumentError, "Cannot determine table for provided scope"
-        end
+        arel_table =
+          if scope.respond_to?(:arel_table)
+            scope.arel_table
+          elsif scope.respond_to?(:klass)
+            scope.klass.arel_table
+          else
+            raise ArgumentError, "Cannot determine table for provided scope"
+          end
 
         arel_table[column.to_sym]
       end
@@ -145,9 +147,7 @@ module HQ
           @operations = normalize_operations(Array(operations))
         end
 
-        def graphql_name
-          @graphql_name
-        end
+        attr_reader :graphql_name
 
         def resolver?
           @resolver.present?
@@ -448,7 +448,6 @@ module HQ
         def range_operation?
           [DATE_RANGE_BETWEEN, DATE_RANGE_NOT_BETWEEN].include?(operation)
         end
-
       end
 
       class NumericFilter < Filter
