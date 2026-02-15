@@ -248,7 +248,7 @@ module HQ
                 class_eval(&block) if block
               end
 
-              constant_name = "#{field_name.to_s.classify}Resolver"
+              constant_name = "#{field_name.to_s.classify.demodulize}Resolver"
               resource.send(:remove_const, constant_name) if resource.const_defined?(constant_name, false)
               resource.const_set(constant_name, klass)
             }
@@ -263,7 +263,7 @@ module HQ
                 class_eval(&block) if block
               end
 
-              constant_name = "#{field_name.to_s.classify}Resolver#{suffix}"
+              constant_name = "#{field_name.to_s.classify.demodulize}Resolver#{suffix}"
               resource.send(:remove_const, constant_name) if resource.const_defined?(constant_name, false)
               resource.const_set(constant_name, klass)
             }
