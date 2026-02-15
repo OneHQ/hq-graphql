@@ -54,19 +54,20 @@ module HQ
           end
 
           private
+
           attr_writer :authorized_action
 
           def authorized_action
-            @authorized_action ||= :read
+            @authorized_action ||= :view
           end
 
           def field_from_association(association, auto_nil:, internal_association: false, &block)
             association_klass = association.klass
-            name              = association.name.to_s
+            name = association.name.to_s
             return if field_exists?(name)
 
             klass = model_klass
-            type  = Types[association_klass]
+            type = Types[association_klass]
 
             case association.macro
             when :has_many

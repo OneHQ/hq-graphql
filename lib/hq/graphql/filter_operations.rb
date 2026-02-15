@@ -9,10 +9,10 @@ module HQ
         attr_reader :name, :arel, :check_for_null, :sanitize
 
         def initialize(name:, arel:, check_for_null: false, sanitize: nil)
-          @name           = name
-          @arel           = arel
+          @name = name
+          @arel = arel
           @check_for_null = check_for_null
-          @sanitize       = sanitize
+          @sanitize = sanitize
         end
 
         def sanitize_value(value)

@@ -30,17 +30,20 @@ describe ::HQ::GraphQL::Comparator do
   describe "Comparing two schemas" do
     context "when the criticality is not valid" do
       it "should raise an error" do
-        expect { described_class.compare(schema, schema, criticality: :invalid_criticality) }.to raise_error(::ArgumentError, /Invalid criticality. Possible values are #{described_class::CRITICALITY.keys.join(", ")}/i)
+        expect { described_class.compare(schema, schema, criticality: :invalid_criticality) }.
+          to raise_error(::ArgumentError, /Invalid criticality. Possible values are #{described_class::CRITICALITY.keys.join(", ")}/i)
       end
     end
 
     context "when the schemas are identical" do
       it "should return nil" do
         result = described_class.compare(schema, schema, criticality: :non_breaking)
+
         expect(result).to be_nil
 
         definition = schema.to_definition
         result = described_class.compare(definition, definition, criticality: :non_breaking)
+
         expect(result).to be_nil
       end
     end
@@ -101,6 +104,7 @@ describe ::HQ::GraphQL::Comparator do
       context "when the criticality is set to dangerous" do
         it "should list dangerous and breaking changes" do
           result = described_class.compare(schema, new_schema, criticality: :dangerous)
+
           expect(result[:breaking]).not_to be_nil
           expect(result[:dangerous]).not_to be_nil
           expect(result[:breaking].count).to eq(1)
@@ -109,6 +113,7 @@ describe ::HQ::GraphQL::Comparator do
 
         it "should not list non-breaking changes" do
           result = described_class.compare(schema, new_schema, criticality: :dangerous)
+
           expect(result[:non_breaking]).to be_nil
         end
       end
@@ -116,6 +121,7 @@ describe ::HQ::GraphQL::Comparator do
       context "when the criticality is set to breaking" do
         it "should list the breaking changes" do
           result = described_class.compare(schema, new_schema)
+
           expect(result[:breaking]).not_to be_nil
           expect(result[:breaking].count).to eq(1)
           expect(result[:breaking].first.criticality.reason).to match(/Removing a field is a breaking change/i)
@@ -123,6 +129,7 @@ describe ::HQ::GraphQL::Comparator do
 
         it "should not list dangerous or non-breaking changes" do
           result = described_class.compare(schema, new_schema)
+
           expect(result[:dangerous]).to be_nil
           expect(result[:non_breaking]).to be_nil
         end
@@ -159,6 +166,7 @@ describe ::HQ::GraphQL::Comparator do
 
       it "should return nil" do
         result = described_class.compare(schema, new_schema, criticality: :dangerous)
+
         expect(result).to be_nil
       end
     end
