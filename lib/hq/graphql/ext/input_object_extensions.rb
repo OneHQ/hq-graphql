@@ -19,7 +19,7 @@ module HQ
         module InstanceMethods
           # Recursively format attributes so that they are compatible with `accepts_nested_attributes_for`
           def format_nested_attributes
-            self.each.inject({}) do |formatted_attrs, (key, value) |
+            self.each.inject({}) do |formatted_attrs, (key, value)|
               if self.class.nested_attributes.include?(key.to_s)
                 formatted_value =
                   if value.is_a?(Array)

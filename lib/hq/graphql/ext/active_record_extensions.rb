@@ -76,6 +76,7 @@ module HQ
             validate_model!
             added_attributes.concat attrs.map(&:to_sym)
           end
+
           alias_method :add_attribute, :add_attributes
           alias_method :add_attrs, :add_attributes
           alias_method :add_attr, :add_attributes
@@ -84,6 +85,7 @@ module HQ
             validate_model!
             removed_attributes.concat attrs.map(&:to_sym)
           end
+
           alias_method :remove_attribute, :remove_attributes
           alias_method :remove_attrs, :remove_attributes
           alias_method :remove_attr, :remove_attributes
@@ -92,12 +94,14 @@ module HQ
             validate_model!
             added_associations.concat associations.map(&:to_sym)
           end
+
           alias_method :add_association, :add_associations
 
           def remove_associations(*associations)
             validate_model!
             removed_associations.concat associations.map(&:to_sym)
           end
+
           alias_method :remove_association, :remove_associations
 
           def model_klass

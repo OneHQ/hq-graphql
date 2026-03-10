@@ -1,4 +1,4 @@
-require 'rails_helper'
+require "rails_helper"
 
 describe ::HQ::GraphQL::Ext::ActiveRecordExtensions do
   let(:extended_klass) do
@@ -20,6 +20,7 @@ describe ::HQ::GraphQL::Ext::ActiveRecordExtensions do
   describe ".add_attributes" do
     it "aliases add_attributes" do
       add_attributes = extended_klass.method(:add_attributes)
+
       aggregate_failures do
         expect(add_attributes).to eql(extended_klass.method(:add_attribute))
         expect(add_attributes).to eql(extended_klass.method(:add_attrs))
@@ -31,6 +32,7 @@ describe ::HQ::GraphQL::Ext::ActiveRecordExtensions do
   describe ".remove_attributes" do
     it "aliases remove_attributes" do
       remove_attributes = extended_klass.method(:remove_attributes)
+
       aggregate_failures do
         expect(remove_attributes).to eql(extended_klass.method(:remove_attribute))
         expect(remove_attributes).to eql(extended_klass.method(:remove_attrs))
@@ -54,9 +56,9 @@ describe ::HQ::GraphQL::Ext::ActiveRecordExtensions do
   describe ".lazy_load" do
     it "lazy loads once" do
       # First time it works
-      expect { extended_klass.lazy_load! }.to change  { extended_klass.counter }.by(1)
+      expect { extended_klass.lazy_load! }.to change { extended_klass.counter }.by(1)
       # Second time it does nothing
-      expect { extended_klass.lazy_load! }.to change  { extended_klass.counter }.by(0)
+      expect { extended_klass.lazy_load! }.to change { extended_klass.counter }.by(0)
     end
   end
 end

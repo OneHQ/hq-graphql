@@ -1,4 +1,4 @@
-require 'rails_helper'
+require "rails_helper"
 
 describe ::HQ::GraphQL::Inputs do
 
@@ -36,5 +36,4 @@ describe ::HQ::GraphQL::Inputs do
       expect { described_class[Advisor] }.to raise_error(described_class::Error)
     end
   end
-
 end
