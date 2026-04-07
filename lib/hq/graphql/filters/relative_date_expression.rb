@@ -89,11 +89,12 @@ module HQ
             period = payload[:period].to_s.downcase.singularize
             anchor = payload[:anchor].to_s.downcase
 
-            offset = case position
-                     when "last" then -1
-                     when "next" then 1
-                     else 0
-            end
+            offset =
+              case position
+              when "last" then -1
+              when "next" then 1
+              else 0
+              end
 
             adjusted = current_time.advance(period_plural(period) => offset)
             method = anchor == "end_of" ? "end_of_#{period}" : "beginning_of_#{period}"
