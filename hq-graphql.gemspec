@@ -27,7 +27,7 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "byebug",                         "~> 12.0"
   s.add_development_dependency "combustion",                     "~> 1.5"
-  s.add_development_dependency "concurrent-ruby",                "1.3.5"
+  s.add_development_dependency "concurrent-ruby",                "1.3.4"
   s.add_development_dependency "database_cleaner",               "~> 2.1"
   s.add_development_dependency "factory_bot_rails",              "~> 6.5"
   s.add_development_dependency "faker",                          "~> 3.5"
