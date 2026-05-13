@@ -6,15 +6,15 @@ $:.push File.expand_path("../lib", __FILE__)
 require "hq/graphql/version"
 # Describe your gem and declare its dependencies:
 Gem::Specification.new do |s|
-  s.name        = "hq-graphql"
-  s.version     = HQ::GraphQL::VERSION
-  s.authors     = ["Danny Jones"]
-  s.email       = ["dpjones09@gmail.com"]
-  s.homepage    = "https://github.com/OneHQ/hq-graphql"
-  s.summary     = "OneHQ GraphQL Library"
-  s.description = "OneHQ GraphQL Library"
-  s.license     = "MIT"
-  s.required_ruby_version = ">= 3.4"
+  s.name                  = "hq-graphql"
+  s.version               = HQ::GraphQL::VERSION
+  s.authors               = ["Danny Jones"]
+  s.email                 = ["dpjones09@gmail.com"]
+  s.homepage              = "https://github.com/OneHQ/hq-graphql"
+  s.summary               = "OneHQ GraphQL Library"
+  s.description           = "OneHQ GraphQL Library"
+  s.license               = "MIT"
+  s.required_ruby_version = ">= 3.0.0", "< 4.0.0"
 
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
 
