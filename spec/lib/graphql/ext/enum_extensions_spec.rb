@@ -44,6 +44,25 @@ describe ::HQ::GraphQL::Ext::EnumExtensions do
     expect { ::HQ::GraphQL::Types[Advisor] }.to raise_error ::HQ::GraphQL::Types::Error
   end
 
+  it "orders values by id when no scope-provided ordering is set" do
+    records = Array.new(3) { FactoryBot.create(:advisor, :simple_name) }
+    records[1].touch
+
+    enum = build_enum
+    enum.lazy_load!
+
+    expect(enum.values.values.map(&:value)).to eq records.sort_by(&:id)
+  end
+
+  it "respects caller-provided ordering from scope" do
+    records = Array.new(3) { FactoryBot.create(:advisor, :simple_name) }
+
+    enum = build_enum(scope: -> { order(id: :desc) })
+    enum.lazy_load!
+
+    expect(enum.values.values.map(&:value)).to eq records.sort_by(&:id).reverse
+  end
+
   it "supports scoping" do
     expected_keys = [advisor1.name.delete(" ")]
     organization_id = advisor1.organization_id
