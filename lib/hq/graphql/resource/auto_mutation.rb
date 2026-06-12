@@ -154,7 +154,17 @@ module HQ
             end
 
             def errors_from_resource(resource)
-              resource.errors.to_h.deep_transform_keys { |k| k.to_s.camelize(:lower) }
+              # Rails 7 exposes validation errors through `messages`, while older versions
+              # may still rely on `to_h`. Keep both paths so this remains compatible across
+              # Rails versions and preserves the expected GraphQL error shape.
+              errors =
+                if resource.errors.respond_to?(:messages)
+                  resource.errors.messages
+                else
+                  resource.errors.to_h
+                end
+
+              errors.deep_transform_keys { |k| k.to_s.camelize(:lower) }
             end
           end
 

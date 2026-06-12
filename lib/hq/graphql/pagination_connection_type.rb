@@ -12,7 +12,7 @@ module HQ
         (0...(object.items.size)).step(object.first || object.items.size + 1).map do |item|
           Base64.urlsafe_encode64(item.to_s).delete("=")
         end
-     end
+      end
 
       def total_count
         object.items.size
