@@ -50,6 +50,9 @@ module HQ::GraphQL
 
         lazy_load do
           records = scope ? klass.instance_exec(&scope) : klass.all
+          if records.respond_to?(:order_values) && records.order_values.empty?
+            records = records.reorder(:id)
+          end
           records.each do |record|
             value "#{prefix}#{record.send(value_method).gsub(strip, "")}", value: record
           end
