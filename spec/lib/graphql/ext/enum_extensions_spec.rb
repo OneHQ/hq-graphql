@@ -58,6 +58,15 @@ describe ::HQ::GraphQL::Ext::EnumExtensions do
     expect(enum.values.values.map(&:value)).to eq records.sort_by(&:id).reverse
   end
 
+  it "supports a scope that returns a plain array instead of a relation" do
+    records = Array.new(2) { FactoryBot.create(:advisor, :simple_name) }
+
+    enum = build_enum(scope: -> { records })
+    expect { enum.lazy_load! }.not_to raise_error
+
+    expect(enum.values.values.map(&:value)).to match_array(records)
+  end
+
   it "supports scoping" do
     expected_keys = [advisor1.name.delete(" ")]
 
