@@ -22,10 +22,10 @@ version: 0.1.0
 # follow Semantic Versioning. They should reflect the version the application is using.
 
 dependencies:
-- name: ruby-pipelines
-  alias: delivery
-  version: "0.2.0-dev.4"
-  repository: "oci://public.ecr.aws/c6o8b8d1"
+  - name: ruby-pipelines
+    alias: delivery
+    version: "0.2.0-dev.4"
+    repository: "oci://public.ecr.aws/c6o8b8d1"
 # - name: gem-delivery
 #   alias: delivery
 #   version: "0.1.0"

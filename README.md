@@ -40,6 +40,7 @@ Fields will be created for all active record columns. Association fields will be
 is also a GraphQL Resource.
 
 ```ruby
+
 class AdvisorResource
   include ::HQ::GraphQL::Resource
 
@@ -51,6 +52,7 @@ end
 #### Customize
 
 ```ruby
+
 class AdvisorResource
   include ::HQ::GraphQL::Resource
   self.model_name = "Advisor"
@@ -72,9 +74,11 @@ end
 
 ### Mutations
 
-Mutations will not be created by default. Add `mutations` to a resource to build mutations for create, update, and destroy.
+Mutations will not be created by default. Add `mutations` to a resource to build mutations for create, update, and
+destroy.
 
 ```ruby
+
 class AdvisorResource
   include ::HQ::GraphQL::Resource
   self.model_name = "Advisor"
@@ -112,6 +116,7 @@ Let's assume we're saving data into a user types table
 ```
 
 ```ruby
+
 class Enums::UserType < ::GraphQL::Schema::Enum
   with_model
 end
@@ -121,8 +126,8 @@ This class automatically uses the UserType ActiveRecord model to generate an enu
 
 ```graphql
 enum UserType {
-  Admin
-  SupportUser
+    Admin
+    SupportUser
 }
 ```
 
@@ -143,6 +148,7 @@ end
 Create a root query:
 
 ```ruby
+
 class AdvisorResource
   include ::HQ::GraphQL::Resource
   self.model_name = "Advisor"
@@ -181,6 +187,7 @@ end
 ## Create a new ::GraphQL::Schema::Object
 
 ```ruby
+
 class AdvisorType < ::GraphQL::Schema::Object
   # Supports graphql-ruby functionality
   field :id, Int, null: false

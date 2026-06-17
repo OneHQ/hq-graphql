@@ -1,4 +1,4 @@
-rubyVersion: 3.0.0
+rubyVersion: 3.4.4
 publish: false
 
 gem: &gem hq-graphql
@@ -11,11 +11,11 @@ git:
   # sha:
 
 global:
-  taskAnnotations: 
+  taskAnnotations:
     vault.security.banzaicloud.io/vault-addr: "https://vault-onehq.apps.hub.internal.onehq.com"
     vault.security.banzaicloud.io/vault-path: "jwt-hub"
     vault.security.banzaicloud.io/vault-auth-method: "jwt"
-    vault.security.banzaicloud.io/vault-tls-secret: "custom-trusted-ca"  
-  rubyVersion: 3.0.4
+    vault.security.banzaicloud.io/vault-tls-secret: "custom-trusted-ca"
+  rubyVersion: 3.4.4
   gem: *gem
   mountGemDockerfile: true

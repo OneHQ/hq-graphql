@@ -1,4 +1,4 @@
-require 'rails_helper'
+require "rails_helper"
 
 describe ::HQ::GraphQL::Filters do
   include ActiveSupport::Testing::TimeHelpers
@@ -128,7 +128,7 @@ describe ::HQ::GraphQL::Filters do
           }
         }
       }
-    GRAPHQL
+  GRAPHQL
   }
 
   before(:each) do
@@ -139,22 +139,22 @@ describe ::HQ::GraphQL::Filters do
   it "generates enums of filterable fields" do
     resource::FilterFields.lazy_load!
     expect(resource::FilterFields.values.keys).to contain_exactly(
-      "id",
-      "count",
-      "amount",
-      "isBool",
-      "name",
-      "createdDate",
-      "createdAt",
-      "updatedAt",
-      "countPlusOne",
-      "createdRecently",
-      "relatedCreatedRecently",
-      "countFiltered",
-      "nameFiltered",
-      "idFiltered",
-      "boolFiltered"
-    )
+                                                    "id",
+                                                    "count",
+                                                    "amount",
+                                                    "isBool",
+                                                    "name",
+                                                    "createdDate",
+                                                    "createdAt",
+                                                    "updatedAt",
+                                                    "countPlusOne",
+                                                    "createdRecently",
+                                                    "relatedCreatedRecently",
+                                                    "countFiltered",
+                                                    "nameFiltered",
+                                                    "idFiltered",
+                                                    "boolFiltered"
+                                                  )
 
     resource::FilterColumnFields.lazy_load!
     expect(resource::FilterColumnFields.values.keys).to contain_exactly("id", "count", "amount", "isBool", "name", "createdDate", "createdAt", "updatedAt")
@@ -329,15 +329,14 @@ describe ::HQ::GraphQL::Filters do
       target_two = TestType.create(count: 12)
       results = schema.execute(query, variables: { filters: [
         { field: "count", operation: "EQUAL", value: target.count.to_s },
-        { field: "count", operation: "EQUAL", value: target_two.count.to_s, isOr: true},
+        { field: "count", operation: "EQUAL", value: target_two.count.to_s, isOr: true },
         { field: "count", operation: "IN", arrayValues: [target.count.to_s, target_two.count.to_s], isOr: true }
-        ]})
+      ] })
       data = results["data"]["testTypes"]["nodes"]
       expect(data.length).to be 2
       expect(data[0]["id"]).to eql(target_two.id)
       expect(data[1]["id"]).to eql(target.id)
     end
-
 
     it "only supports numerical values" do
       results = schema.execute(query, variables: { filters: [{ field: "count", operation: "GREATER_THAN", value: "Fizz" }] })
@@ -407,9 +406,9 @@ describe ::HQ::GraphQL::Filters do
       target_two = TestType.create(name: "Unique Name Two")
       results = schema.execute(query, variables: { filters: [
         { field: "name", operation: "EQUAL", value: target.name },
-        { field: "name", operation: "EQUAL", value: target_two.name, isOr: true},
+        { field: "name", operation: "EQUAL", value: target_two.name, isOr: true },
         { field: "name", operation: "IN", arrayValues: [target.name, target_two.name], isOr: true }
-        ]})
+      ] })
       data = results["data"]["testTypes"]["nodes"]
       expect(data.length).to be 2
       expect(data[0]["id"]).to eql(target_two.id)
@@ -455,9 +454,9 @@ describe ::HQ::GraphQL::Filters do
       target_two = TestType.create
       results = schema.execute(query, variables: { filters: [
         { field: "id", operation: "EQUAL", value: target.id },
-        { field: "id", operation: "EQUAL", value: target_two.id, isOr: true},
+        { field: "id", operation: "EQUAL", value: target_two.id, isOr: true },
         { field: "id", operation: "IN", arrayValues: [target.id, target_two.id], isOr: true }
-        ]})
+      ] })
       data = results["data"]["testTypes"]["nodes"]
       expect(data.length).to be 2
       expect(data[0]["id"]).to eql(target_two.id)
