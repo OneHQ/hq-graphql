@@ -86,6 +86,7 @@ module HQ
 end
 
 require "hq/graphql/association_loader"
+require "hq/graphql/changed_attributes_proxy"
 require "hq/graphql/scalars"
 require "hq/graphql/comparator"
 require "hq/graphql/ext"

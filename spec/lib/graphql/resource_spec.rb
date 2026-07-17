@@ -156,6 +156,65 @@ describe ::HQ::GraphQL::Resource do
 
       expect(advisor_resource.query_object.superclass).to be(new_class)
     end
+
+    context "with a custom field argument" do
+      let(:advisor_resource) do
+        Class.new do
+          include ::HQ::GraphQL::Resource
+          self.model_name = "Advisor"
+
+          query do
+            field :nickname, String, null: false do
+              argument :shout, ::GraphQL::Types::Boolean, required: false
+            end
+
+            def nickname(shout: false)
+              shout ? object.nickname.to_s.upcase : object.nickname
+            end
+          end
+        end
+      end
+
+      it "carries the custom field and its argument over to the nilable copy query object" do
+        query_object = ::HQ::GraphQL::Types[Advisor]
+        query_object.lazy_load!
+        nil_query_object = ::HQ::GraphQL::Types[Advisor, true]
+        nil_query_object.lazy_load!
+
+        aggregate_failures do
+          expect(query_object.fields["nickname"].arguments.keys).to contain_exactly("shout")
+          expect(nil_query_object.fields["nickname"].arguments.keys).to contain_exactly("shout")
+        end
+      end
+    end
+
+    context "with a custom field forced non-null via auto_nil" do
+      let(:advisor_resource) do
+        Class.new do
+          include ::HQ::GraphQL::Resource
+          self.model_name = "Advisor"
+
+          query do
+            # mirrors advisor_resource.rb's `field :name, String, null: false` pattern,
+            # backed by a guarantee (e.g. a DB trigger) that only holds for the regular
+            # type — the nilable copy type must stay nullable regardless.
+            field :name, String, null: !auto_nil
+          end
+        end
+      end
+
+      it "is non-null on the regular query object but nullable on the nil/copy query object" do
+        query_object = ::HQ::GraphQL::Types[Advisor]
+        query_object.lazy_load!
+        nil_query_object = ::HQ::GraphQL::Types[Advisor, true]
+        nil_query_object.lazy_load!
+
+        aggregate_failures do
+          expect(query_object.fields["name"].type).to be_kind_of(::GraphQL::Schema::NonNull)
+          expect(nil_query_object.fields["name"].type).not_to be_kind_of(::GraphQL::Schema::NonNull)
+        end
+      end
+    end
   end
 
   describe ".input" do
@@ -227,6 +286,35 @@ describe ::HQ::GraphQL::Resource do
 
         expected_fields = ["errors", "resource"]
         expect(update_mutation.fields.keys).to contain_exactly(*expected_fields)
+      end
+    end
+
+    context "with return_copy: true" do
+      let(:advisor_resource) do
+        Class.new do
+          include ::HQ::GraphQL::Resource
+          self.model_name = "Advisor"
+
+          mutations return_copy: true
+
+          input do
+            add_association :organization
+          end
+        end
+      end
+
+      it "adds a changedAttributes field and types resource as the nilable copy type" do
+        update_mutation = advisor_resource.mutation_klasses[:update_advisor]
+        update_mutation.lazy_load!
+
+        aggregate_failures do
+          expected_fields = ["errors", "resource", "changedAttributes"]
+          expect(update_mutation.fields.keys).to contain_exactly(*expected_fields)
+
+          resource_field_type = update_mutation.fields["resource"].type
+          expect(resource_field_type.graphql_name).to eql(::HQ::GraphQL::Types[Advisor, true].graphql_name)
+          expect(update_mutation.fields["changedAttributes"].type.to_type_signature).to eql("[String!]!")
+        end
       end
     end
   end
@@ -625,6 +713,69 @@ describe ::HQ::GraphQL::Resource do
           expect(data["updateAdvisor"]["errors"]).to be_present
           expect(data["updateAdvisor"]["resource"]).to be_nil
         end
+      end
+    end
+  end
+
+  context "update mutation with return_copy: true" do
+    let(:advisor_resource) do
+      Class.new do
+        include ::HQ::GraphQL::Resource
+        self.model_name = "Advisor"
+
+        root_query
+      end
+    end
+
+    before(:each) do
+      allow(::HQ::GraphQL.config).to receive(:use_experimental_associations) { true }
+      advisor_resource
+      stub_const("RootQuery", root_query)
+      stub_const("RootMutation", root_mutation)
+
+      organization_type
+      advisor_resource.class_eval do
+        mutations return_copy: true
+
+        input do
+          add_association :organization
+        end
+      end
+    end
+
+    it "only returns changed attributes on resource, and lists them in changedAttributes" do
+      advisor = FactoryBot.create(:advisor)
+
+      results = schema.execute(<<-GRAPHQL, variables: { id: advisor.id, attributes: { name: "Bob" } })
+        mutation updateAdvisor($id: ID!, $attributes: AdvisorInput!) {
+          updateAdvisor(id: $id, attributes: $attributes) {
+            errors
+            changedAttributes
+            resource {
+              id
+              name
+              nickname
+              organization {
+                name
+              }
+            }
+          }
+        }
+      GRAPHQL
+
+      data = results["data"]["updateAdvisor"]
+      aggregate_failures do
+        expect(data["errors"]).to eql({})
+        expect(data["changedAttributes"]).to include("name")
+        expect(data["changedAttributes"]).not_to include("nickname")
+        expect(data["resource"]["id"]).to eql(advisor.id)
+        expect(data["resource"]["name"]).to eql("Bob")
+        expect(data["resource"]["nickname"]).to be_nil
+        expect(Advisor.find(advisor.id).nickname).to eql(advisor.nickname)
+        # Associations must still resolve normally (not nilled, not broken by the
+        # proxy) — this is the AssociationLoader/Preloader codepath, which relies
+        # on `record.is_a?(model)` and `record.class` matching the real AR class.
+        expect(data["resource"]["organization"]["name"]).to eql(advisor.organization.name)
       end
     end
   end

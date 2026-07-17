@@ -34,20 +34,30 @@ module HQ
           end
         end
 
-        def build_update
+        def build_update(return_copy: false)
           scoped_self = self
 
-          build_mutation(action: :update, require_primary_key: true) do
+          build_mutation(action: :update, require_primary_key: true, nil_klass: return_copy) do
+            byebug
             define_method(:resolve) do |**args|
               resource = scoped_self.find_record(args, context)
 
               if resource
                 resource.assign_attributes(args[:attributes].format_nested_attributes)
                 if resource.save
-                  {
-                    resource: resource,
-                    errors: {},
-                  }
+                  if return_copy
+                    changed_attributes = resource.saved_changes.keys
+                    {
+                      resource: ::HQ::GraphQL::ChangedAttributesProxy.wrap(resource, changed_attributes),
+                      changed_attributes: changed_attributes.map { |a| a.to_s.camelize(:lower) },
+                      errors: {},
+                    }
+                  else
+                    {
+                      resource: resource,
+                      errors: {},
+                    }
+                  end
                 else
                   {
                     resource: nil,
@@ -64,6 +74,7 @@ module HQ
 
             lazy_load do
               argument :attributes, ::HQ::GraphQL::Inputs[scoped_self.model_name], required: true
+              field :changed_attributes, [String], null: false if return_copy
             end
           end
         end
