@@ -69,8 +69,15 @@ module HQ
           @input_klass ||= build_input_object
         end
 
+        # NilQuery/`<Name>Copy` is meant to be the same shape as the regular query
+        # object, just with every field nullable — so it must apply the same custom
+        # `query do ... end` block (e.g. field redefinitions, extra arguments) that
+        # the regular query object uses, not just the plain auto-generated fields.
         def nil_query_object
-          @nil_query_object ||= const_set(:NilQuery, build_graphql_object(name: "#{graphql_name}Copy", auto_nil: false))
+          @nil_query_object ||= begin
+            options, block = @query_object_options || [{}, nil]
+            const_set(:NilQuery, build_graphql_object(name: "#{graphql_name}Copy", **options, auto_nil: false, &block))
+          end
         end
 
         def query_object
@@ -78,7 +85,6 @@ module HQ
             qo =
               if @query_object_options
                 options, block = @query_object_options
-                @query_object_options = nil
                 build_graphql_object(**options, &block)
               else
                 build_graphql_object
@@ -188,7 +194,12 @@ module HQ
         # copy => adds copy operation
         # update => adds update operation
         # destroy => adds destroy operation
-        def mutations(create: true, copy: true, update: true, destroy: true)
+        # return_copy => the update mutation's `resource` field only returns attributes that
+        #   changed as part of the save (everything else comes back nil), using the resource's
+        #   `<Name>Copy` type (all fields nullable) instead of its regular query type. The
+        #   payload also gains a `changedAttributes: [String!]!` field listing which attributes
+        #   changed, so consumers can tell "unchanged" apart from "changed to null".
+        def mutations(create: true, copy: true, update: true, destroy: true, return_copy: false)
           scoped_self = self
           if create
             mutation_klasses["create_#{graphql_name.underscore}"] = build_create
@@ -207,7 +218,7 @@ module HQ
             end
           end
           mutation_klasses["copy_#{graphql_name.underscore}"] = build_copy if copy
-          mutation_klasses["update_#{graphql_name.underscore}"] = build_update if update
+          mutation_klasses["update_#{graphql_name.underscore}"] = build_update(return_copy: return_copy) if update
           mutation_klasses["destroy_#{graphql_name.underscore}"] = build_destroy if destroy
         end
 
