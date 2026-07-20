@@ -218,6 +218,18 @@ describe ::HQ::GraphQL::Filters do
       expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.map(&:id))
     end
 
+    it "applies GREATER_THAN and LESS_THAN on the same column as an AND range" do
+      results = schema.execute(query, variables: {
+        filters: [
+          { field: "createdAt", operation: "GREATER_THAN", value: 1.day.ago.iso8601 },
+          { field: "createdAt", operation: "LESS_THAN", value: 1.day.from_now.iso8601 }
+        ]
+      })
+      data = results["data"]["testTypes"]["nodes"]
+      expect(data.length).to be 1
+      expect(data[0]["id"]).to eql(target.id)
+    end
+
     it "filters test_types using OR statement" do
       results = schema.execute(query, variables: { filters: [{ field: "createdAt", operation: "GREATER_THAN", value: target.created_at.iso8601 }, { field: "createdAt", operation: "LESS_THAN", value: target.created_at.iso8601, isOr: true }] })
       data = results["data"]["testTypes"]["nodes"]
@@ -302,6 +314,18 @@ describe ::HQ::GraphQL::Filters do
       data = results["data"]["testTypes"]["nodes"]
       expect(data.length).to be 10
       expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.map(&:id))
+    end
+
+    it "applies GREATER_THAN and LESS_THAN on the same column as an AND range" do
+      results = schema.execute(query, variables: {
+        filters: [
+          { field: "count", operation: "GREATER_THAN", value: "5" },
+          { field: "count", operation: "LESS_THAN", value: "8" }
+        ]
+      })
+      data = results["data"]["testTypes"]["nodes"]
+      # counts 6, 7 only — both bounds must be active
+      expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.select { |t| t.count > 5 && t.count < 8 }.map(&:id))
     end
 
     it "filters test_types using EQUAL" do
@@ -507,6 +531,19 @@ describe ::HQ::GraphQL::Filters do
       data = results["data"]["testTypes"]["nodes"]
       expect(data.length).to be 2
       expect(data.map { |d| d["id"] }).to contain_exactly(*test_types.select { |t| t.count < 2 }.map(&:id))
+    end
+
+    it "applies GREATER_THAN and LESS_THAN on the same custom field as an AND range" do
+      results = schema.execute(query, variables: {
+        filters: [
+          { field: "countPlusOne", operation: "GREATER_THAN", value: "3" },
+          { field: "countPlusOne", operation: "LESS_THAN", value: "6" }
+        ]
+      })
+      data = results["data"]["testTypes"]["nodes"]
+      # count+1 > 3 AND count+1 < 6 → counts 3, 4 only
+      expected_ids = test_types.select { |t| !t.count.nil? && t.count + 1 > 3 && t.count + 1 < 6 }.map(&:id)
+      expect(data.map { |d| d["id"] }).to contain_exactly(*expected_ids)
     end
 
     it "rejects unsupported operations" do
