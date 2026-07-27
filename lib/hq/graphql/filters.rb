@@ -211,7 +211,20 @@ module HQ
         filters.reduce(model.all) do |scope, filter|
           filter_scope = filter.to_relation(model)
           next scope unless filter_scope
-          filter.is_or ? scope.or(filter_scope) : scope.merge(filter_scope)
+
+          if filter.is_or
+            scope.or(filter_scope)
+          else
+            # Rails' WhereClause#merge (used by Relation#merge) deduplicates predicates
+            # by column reference, so a second filter on the same column (e.g. LESS_THAN
+            # after GREATER_THAN on a date field) silently drops the first. Merge
+            # everything BUT the where clause (joins, left_outer_joins, eager_load,
+            # includes, group, having, etc. all carry over normally via merge), then
+            # add the where clause separately via where() (WhereClause#+), which
+            # concatenates without deduplication.
+            scope = scope.merge(filter_scope.except(:where))
+            filter_scope.where_clause.empty? ? scope : scope.where(filter_scope.where_clause.ast)
+          end
         end
       end
 
