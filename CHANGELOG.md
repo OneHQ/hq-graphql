@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+# 2.4.4 (3 August 2026)
+
+### Breaking changes
+
+- Subclasses are included in types where the main class is present.
+
 # 2.3.6 (6 December 2024)
 
 ### Bug fixes
