@@ -18,6 +18,10 @@ Gem::Specification.new do |s|
 
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
 
+  # ActiveSupport 8.0 passes quirks_mode, which JSON 3 rejects.
+
+  s.add_dependency "json", "< 3"
+
   s.add_dependency "rails",                                      ">= 6.0", "< 8.1"
 
   s.add_dependency "graphql",                                    "~> 1.13"
