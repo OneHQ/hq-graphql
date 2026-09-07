@@ -2,6 +2,6 @@
 
 module HQ
   module GraphQL
-    VERSION = "5.0.5"
+    VERSION = "5.0.4"
   end
 end

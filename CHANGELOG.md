@@ -26,17 +26,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Fixed** for any bug fixes.
 - **Security** in case of vulnerabilities.
 
-# [5.0.5] 2026-09-04
-
-### Changed
-
-- The `search_options` resolver no longer applies a default limit of 15 when the caller doesn't pass `with: { limit: }`. `default_limit:` now defaults to `nil`, so results are unbounded unless the caller passes `limit`, or the resource explicitly opts into a cap via `search_options(default_limit: N)`.
-
 # [5.0.4] 2026-09-03
 
 ### Changed
 
 - The `search_options` resolver (from `auto_register_search_options!`) now passes `current_user: context[:current_user]` and `current_application: context[:current_application]` through to the model's `.search_options(query, options)` call, alongside the existing `organization_id`/`with`. Additive — existing `.search_options` implementations that don't read those keys are unaffected. Lets a model's `search_options` call into `HasHelpers::Search.search` (which needs a real user/application), instead of being limited to plain ActiveRecord queries.
+- The `search_options` resolver no longer applies a default limit of 15 when the caller doesn't pass `with: { limit: }`. `default_limit:` now defaults to `nil`, so results are unbounded unless the caller passes `limit`, or the resource explicitly opts into a cap via `search_options(default_limit: N)`.
 
 # [2.2.0] 2021-01-27
 
