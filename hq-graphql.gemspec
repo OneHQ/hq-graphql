@@ -24,6 +24,9 @@ Gem::Specification.new do |s|
   s.add_dependency "graphql-batch",                              "~> 0.4"
   s.add_dependency "graphql-schema_comparator",                  "~> 1.0"
   s.add_dependency "pg",                                         "~> 1.1"
+  # graphql (~> 1.13) calls JSON.generate/.parse with the legacy `quirks_mode:` option,
+  # which json 3.0 removed support for (raises ArgumentError: unknown keyword: quirks_mode)
+  s.add_dependency "json",                                       "< 3"
 
   s.add_development_dependency "byebug",                         "~> 12.0"
   s.add_development_dependency "combustion",                     "~> 1.5"
