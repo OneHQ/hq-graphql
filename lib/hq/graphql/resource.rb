@@ -216,7 +216,8 @@ module HQ
         # already defines `.search_options`, so this rarely needs to be called explicitly.
         # Parameters:
         # field_name => overrides the generated field name
-        # default_limit => cap applied when the caller doesn't pass with: { limit: }
+        # default_limit => cap applied when the caller doesn't pass with: { limit: };
+        # when nil (the default), no limit is applied unless the caller passes one
         # type => the GraphQL type returned; defaults to HQ::GraphQL.config.default_search_type
         #
         # When an `Owner`-prefixed class exists for the model (e.g. `OwnerLevel` for
@@ -229,7 +230,7 @@ module HQ
         # those override whatever the Owner view returned for that record.
         OWNER_OVERRIDE_METHODS = %i[sub_item_type abbreviation].freeze
 
-        def search_options(field_name: nil, default_limit: 15, type: nil)
+        def search_options(field_name: nil, default_limit: nil, type: nil)
           return if @search_options_registered
 
           resource = self
@@ -248,10 +249,16 @@ module HQ
               owner_klass = "Owner#{klass.name}".safe_constantize
               opts = (with || {}).deep_symbolize_keys
 
-              scope = klass.search_options(query, organization_id: context[:current_organization]&.id, with: opts)
+              scope = klass.search_options(
+                query,
+                organization_id: context[:current_organization]&.id,
+                with: opts,
+                current_user: context[:current_user],
+                current_application: context[:current_application]
+              )
               limit = Integer(opts[:limit]) rescue default_limit
               is_relation = scope.respond_to?(:limit)
-              limited_scope = is_relation ? scope.limit(limit) : scope
+              limited_scope = (is_relation && limit) ? scope.limit(limit) : scope
               primary_key = klass.primary_key
 
               # `.search_options_groups` (e.g. Level#is_active?) needs real model

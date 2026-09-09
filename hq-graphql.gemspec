@@ -18,9 +18,6 @@ Gem::Specification.new do |s|
 
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
 
-  # ActiveSupport 8.0 passes quirks_mode, which JSON 3 rejects.
-
-  s.add_dependency "json", "< 3"
 
   s.add_dependency "rails",                                      ">= 6.0", "< 8.1"
 
@@ -28,6 +25,9 @@ Gem::Specification.new do |s|
   s.add_dependency "graphql-batch",                              "~> 0.4"
   s.add_dependency "graphql-schema_comparator",                  "~> 1.0"
   s.add_dependency "pg",                                         "~> 1.1"
+  # graphql (~> 1.13) calls JSON.generate/.parse with the legacy `quirks_mode:` option,
+  # which json 3.0 removed support for (raises ArgumentError: unknown keyword: quirks_mode)
+  s.add_dependency "json",                                       "< 3"
 
   s.add_development_dependency "byebug",                         "~> 12.0"
   s.add_development_dependency "combustion",                     "~> 1.5"
