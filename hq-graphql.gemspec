@@ -18,7 +18,8 @@ Gem::Specification.new do |s|
 
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
 
-  s.add_dependency "rails",                                      ">= 6.0", "< 7.2.4"
+
+  s.add_dependency "rails",                                      ">= 6.0", "< 8.1"
 
   s.add_dependency "graphql",                                    "~> 1.13"
   s.add_dependency "graphql-batch",                              "~> 0.4"

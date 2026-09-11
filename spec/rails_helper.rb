@@ -5,6 +5,10 @@ require "combustion"
 Combustion.initialize! :all do
 end
 
+Testhq.register_factory_definition_paths(
+  File.expand_path("factories", __dir__)
+)
+
 require "database_cleaner"
 require "factory_bot_rails"
 require "faker"

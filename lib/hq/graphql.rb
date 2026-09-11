@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "rails"
+require "active_model"
 require "graphql"
 require "graphql/batch"
 require "hq/graphql/field"
