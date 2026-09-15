@@ -10,7 +10,15 @@ gem "net-pop",  require: false
 gem "net-smtp", require: false
 
 source "https://vLEyAxzPMpJK8itRTFw6@gem.fury.io/onehq/" do
-  gem "testhq", "= 6.0.0"
+  gem "testhq", "= 6.1.0"
 end
 
 gemspec
+
+# Verify both supported Rails series during the upgrade.
+def next?
+  File.basename(__FILE__) == "Gemfile.next"
+end
+
+gem "next_rails"
+gem "rails", next? ? "= 8.1.3.1" : "= 8.0.5.1"
