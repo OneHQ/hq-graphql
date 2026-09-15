@@ -10,7 +10,7 @@ gem "net-pop",  require: false
 gem "net-smtp", require: false
 
 source "https://vLEyAxzPMpJK8itRTFw6@gem.fury.io/onehq/" do
-  gem "testhq", "= 6.0.0"
+  gem "testhq", "~> 6.1.0"
 end
 
 gemspec
