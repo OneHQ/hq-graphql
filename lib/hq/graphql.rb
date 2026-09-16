@@ -51,6 +51,20 @@ module HQ
       !!config.use_experimental_associations
     end
 
+    # When enabled, association fields on OUTPUT types are emitted nullable.
+    # A host app whose authorization can deny a record needs this: a denial
+    # returns nil, and at a non-null position that nil propagates up and takes
+    # the whole payload with it. Only the OUTER wrapper is relaxed --
+    # `[T!]!` becomes `[T!]` and `T!` becomes `T`; list ELEMENTS stay non-null,
+    # because a per-record denial must shorten the collection (via
+    # `config.default_scope`), never punch a hole in it.
+    #
+    # Off by default, so the gem behaves exactly as before for every consumer
+    # that has not opted in.
+    def self.nullable_associations?
+      !!config.nullable_associations
+    end
+
     def self.reset!
       @lazy_load_classes = nil
       @root_queries = nil

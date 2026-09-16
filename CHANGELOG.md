@@ -26,6 +26,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Fixed** for any bug fixes.
 - **Security** in case of vulnerabilities.
 
+# [Unreleased]
+
+### Added
+
+- `config.nullable_associations` emits association fields on OUTPUT types as nullable. Off by default, so the gem behaves exactly as before for every consumer that has not opted in. A host app whose authorization can deny a record needs it: the denial returns `nil`, and at a non-null position that `nil` propagates to the nearest nullable ancestor and takes the whole payload with it, turning a hidden relationship into a failed query. One flag covers all three association shapes — `has_many`, `has_one` and `belongs_to`. Only the OUTER wrapper is relaxed (`[T!]!` -> `[T!]`, `T!` -> `T`); list elements stay non-null, because a per-record denial must shorten the collection through `config.default_scope`, not leave a hole in it. Input types are untouched: presence validation is a legitimate constraint on what a client may send, and is unrelated to what the server is willing to return.
+
 # [5.0.4] 2026-09-03
 
 ### Changed

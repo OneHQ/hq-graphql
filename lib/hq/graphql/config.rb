@@ -11,6 +11,7 @@ module HQ
       :extract_class,
       :resource_lookup,
       :use_experimental_associations,
+      :nullable_associations,
       :excluded_inputs,
       keyword_init: true
     )
