@@ -680,7 +680,10 @@ describe ::HQ::GraphQL::Resource do
         data = results["data"]
 
         aggregate_failures do
-          expect(data["createAdvisor"]).to be_nil
+          # A refusal has to be legible to the caller: a bare null reads to a
+          # form as "nothing happened", i.e. as a successful save.
+          expect(data["createAdvisor"]["resource"]).to be_nil
+          expect(data["createAdvisor"]["errors"]).to eq({ "base" => ["You are not allowed to create advisors"] })
           expect(Advisor.where(name: name).exists?).to eql false
         end
       end
@@ -705,7 +708,8 @@ describe ::HQ::GraphQL::Resource do
         data = results["data"]
 
         aggregate_failures do
-          expect(data["updateAdvisor"]).to be_nil
+          expect(data["updateAdvisor"]["resource"]).to be_nil
+          expect(data["updateAdvisor"]["errors"]).to eq({ "base" => ["You are not allowed to update advisors"] })
           expect(Advisor.find(advisor.id).name).to eql advisor.name
           expect(Organization.find(advisor.organization_id).name).to eql advisor.organization.name
         end
@@ -722,7 +726,8 @@ describe ::HQ::GraphQL::Resource do
         data = results["data"]
 
         aggregate_failures do
-          expect(data["destroyAdvisor"]).to be_nil
+          expect(data["destroyAdvisor"]["resource"]).to be_nil
+          expect(data["destroyAdvisor"]["errors"]).to eq({ "base" => ["You are not allowed to delete advisors"] })
           expect(Advisor.where(id: advisor.id).exists?).to eql true
         end
       end

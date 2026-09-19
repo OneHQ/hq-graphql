@@ -6,6 +6,8 @@ require "graphql"
 require "graphql/batch"
 require "hq/graphql/field"
 require "hq/graphql/config"
+require "hq/graphql/authorization_message"
+require "hq/graphql/nested_authorization"
 
 module HQ
   module GraphQL
@@ -27,6 +29,15 @@ module HQ
 
     def self.authorize_field(action, field, object, context)
       !config.authorize_field || config.authorize_field.call(action, field, object, context)
+    end
+
+    # Authorizes one record reached through a mutation's nested attributes.
+    # `klass` is the association's class, `parent_klass` its owner. Inert until
+    # the host sets `config.authorize_nested_attributes`; see
+    # `HQ::GraphQL::NestedAuthorization`.
+    def self.authorize_nested_attributes(action, klass, parent_klass, context)
+      !config.authorize_nested_attributes ||
+        config.authorize_nested_attributes.call(action, klass, parent_klass, context)
     end
 
     def self.default_scope(scope, context)
@@ -63,6 +74,24 @@ module HQ
     # that has not opted in.
     def self.nullable_associations?
       !!config.nullable_associations
+    end
+
+    # Which class an association field hands to `config.authorize_field`.
+    #
+    # Off: the association's OWNER, which the host has necessarily already
+    # authorized to have reached the field -- so a resource-level denial on the
+    # association's own class can never fire here. It falls through to the
+    # per-record object hook instead, whose only move is nulling individual list
+    # elements; against a non-null element type that is an error, not a hidden
+    # field.
+    #
+    # On: the association's TARGET class, so the host is asked the question it
+    # can actually answer -- "may this user see SalesManager?" -- once, before
+    # resolving. A denial then nulls the field itself, which `nullable_associations`
+    # has made legal. Per-record denials are unaffected and still belong to the
+    # object hook (or `config.default_scope`).
+    def self.authorize_association_target?
+      !!config.authorize_association_target
     end
 
     def self.reset!
