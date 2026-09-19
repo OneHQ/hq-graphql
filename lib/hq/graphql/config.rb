@@ -5,6 +5,7 @@ module HQ
     class Config < Struct.new(
       :authorize,
       :authorize_field,
+      :authorize_nested_attributes,
       :default_object_class,
       :default_scope,
       :default_search_type,
@@ -12,6 +13,7 @@ module HQ
       :resource_lookup,
       :use_experimental_associations,
       :nullable_associations,
+      :authorize_association_target,
       :excluded_inputs,
       keyword_init: true
     )
