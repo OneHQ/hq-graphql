@@ -337,7 +337,10 @@ module HQ
               klass = Class.new(::GraphQL::Schema::Resolver) do
                 type = resource.query_object.connection_type
 
-                type type, null: null
+                # See `HQ::GraphQL.nullable_root_collections?`: a denied root
+                # collection has to be expressible as null, or it takes the
+                # response with it.
+                type type, null: null || ::HQ::GraphQL.nullable_root_collections?
                 class_eval(&block) if block
               end
 

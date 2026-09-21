@@ -76,6 +76,25 @@ module HQ
       !!config.nullable_associations
     end
 
+    # When enabled, ROOT collection fields are emitted nullable.
+    #
+    # Same reasoning as `nullable_associations`, one level up. A root collection
+    # is declared `AdvisorConnection!`, so a host that denies the field has
+    # nowhere to put the denial: the nil propagates to `data` and the whole
+    # response is lost, however little of the page depended on it.
+    #
+    # Nullable, rather than an empty collection, on purpose: `[]` says "there
+    # are none", which is a different fact from "these are not yours to see",
+    # and a client that cannot tell them apart will state the wrong one. This
+    # keeps the same distinction the association flag draws -- null for denied,
+    # empty for genuinely nothing -- so a field means the same thing wherever it
+    # sits.
+    #
+    # Off by default.
+    def self.nullable_root_collections?
+      !!config.nullable_root_collections
+    end
+
     # Which class an association field hands to `config.authorize_field`.
     #
     # Off: the association's OWNER, which the host has necessarily already
