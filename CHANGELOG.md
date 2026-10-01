@@ -26,6 +26,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Fixed** for any bug fixes.
 - **Security** in case of vulnerabilities.
 
+# [6.1.2] 2026-09-30
+
+### Added
+
+- GraphQL object types can declare `authorize_objects false` when they intentionally expose a projection whose underlying records must not use the global object-level authorization callback. GraphQL's own authorization still runs, and HQ object authorization remains enabled by default.
+- `config.filter_unauthorized_collection_items` removes records denied by object-level authorization from generated collection associations before GraphQL resolves their non-null element types. This prevents a denied record from becoming an invalid `null` inside a list such as `[Phone!]`. Off by default for backward compatibility and overridable per association field with `filter_unauthorized_items true` or `false`.
+- `config.apply_default_scope_to_associations` applies the host application's configured `default_scope` to generated collection association relations before sorting, offset, and limit. It is independent from authorization filtering, off by default, and overridable per association field with `apply_default_scope true` or `false`.
+
 # [6.1.1] 2026-09-22
 
 ### Added

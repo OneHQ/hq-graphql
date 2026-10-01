@@ -2,6 +2,33 @@ require "rails_helper"
 
 describe ::HQ::GraphQL::Ext::ObjectExtensions do
 
+  describe ".authorize_objects" do
+    let(:hq_object) do
+      Class.new(::GraphQL::Schema::Object) do
+        graphql_name "AuthorizedObject"
+      end
+    end
+
+    let(:object) { Object.new }
+    let(:context) { {} }
+
+    before do
+      allow(::HQ::GraphQL).to receive(:authorized?).and_return(false)
+    end
+
+    it "authorizes objects through HQ by default" do
+      expect(hq_object.authorized?(object, context)).to be(false)
+      expect(::HQ::GraphQL).to have_received(:authorized?).with(:view, object, context)
+    end
+
+    it "can explicitly disable HQ object authorization" do
+      hq_object.authorize_objects false
+
+      expect(hq_object.authorized?(object, context)).to be(true)
+      expect(::HQ::GraphQL).not_to have_received(:authorized?)
+    end
+  end
+
   describe ".with_model" do
     let(:hq_object) do
       Class.new(::GraphQL::Schema::Object) do

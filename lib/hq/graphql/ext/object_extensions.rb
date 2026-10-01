@@ -25,8 +25,12 @@ module HQ
             self.authorized_action = action
           end
 
+          def authorize_objects(value)
+            @authorize_objects = value
+          end
+
           def authorized?(object, context)
-            super && ::HQ::GraphQL.authorized?(authorized_action, object, context)
+            super && (!authorize_objects? || ::HQ::GraphQL.authorized?(authorized_action, object, context))
           end
 
           def with_model(model_name, attributes: true, associations: true, auto_nil: true, enums: true)
@@ -59,6 +63,13 @@ module HQ
 
           def authorized_action
             @authorized_action ||= :view
+          end
+
+          def authorize_objects?
+            return @authorize_objects unless @authorize_objects.nil?
+            return superclass.authorize_objects? if superclass.respond_to?(:authorize_objects?)
+
+            true
           end
 
           def field_from_association(association, auto_nil:, internal_association: false, &block)

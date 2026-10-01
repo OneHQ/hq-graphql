@@ -20,6 +20,26 @@ module HQ
         end
       end
 
+      def apply_default_scope(value = true)
+        @apply_default_scope = value
+      end
+
+      def apply_default_scope?
+        return @apply_default_scope unless @apply_default_scope.nil?
+
+        ::HQ::GraphQL.apply_default_scope_to_associations?
+      end
+
+      def filter_unauthorized_items(value = true)
+        @filter_unauthorized_items = value
+      end
+
+      def filter_unauthorized_items?
+        return @filter_unauthorized_items unless @filter_unauthorized_items.nil?
+
+        ::HQ::GraphQL.filter_unauthorized_collection_items?
+      end
+
       def authorized?(object, _args, ctx)
         super &&
           (!authorize || authorize.call(object, ctx)) &&
