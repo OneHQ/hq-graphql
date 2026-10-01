@@ -16,7 +16,20 @@ module HQ
         end
       end
 
-      def initialize(model, association_name, internal_association: false, limit: nil, offset: nil, scope: nil, sort_by: nil, sort_order: nil)
+      def initialize(
+        model,
+        association_name,
+        internal_association: false,
+        limit: nil,
+        offset: nil,
+        scope: nil,
+        sort_by: nil,
+        sort_order: nil,
+        context: nil,
+        apply_default_scope: false,
+        filter_unauthorized_items: false,
+        authorize_action: :view
+      )
         super()
         @model = model
         @association_name = association_name
@@ -24,6 +37,10 @@ module HQ
         @limit = [0, limit].max if limit
         @offset = [0, offset].max if offset
         @scope = scope
+        @context = context
+        @apply_default_scope = apply_default_scope
+        @filter_unauthorized_items = filter_unauthorized_items
+        @authorize_action = authorize_action
         @sort_by = sort_by || :created_at
         @sort_order = normalize_sort_order(sort_order)
 
@@ -95,6 +112,9 @@ module HQ
           end
 
         results = scope.to_a
+        if @filter_unauthorized_items
+          results.select! { |record| ::HQ::GraphQL.authorized?(@authorize_action, record, @context) }
+        end
         records.each do |record|
           fulfill(record, target_value(record, results)) unless fulfilled?(record)
         end
@@ -137,6 +157,8 @@ module HQ
           join = source.join(target).on(target[association.foreign_key].eq(source[source_join_key]))
           scope = scope.joins(join.join_sources)
         end
+
+        scope = ::HQ::GraphQL.default_scope(scope, @context) if @apply_default_scope
 
         scope
       end

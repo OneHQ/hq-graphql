@@ -15,6 +15,8 @@ module HQ
       :nullable_associations,
       :nullable_root_collections,
       :authorize_association_target,
+      :apply_default_scope_to_associations,
+      :filter_unauthorized_collection_items,
       :excluded_inputs,
       keyword_init: true
     )

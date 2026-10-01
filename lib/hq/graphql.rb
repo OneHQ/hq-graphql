@@ -113,6 +113,20 @@ module HQ
       !!config.authorize_association_target
     end
 
+    # Whether generated collection associations should pass their relation
+    # through the host application's configured default scope. Off by default
+    # for backward compatibility; individual fields can override the setting.
+    def self.apply_default_scope_to_associations?
+      !!config.apply_default_scope_to_associations
+    end
+
+    # Whether generated collection associations should discard records denied
+    # by object-level authorization before GraphQL resolves the non-null list
+    # elements. Off by default; individual fields can override the setting.
+    def self.filter_unauthorized_collection_items?
+      !!config.filter_unauthorized_collection_items
+    end
+
     def self.reset!
       @lazy_load_classes = nil
       @root_queries = nil

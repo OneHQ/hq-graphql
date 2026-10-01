@@ -10,6 +10,8 @@ describe ::HQ::GraphQL::ObjectAssociation do
       root_query
       query do
         has_many :custom_association, -> { where(inactive: nil) }, class_name: "User" do
+          apply_default_scope false
+          filter_unauthorized_items false
           argument :name, String, required: false
 
           scope do |name: nil|
@@ -50,6 +52,16 @@ describe ::HQ::GraphQL::ObjectAssociation do
   context "meta data" do
     it "adds a custom association field" do
       expect(organization_resource.query_object.fields.keys).to include("customAssociation")
+    end
+
+    it "allows association fields to opt out of global scoping and filtering" do
+      allow(::HQ::GraphQL.config).to receive(:apply_default_scope_to_associations) { true }
+      allow(::HQ::GraphQL.config).to receive(:filter_unauthorized_collection_items) { true }
+
+      field = organization_resource.query_object.fields.fetch("customAssociation")
+
+      expect(field.apply_default_scope?).to be(false)
+      expect(field.filter_unauthorized_items?).to be(false)
     end
   end
 

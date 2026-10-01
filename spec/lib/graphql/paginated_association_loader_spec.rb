@@ -79,6 +79,65 @@ describe ::HQ::GraphQL::PaginatedAssociationLoader do
     end
   end
 
+  context "host application scoping" do
+    let(:context) { { current_organization: organization } }
+
+    it "applies the configured default scope before limiting when enabled" do
+      allow(::HQ::GraphQL.config).to receive(:default_scope) do
+        ->(scope, received_context) {
+          expect(received_context).to equal(context)
+          scope.where(inactive: [nil, false])
+        }
+      end
+
+      users = load(
+        :users,
+        context: context,
+        apply_default_scope: true,
+        limit: 2,
+        sort_order: :asc
+      )
+
+      expect(users).to eq [user1, user3]
+    end
+
+    it "does not apply the configured default scope when disabled" do
+      expect(::HQ::GraphQL.config).not_to receive(:default_scope)
+
+      users = load(:users, context: context, apply_default_scope: false)
+
+      expect(users).to eq [user3, user2, user1]
+    end
+  end
+
+  context "object authorization filtering" do
+    let(:context) { { current_organization: organization } }
+
+    before do
+      allow(::HQ::GraphQL.config).to receive(:authorize) do
+        ->(action, record, received_context) {
+          expect(action).to eq(:view)
+          expect(received_context).to equal(context)
+          !record.inactive?
+        }
+      end
+    end
+
+    it "removes denied records when enabled" do
+      users = load(:users, context: context, filter_unauthorized_items: true)
+
+      expect(users).to eq [user3, user1]
+    end
+
+    it "leaves denied records for GraphQL to handle when disabled" do
+      expect(::HQ::GraphQL.config).not_to receive(:authorize)
+
+      users = load(:users, context: context, filter_unauthorized_items: false)
+
+      expect(users).to eq [user3, user2, user1]
+    end
+  end
+
   context "has many through" do
     let(:advisor1) { ::FactoryBot.create(:advisor, organization: organization, created_at: now) }
     let(:advisor2) { ::FactoryBot.create(:advisor, organization: organization, created_at: now - 1.minutes, name: "Joe") }
