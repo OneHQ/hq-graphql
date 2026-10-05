@@ -26,6 +26,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Fixed** for any bug fixes.
 - **Security** in case of vulnerabilities.
 
+# [6.1.3] 2026-10-04
+
+### Added
+
+- `config.record_parents` makes the generated `create`, `update`, `destroy` and `copy` mutations authorize the record they write AS A CHILD of whoever it belongs to. Inert until the host sets it (together with `config.authorize_nested_attributes`, which answers the questions), so nothing changes for a consumer that has not opted in. A mutation's own check only asks "may I update SalesManager?", so a host that scopes restrictions per parent (`Advisor -> SalesManager`, distinct from `Opportunity -> SalesManager`) never had them found: a role forbidden to update an advisor's sales managers could still update one through `updateSalesManager`, because nothing in the mutation says whose it is. The hook is given the record (`->(record, context) { [Advisor] }`) and returns the parent classes to ask about -- every owner the record has, since a model that allows several is restricted under each -- or an empty list for none; the gem then calls `config.authorize_nested_attributes(action, record.class, parent_klass, context)` for each, the same question it already asks for the rows a mutation reaches through nested attributes. The record is the one the mutation found (or built), so its owner is read from the real thing rather than worked out from the arguments. An update is asked about the owners the record has and then, once the attributes are assigned, about any new ones it would be left with -- as a create, since handing a record to a new owner is adding it there. A refusal writes nothing and comes back as `{ "base" => ["You are not allowed to update sales managers"] }`, the same shape and wording as a mutation the model's own check denied.
+
 # [6.1.2] 2026-09-30
 
 ### Added

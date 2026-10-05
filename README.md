@@ -133,6 +133,32 @@ class AdvisorResource
 end
 ```
 
+#### Authorizing a record through its owner
+
+A mutation's own check only knows the model (`updateSalesManager` asks "may I update `SalesManager`?"). A host that
+scopes its restrictions per parent (`Advisor -> SalesManager`) authors them under the parent, which that question can
+never reach. `record_parents` says whose a record is, and the gem asks about it as a child of each:
+
+```ruby
+HQ::GraphQL.configure do |config|
+  # Who a record belongs to: the parent classes to ask about, an empty list for none.
+  # EVERY owner it has, not just the first: a model that allows several owners is restricted
+  # under each of them, and a restriction on one that was skipped would be bypassed.
+  config.record_parents = ->(record, context) do
+    record.class.owner_associations.filter_map { |name| record.public_send(name)&.class }.uniq
+  end
+
+  # Answers every question: the nested-attribute rows and, now, a record as a child of its owner.
+  config.authorize_nested_attributes = ->(action, klass, parent_klass, context) do
+    # may context[:current_user] `action` a `klass` under a `parent_klass`?
+  end
+end
+```
+
+Inert until both are set. `create`, `update`, `destroy` and `copy` ask about the record the mutation found (or built);
+an update also asks, as a `:create`, about any new owner it would leave the record with. A refusal writes nothing and answers
+`{ "base" => ["You are not allowed to update sales managers"] }`.
+
 ### Enums
 
 Auto generate enums from the database using ActiveRecord

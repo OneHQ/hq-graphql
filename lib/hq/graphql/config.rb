@@ -6,6 +6,7 @@ module HQ
       :authorize,
       :authorize_field,
       :authorize_nested_attributes,
+      :record_parents,
       :default_object_class,
       :default_scope,
       :default_search_type,

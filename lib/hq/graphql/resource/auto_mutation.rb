@@ -2,6 +2,7 @@
 
 require "hq/graphql/ext/mutation_extensions"
 require "hq/graphql/inputs"
+require "hq/graphql/record_authorization"
 require "hq/graphql/types"
 
 module HQ
@@ -19,6 +20,9 @@ module HQ
 
               resource = scoped_self.new_record(context)
               resource.assign_attributes(attributes)
+              refusal = ::HQ::GraphQL::RecordAuthorization.refusal(:create, resource, context)
+              next ::HQ::GraphQL::RecordAuthorization.payload(refusal) if refusal
+
               if resource.save
                 {
                   resource: resource,
@@ -50,7 +54,17 @@ module HQ
                 nested_errors = ::HQ::GraphQL::NestedAuthorization.errors(scoped_self.model_klass, attributes, context)
                 next { resource: nil, errors: nested_errors } if nested_errors.any?
 
+                # Whose the record is now, then whose it would be left with: handing a record
+                # to a new owner is adding it there, which is a create, not an update.
+                stored_parents = ::HQ::GraphQL::RecordAuthorization.parents(resource, context)
+                refusal = ::HQ::GraphQL::RecordAuthorization.refusal(:update, resource, context, parents: stored_parents)
+                next ::HQ::GraphQL::RecordAuthorization.payload(refusal) if refusal
+
                 resource.assign_attributes(attributes)
+                new_parents = ::HQ::GraphQL::RecordAuthorization.parents(resource, context) - stored_parents
+                refusal = ::HQ::GraphQL::RecordAuthorization.refusal(:create, resource, context, parents: new_parents)
+                next ::HQ::GraphQL::RecordAuthorization.payload(refusal) if refusal
+
                 if resource.save
                   {
                     resource: resource,
@@ -84,6 +98,9 @@ module HQ
               resource = scoped_self.find_record(args, context)
 
               if resource
+                refusal = ::HQ::GraphQL::RecordAuthorization.refusal(:copy, resource, context)
+                next ::HQ::GraphQL::RecordAuthorization.payload(refusal) if refusal
+
                 copy = resource.copy
                 if copy.save
                   {
@@ -114,6 +131,9 @@ module HQ
               resource = scoped_self.find_record(attrs, context)
 
               if resource
+                refusal = ::HQ::GraphQL::RecordAuthorization.refusal(:destroy, resource, context)
+                next ::HQ::GraphQL::RecordAuthorization.payload(refusal) if refusal
+
                 if resource.destroy
                   {
                     resource: resource,
