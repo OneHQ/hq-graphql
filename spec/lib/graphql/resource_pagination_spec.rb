@@ -36,7 +36,7 @@ describe ::HQ::GraphQL::Resource do
 
   let(:association_fields) { ["offset", "limit", "sortBy", "sortOrder"] }
   let(:connection_fields)  { ["before", "after", "first", "last"] }
-  let(:query_fields)       { association_fields + connection_fields + ["filters"] }
+  let(:query_fields)       { association_fields + connection_fields + ["filters", "initialValues"] }
   let(:root_fields)        { root_query.fields }
   let(:managers_field)     { root_fields["managers"] }
   let(:managers_arguments) { managers_field.arguments }

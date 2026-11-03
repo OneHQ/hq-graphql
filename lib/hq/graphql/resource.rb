@@ -395,13 +395,26 @@ module HQ
             def_root field_name.pluralize, is_array: true, null: false do
               extension FieldExtension::PaginatedArguments, klass: scoped_self.model_klass
               argument :filters, [scoped_self.filter_input], required: false
+              # Ids (uuid, integer or string, whatever the primary key is) of records to
+              # show at the top of the list, so they land on the first page. They still
+              # have to pass the filters and the scope, and values that match no record
+              # are dropped. The rest of the list keeps its order after them. Send the
+              # same values on every page so the offsets behind the cursors stay the same.
+              argument :initial_values, [::GraphQL::Types::ID, null: true], required: false
 
-              define_method(:resolve) do |filters: nil, limit: nil, offset: nil, sort_by: nil, sort_order: nil, **_attrs|
+              define_method(:resolve) do |filters: nil, limit: nil, offset: nil, sort_by: nil, sort_order: nil, initial_values: nil, **_attrs|
                 filters_scope = ::HQ::GraphQL::Filters.new(filters, scoped_self.model_klass)
                 filters_scope.validate!
 
                 scope = scoped_self.scope(context).all.merge(filters_scope.to_scope)
                 offset = [0, *offset].max
+
+                # Resolved through ActiveRecord, which casts each value to the primary key's
+                # type and leaves out the ones that can't be one (a malformed uuid, an
+                # integer out of range) instead of raising, so only real ids are left.
+                initial_values = Array(initial_values).reject(&:blank?).uniq
+                primary_key = scoped_self.model_klass.primary_key
+                initial_ids = initial_values.any? ? scope.where(primary_key => initial_values).limit(limit_max).pluck(primary_key) : []
 
                 # set limit_max if first/last N is not provided
                 scope =
@@ -415,7 +428,13 @@ module HQ
                 sort_by ||= :updated_at
                 sort_order ||= :desc
                 # There should be no risk for SQL injection since an enum is being used for both sort_by and sort_order
-                scope = scope.reorder(sort_by => sort_order)
+                order = [{ sort_by => sort_order }]
+
+                if initial_ids.any?
+                  order.unshift(::Arel::Nodes::Case.new.when(scoped_self.model_klass.arel_table[primary_key].in(initial_ids)).then(0).else(1).asc)
+                end
+
+                scope = scope.reorder(*order)
 
                 scope
               end
